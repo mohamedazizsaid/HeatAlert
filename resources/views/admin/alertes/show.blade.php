@@ -47,12 +47,13 @@
     <a href="{{ route('admin.alertes.edit', $alerte) }}" class="m-btn m-btn--primary">
       <i class="fa-solid fa-pen-to-square"></i> Modifier l'alerte
     </a>
-    <form action="{{ route('admin.alertes.destroy', $alerte) }}" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette alerte ?')">
-      @csrf @method('DELETE')
-      <button type="submit" class="m-btn m-btn--ghost" style="border:1px solid #dc2626;color:#dc2626;">
-        <i class="fa-solid fa-trash"></i> Supprimer
-      </button>
-    </form>
+    <button type="button" class="m-btn m-btn--ghost js-trigger-delete" style="border:1px solid #dc2626;color:#dc2626;"
+            data-action="{{ route('admin.alertes.destroy', $alerte) }}"
+            data-name="{{ $alerte->titre }}"
+            data-type="l'alerte"
+            title="Supprimer l'alerte">
+      <i class="fa-solid fa-trash"></i> Supprimer
+    </button>
   </div>
 </div>
 

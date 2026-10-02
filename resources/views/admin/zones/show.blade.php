@@ -27,6 +27,13 @@
     <a href="{{ route('admin.alertes.create', ['zone_id' => $zone->id]) }}" class="m-btn m-btn--ghost" style="border:1px solid #dc2626;color:#dc2626;">
       <i class="fa-solid fa-triangle-exclamation"></i> Déclarer une alerte
     </a>
+    <button type="button" class="m-btn m-btn--ghost js-trigger-delete" style="border:1px solid #dc2626;color:#dc2626;"
+            data-action="{{ route('admin.zones.destroy', $zone) }}"
+            data-name="{{ $zone->nom }}"
+            data-type="la zone"
+            title="Supprimer la zone">
+      <i class="fa-solid fa-trash"></i> Supprimer
+    </button>
   </div>
 </div>
 

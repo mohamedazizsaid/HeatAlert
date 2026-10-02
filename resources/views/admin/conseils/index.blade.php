@@ -119,19 +119,15 @@
                title="Modifier">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
-            <form action="{{ route('admin.conseils.destroy', $conseil) }}"
-                  method="POST"
-                  style="display:inline;"
-                  onsubmit="return confirm('Supprimer le conseil « {{ addslashes(Str::limit($conseil->titre, 40)) }} » ?')">
-              @csrf
-              @method('DELETE')
-              <button type="submit"
-                      class="m-btn m-btn--ghost"
-                      style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;"
-                      title="Supprimer">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </form>
+            <button type="button"
+                    class="m-btn m-btn--ghost js-trigger-delete"
+                    style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;"
+                    data-action="{{ route('admin.conseils.destroy', $conseil) }}"
+                    data-name="{{ $conseil->titre }}"
+                    data-type="le conseil"
+                    title="Supprimer">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </td>
         </tr>
         @empty

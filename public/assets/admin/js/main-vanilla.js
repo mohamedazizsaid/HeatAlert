@@ -1010,7 +1010,18 @@ function initToastSystem() {
 function initCommandPalette() {
   function getCommands() {
     if (window.HEATALERT_COMMANDS && window.HEATALERT_COMMANDS.length) {
-      return window.HEATALERT_COMMANDS;
+      const baseItems = [...window.HEATALERT_COMMANDS];
+      const logoutForm = document.querySelector('form[action*="logout"]');
+      if (logoutForm && !baseItems.some(i => i.title === 'Déconnexion')) {
+        baseItems.push({
+          section: 'Compte',
+          title: 'Déconnexion',
+          sub: 'Quitter la session HeatAlert Admin',
+          action: () => logoutForm.submit(),
+          icon: 'fa-power-off'
+        });
+      }
+      return baseItems;
     }
 
     const items = [];

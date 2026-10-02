@@ -68,12 +68,14 @@
             <a href="{{ route('admin.zones.edit', $zone) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;" title="Modifier">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
-            <form action="{{ route('admin.zones.destroy', $zone) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer la zone « {{ addslashes($zone->nom) }} » ?')">
-              @csrf @method('DELETE')
-              <button type="submit" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;" title="Supprimer">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </form>
+            <button type="button" class="m-btn m-btn--ghost js-trigger-delete"
+                    style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;"
+                    data-action="{{ route('admin.zones.destroy', $zone) }}"
+                    data-name="{{ $zone->nom }}"
+                    data-type="la zone"
+                    title="Supprimer">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </td>
         </tr>
         @empty

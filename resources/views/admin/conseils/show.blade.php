@@ -37,12 +37,13 @@
     <a href="{{ route('admin.conseils.edit', $conseil) }}" class="m-btn m-btn--primary">
       <i class="fa-solid fa-pen-to-square"></i> Modifier le conseil
     </a>
-    <form action="{{ route('admin.conseils.destroy', $conseil) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer définitivement ce conseil ?')">
-      @csrf @method('DELETE')
-      <button type="submit" class="m-btn m-btn--ghost" style="border:1px solid #dc2626;color:#dc2626;">
-        <i class="fa-solid fa-trash"></i> Supprimer
-      </button>
-    </form>
+    <button type="button" class="m-btn m-btn--ghost js-trigger-delete" style="border:1px solid #dc2626;color:#dc2626;"
+            data-action="{{ route('admin.conseils.destroy', $conseil) }}"
+            data-name="{{ $conseil->titre }}"
+            data-type="le conseil"
+            title="Supprimer le conseil">
+      <i class="fa-solid fa-trash"></i> Supprimer
+    </button>
   </div>
 </div>
 
