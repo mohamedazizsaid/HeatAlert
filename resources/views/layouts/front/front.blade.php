@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
   <meta charset="utf-8">
@@ -30,13 +30,6 @@
   <!-- Main CSS File -->
   <link href={{ asset("assets/front/css/main.css") }} rel="stylesheet">
 
-  <!-- =======================================================
-  * Template Name: Clinic
-  * Template URL: https://bootstrapmade.com/clinic-bootstrap-template/
-  * Updated: Jul 23 2025 with Bootstrap v5.3.7
-  * Author: BootstrapMade.com
-  * License: https://bootstrapmade.com/license/
-  ======================================================== -->
 </head>
 
 <body class="index-page">
@@ -45,9 +38,10 @@
 
   <main class="main">
 
-    @yield('content')
+    @if(request()->routeIs('front.home') || request()->routeIs('home') || request()->is('/'))
+      @yield('content')
 
-    <section id="hero" class="hero section">
+      <section id="hero" class="hero section">
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
 
@@ -850,6 +844,9 @@
       </div>
 
     </section><!-- /Call To Action Section -->
+    @else
+      @yield('content')
+    @endif
 
   </main>
 
@@ -879,4 +876,4 @@
 
 </body>
 
-</html>
+</html>

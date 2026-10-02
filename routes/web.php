@@ -28,6 +28,12 @@ Route::get('/dashboard', function () {
 // ─── Routes authentifiées — Front (utilisateurs ROLE_USER)
 Route::middleware(['auth'])->group(function () {
     Route::get('/accueil', [FrontController::class, 'index'])->name('front.home');
+    Route::get('/zones', [FrontController::class, 'zones'])->name('front.zones.index');
+    Route::get('/zones/{zone}', [FrontController::class, 'zoneShow'])->name('front.zones.show');
+    Route::get('/alertes', [FrontController::class, 'alertes'])->name('front.alertes.index');
+    Route::get('/alertes/{alerte}', [FrontController::class, 'alerteShow'])->name('front.alertes.show');
+    Route::get('/conseils', [FrontController::class, 'conseils'])->name('front.conseils.index');
+    Route::get('/conseils/{conseil}', [FrontController::class, 'conseilShow'])->name('front.conseils.show');
 });
 
 // ─── Routes Admin — accessible uniquement aux ROLE_ADMIN

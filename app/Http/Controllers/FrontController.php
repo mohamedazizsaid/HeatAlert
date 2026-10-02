@@ -106,15 +106,37 @@ class FrontController extends Controller
      */
     public function conseils()
     {
-        $conseils = Conseil::where('actif', true)
-            ->orderBy('categorie')
-            ->paginate(12);
+        $query = Conseil::where('actif', true);
+
+        if (request('categorie')) {
+            $query->where('categorie', request('categorie'));
+        }
+
+        $conseils = $query->orderBy('categorie')->paginate(12)->appends(request()->query());
 
         $categories = Conseil::where('actif', true)
             ->select('categorie')
+            ->whereNotNull('categorie')
             ->distinct()
+            ->orderBy('categorie')
             ->pluck('categorie');
 
         return view('front.conseils.index', compact('conseils', 'categories'));
+    }
+
+    /**
+     * Détails d'un conseil de santé (front).
+     */
+    public function conseilShow(Conseil $conseil)
+    {
+        $conseil->load(['alertes.zone']);
+
+        $relatedConseils = Conseil::where('actif', true)
+            ->where('id', '!=', $conseil->id)
+            ->where('categorie', $conseil->categorie)
+            ->take(3)
+            ->get();
+
+        return view('front.conseils.show', compact('conseil', 'relatedConseils'));
     }
 }
