@@ -57,50 +57,50 @@
               <div class="trust-badges mb-4" data-aos="fade-right" data-aos-delay="200">
                 <div class="badge-item">
                   <i class="bi bi-shield-check"></i>
-                  <span>Accredited</span>
+                  <span>Alerte Précoce</span>
                 </div>
                 <div class="badge-item">
-                  <i class="bi bi-clock"></i>
-                  <span>24/7 Emergency</span>
+                  <i class="bi bi-clock-history"></i>
+                  <span>Veille 24h/24</span>
                 </div>
                 <div class="badge-item">
-                  <i class="bi bi-star-fill"></i>
-                  <span>4.9/5 Rating</span>
+                  <i class="bi bi-thermometer-sun"></i>
+                  <span>Météo Tunisie</span>
                 </div>
               </div>
 
               <h1 data-aos="fade-right" data-aos-delay="300">
-                Excellence in <span class="highlight">Healthcare</span> With Compassionate Care
+                Alerte Canicule & <span class="highlight">Protection Santé</span> en Tunisie
               </h1>
 
               <p class="hero-description" data-aos="fade-right" data-aos-delay="400">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+                Plateforme nationale de surveillance météorologique et d'alerte précoce. Suivez les vagues de chaleur en temps réel, anticipez les risques thermiques et adoptez les gestes essentiels pour protéger votre santé et vos proches.
               </p>
 
               <div class="hero-stats mb-4" data-aos="fade-right" data-aos-delay="500">
                 <div class="stat-item">
-                  <h3><span data-purecounter-start="0" data-purecounter-end="15" data-purecounter-duration="2"
-                      class="purecounter"></span>+</h3>
-                  <p>Years Experience</p>
+                  <h3><span data-purecounter-start="0" data-purecounter-end="24" data-purecounter-duration="2"
+                      class="purecounter"></span></h3>
+                  <p>Gouvernorats suivis</p>
                 </div>
                 <div class="stat-item">
-                  <h3><span data-purecounter-start="0" data-purecounter-end="5000" data-purecounter-duration="2"
-                      class="purecounter"></span>+</h3>
-                  <p>Patients Treated</p>
+                  <h3><span data-purecounter-start="0" data-purecounter-end="100" data-purecounter-duration="2"
+                      class="purecounter"></span>%</h3>
+                  <p>Alertes en temps réel</p>
                 </div>
                 <div class="stat-item">
-                  <h3><span data-purecounter-start="0" data-purecounter-end="50" data-purecounter-duration="2"
-                      class="purecounter"></span>+</h3>
-                  <p>Medical Experts</p>
+                  <h3><span data-purecounter-start="0" data-purecounter-end="24" data-purecounter-duration="2"
+                      class="purecounter"></span>/7</h3>
+                  <p>Veille sanitaire</p>
                 </div>
               </div>
 
               <div class="hero-actions" data-aos="fade-right" data-aos-delay="600">
-                <a href="appointment.html" class="btn btn-primary">Book Appointment</a>
-                <a href="https://www.youtube.com/watch?v=Y7f98aduVJ8" class="btn btn-outline glightbox">
-                  <i class="bi bi-play-circle me-2"></i>
-                  Watch Our Story
+                <a href="#featured-departments" class="btn btn-primary">
+                  <i class="fa-solid fa-triangle-exclamation me-2"></i>Consulter les Alertes
+                </a>
+                <a href="#find-a-doctor" class="btn btn-outline">
+                  <i class="fa-solid fa-heart-pulse me-2"></i>Conseils de Prévention
                 </a>
               </div>
 
@@ -109,8 +109,8 @@
                   <i class="bi bi-telephone-fill"></i>
                 </div>
                 <div class="emergency-info">
-                  <small>Emergency Hotline</small>
-                  <strong>+1 (555) 911-2468</strong>
+                  <small>Numéros d'Urgence Canicule</small>
+                  <strong>198 (Protection Civile) · 190 (SAMU)</strong>
                 </div>
               </div>
             </div>
@@ -119,28 +119,28 @@
           <div class="col-lg-6">
             <div class="hero-visual" data-aos="fade-left" data-aos-delay="400">
               <div class="main-image">
-                <img src="{{ asset('assets/front/img/health/staff-10.webp') }}" alt="Modern Healthcare Facility" class="img-fluid">
+                <img src="{{ asset('assets/front/img/health/staff-10.webp') }}" alt="Surveillance HeatAlert Tunisie" class="img-fluid">
                 <div class="floating-card appointment-card">
                   <div class="card-icon">
-                    <i class="bi bi-calendar-check"></i>
+                    <i class="bi bi-thermometer-high text-danger"></i>
                   </div>
                   <div class="card-content">
-                    <h6>Next Available</h6>
-                    <p>Today 2:30 PM</p>
-                    <small>Dr. Sarah Johnson</small>
+                    <h6>Vigilance Chaleur</h6>
+                    <p>Pic thermique actif</p>
+                    <small>Tunisie · Relevés du jour</small>
                   </div>
                 </div>
                 <div class="floating-card rating-card">
                   <div class="card-content">
-                    <div class="rating-stars">
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
-                      <i class="bi bi-star-fill"></i>
+                    <div class="rating-stars text-warning">
+                      <i class="bi bi-shield-fill-check"></i>
+                      <i class="bi bi-shield-fill-check"></i>
+                      <i class="bi bi-shield-fill-check"></i>
+                      <i class="bi bi-shield-fill-check"></i>
+                      <i class="bi bi-shield-fill-check"></i>
                     </div>
-                    <h6>4.9/5</h6>
-                    <small>1,234 Reviews</small>
+                    <h6>Sécurité 24/7</h6>
+                    <small>Coordination Secours & Météo</small>
                   </div>
                 </div>
               </div>
@@ -165,35 +165,31 @@
         <div class="row align-items-center">
           <div class="col-lg-6 mb-5 mb-lg-0" data-aos="fade-right" data-aos-delay="200">
             <div class="about-content">
-              <h2 class="section-heading">Compassionate Care, Advanced Medicine</h2>
-              <p class="lead-text">For over two decades, we've been dedicated to providing exceptional healthcare that
-                combines cutting-edge medical technology with the personal touch our patients deserve.</p>
+              <h2 class="section-heading">Protection Citoyenne Face aux Fortes Chaleurs</h2>
+              <p class="lead-text">Face à l'intensification des vagues de chaleur estivales en Tunisie, HeatAlert s'engage à fournir une information météorologique préventive et des protocoles de sécurité sanitaire pour tous.</p>
 
-              <p>Our multidisciplinary team of specialists works collaboratively to ensure every patient receives
-                comprehensive care tailored to their unique needs. From preventive services to complex procedures, we
-                maintain the highest standards of medical excellence while fostering an environment of trust and
-                healing.</p>
+              <p>Nos modèles météorologiques analysent les températures maximales, l'humidité relative, les indices UV et la vitesse du vent afin d'estimer avec précision le stress thermique réel. En coordination avec les autorités de protection civile et les structures médicales, nous déclenchons les alertes adaptées et diffusons les gestes de premiers secours pour prévenir l'insolation, la déshydratation et les malaises graves.</p>
 
               <div class="stats-grid">
                 <div class="stat-item">
-                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="15000"
+                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="24"
                     data-purecounter-duration="1"></div>
-                  <div class="stat-label">Patients Served</div>
+                  <div class="stat-label">Gouvernorats couverts</div>
                 </div>
                 <div class="stat-item">
-                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="25"
+                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="100"
                     data-purecounter-duration="1"></div>
-                  <div class="stat-label">Years of Excellence</div>
+                  <div class="stat-label">% Veille continue</div>
                 </div>
                 <div class="stat-item">
-                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="50"
+                  <div class="stat-number purecounter" data-purecounter-start="0" data-purecounter-end="4"
                     data-purecounter-duration="1"></div>
-                  <div class="stat-label">Medical Specialists</div>
+                  <div class="stat-label">Niveaux de vigilance</div>
                 </div>
               </div>
 
               <div class="cta-section">
-                <a href="about.html" class="btn-primary">Learn More About Us</a>
+                <a href="#featured-services" class="btn-primary">Découvrir le Système d'Alerte</a>
               </div>
             </div>
           </div>
@@ -201,23 +197,23 @@
           <div class="col-lg-6" data-aos="fade-left" data-aos-delay="300">
             <div class="about-visual">
               <div class="main-image">
-                <img src={{ asset('assets/front/img/health/facilities-9.webp') }} alt="Modern medical facility" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/facilities-9.webp') }} alt="Centre de vigilance canicule" class="img-fluid">
               </div>
               <div class="floating-card">
                 <div class="card-content">
                   <div class="icon">
-                    <i class="bi bi-heart-pulse"></i>
+                    <i class="bi bi-heart-pulse-fill text-danger"></i>
                   </div>
                   <div class="card-text">
-                    <h4>24/7 Emergency Care</h4>
-                    <p>Always here when you need us most</p>
+                    <h4>Assistance & Alerte</h4>
+                    <p>Protection active des personnes vulnérables</p>
                   </div>
                 </div>
               </div>
               <div class="experience-badge">
                 <div class="badge-content">
-                  <span class="years">25+</span>
-                  <span class="text">Years of Trusted Care</span>
+                  <span class="years">24h</span>
+                  <span class="text">Surveillance Météo</span>
                 </div>
               </div>
             </div>
@@ -233,8 +229,8 @@
 
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
-        <h2>Featured Departments</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+        <h2>Domaines de Vigilance & Risques</h2>
+        <p>Une surveillance multirisque des impacts environnementaux et sanitaires liés à la canicule en Tunisie.</p>
       </div><!-- End Section Title -->
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -245,23 +241,22 @@
             <div class="specialty-card">
               <div class="specialty-content">
                 <div class="specialty-meta">
-                  <span class="specialty-label">Specialized Care</span>
+                  <span class="specialty-label">Surveillance Thermique</span>
                 </div>
-                <h3>Cardiovascular Medicine</h3>
-                <p>Advanced diagnostic imaging and interventional procedures for comprehensive heart health management
-                  with personalized treatment protocols.</p>
+                <h3>Alertes Canicule & Pics de Chaleur</h3>
+                <p>Détection continue des vagues de chaleur avec seuils de vigilance adaptés (Vert, Jaune, Orange, Rouge) pour informer et protéger la population en temps réel.</p>
                 <div class="specialty-features">
-                  <span><i class="bi bi-check-circle-fill"></i>24/7 Emergency Cardiac Care</span>
-                  <span><i class="bi bi-check-circle-fill"></i>Minimally Invasive Procedures</span>
+                  <span><i class="bi bi-check-circle-fill"></i>Calcul du stress thermique réel (Heat Index)</span>
+                  <span><i class="bi bi-check-circle-fill"></i>Diffusion des alertes géociblées par région</span>
                 </div>
-                <a href="department-details.html" class="specialty-link">
-                  Explore Cardiology <i class="bi bi-arrow-right"></i>
+                <a href="#featured-services" class="specialty-link">
+                  En savoir plus sur les alertes <i class="bi bi-arrow-right"></i>
                 </a>
               </div>
               <div class="specialty-visual">
-                <img src={{ asset('assets/front/img/health/cardiology-1.webp') }} alt="Cardiovascular Medicine" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/cardiology-1.webp') }} alt="Surveillance Canicule" class="img-fluid">
                 <div class="visual-overlay">
-                  <i class="bi bi-heart-pulse"></i>
+                  <i class="bi bi-thermometer-sun"></i>
                 </div>
               </div>
             </div>
@@ -271,23 +266,22 @@
             <div class="specialty-card">
               <div class="specialty-content">
                 <div class="specialty-meta">
-                  <span class="specialty-label">Expert Care</span>
+                  <span class="specialty-label">Santé & Prévention</span>
                 </div>
-                <h3>Neurological Sciences</h3>
-                <p>Cutting-edge neuroimaging and neurosurgical expertise for complex brain and spinal cord conditions
-                  with innovative treatment approaches.</p>
+                <h3>Protection des Personnes Vulnérables</h3>
+                <p>Protocoles d'action prioritaires pour les nourrissons, les personnes âgées, les malades chroniques et les travailleurs sur les chantiers extérieurs.</p>
                 <div class="specialty-features">
-                  <span><i class="bi bi-check-circle-fill"></i>Advanced Brain Imaging</span>
-                  <span><i class="bi bi-check-circle-fill"></i>Robotic Surgery</span>
+                  <span><i class="bi bi-check-circle-fill"></i>Prévention de la déshydratation & insolation</span>
+                  <span><i class="bi bi-check-circle-fill"></i>Recommandations médicales personnalisées</span>
                 </div>
-                <a href="department-details.html" class="specialty-link">
-                  Explore Neurology <i class="bi bi-arrow-right"></i>
+                <a href="#find-a-doctor" class="specialty-link">
+                  Consulter les conseils santé <i class="bi bi-arrow-right"></i>
                 </a>
               </div>
               <div class="specialty-visual">
-                <img src={{ asset('assets/front/img/health/neurology-4.webp') }} alt="Neurological Sciences" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/neurology-4.webp') }} alt="Protection Vulnérable" class="img-fluid">
                 <div class="visual-overlay">
-                  <i class="bi bi-cpu"></i>
+                  <i class="bi bi-shield-heart"></i>
                 </div>
               </div>
             </div>
@@ -296,51 +290,48 @@
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="100">
             <div class="department-highlight">
               <div class="highlight-icon">
-                <i class="bi bi-shield-plus"></i>
+                <i class="bi bi-brightness-high text-warning"></i>
               </div>
-              <h4>Orthopedic Surgery</h4>
-              <p>Comprehensive musculoskeletal care utilizing advanced arthroscopic techniques and joint replacement
-                procedures.</p>
+              <h4>Indice UV & Rayonnement</h4>
+              <p>Mesure quotidienne de l'intensité du rayonnement solaire pour prévenir les brûlures graves et les atteintes cutanées.</p>
               <ul class="highlight-list">
-                <li>Sports Medicine</li>
-                <li>Joint Replacement</li>
-                <li>Spine Surgery</li>
+                <li>Échelle UV de 0 à 15+</li>
+                <li>Heures de pointe à éviter (11h-16h)</li>
+                <li>Protection solaire et lunettes adaptées</li>
               </ul>
-              <a href="department-details.html" class="highlight-cta">Learn More</a>
+              <a href="#find-a-doctor" class="highlight-cta">Consignes UV</a>
             </div>
           </div><!-- End Department Highlight -->
 
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
             <div class="department-highlight">
               <div class="highlight-icon">
-                <i class="bi bi-people"></i>
+                <i class="bi bi-lightning-charge text-danger"></i>
               </div>
-              <h4>Pediatric Care</h4>
-              <p>Child-centered healthcare services from newborn to adolescence with family-focused treatment
-                approaches.</p>
+              <h4>Réseau Électrique & Délestages</h4>
+              <p>Anticipation des pics de charge énergétique dus à la climatisation pour limiter les risques de coupures de courant.</p>
               <ul class="highlight-list">
-                <li>Neonatal Intensive Care</li>
-                <li>Developmental Pediatrics</li>
-                <li>Pediatric Surgery</li>
+                <li>Suivi des pics de demande STEG</li>
+                <li>Réglage optimal de climatisation (26°C)</li>
+                <li>Préservation de la chaîne du froid</li>
               </ul>
-              <a href="department-details.html" class="highlight-cta">Learn More</a>
+              <a href="#featured-services" class="highlight-cta">Guide Énergie</a>
             </div>
           </div><!-- End Department Highlight -->
 
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
             <div class="department-highlight">
               <div class="highlight-icon">
-                <i class="bi bi-activity"></i>
+                <i class="bi bi-fire text-danger"></i>
               </div>
-              <h4>Cancer Treatment</h4>
-              <p>Multidisciplinary oncology program offering personalized cancer care with latest therapeutic
-                innovations.</p>
+              <h4>Vents de Sirocco & Feux de Forêt</h4>
+              <p>Évaluation des vents chauds (Chehili) et de l'humidité critique pour prévenir les départs d'incendies estivaux.</p>
               <ul class="highlight-list">
-                <li>Precision Medicine</li>
-                <li>Immunotherapy</li>
-                <li>Radiation Oncology</li>
+                <li>Surveillance vents > 30 km/h</li>
+                <li>Vigilance feux de forêts & végétation</li>
+                <li>Coordination avec les gardes forestiers</li>
               </ul>
-              <a href="department-details.html" class="highlight-cta">Learn More</a>
+              <a href="#call-to-action" class="highlight-cta">Plan Incendie</a>
             </div>
           </div><!-- End Department Highlight -->
 
@@ -350,15 +341,14 @@
           <div class="row align-items-center">
             <div class="col-lg-8">
               <div class="emergency-content">
-                <h3>Emergency Services Available 24/7</h3>
-                <p>Our emergency department is equipped with state-of-the-art technology and staffed by board-certified
-                  emergency physicians ready to provide immediate care.</p>
+                <h3>Assistance Médicale & Secours d'Urgence 24h/24</h3>
+                <p>En cas de coup de chaleur grave (perte de connaissance, confusion, forte fièvre), placez la victime à l'ombre, humidifiez son corps et alertez immédiatement les secours.</p>
               </div>
             </div>
             <div class="col-lg-4 text-lg-end">
-              <a href="tel:+15551234567" class="emergency-btn">
+              <a href="tel:198" class="emergency-btn">
                 <i class="bi bi-telephone-fill"></i>
-                Call Emergency: (555) 123-4567
+                Protection Civile : 198 · SAMU : 190
               </a>
             </div>
           </div>
@@ -373,8 +363,8 @@
 
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
-        <h2>Featured Services</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+        <h2>Services & Outils Préventifs</h2>
+        <p>Des technologies modernes et des alertes anticipées pour sécuriser chaque foyer tunisien.</p>
       </div><!-- End Section Title -->
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -384,20 +374,19 @@
           <div class="col-lg-8" data-aos="fade-right" data-aos-delay="200">
             <div class="featured-service-main">
               <div class="service-image-wrapper">
-                <img src={{ asset('assets/front/img/health/consultation-4.webp') }} alt="Premier Healthcare Services" class="img-fluid"
+                <img src={{ asset('assets/front/img/health/consultation-4.webp') }} alt="Services HeatAlert" class="img-fluid"
                   loading="lazy">
                 <div class="service-overlay">
                   <div class="service-badge">
-                    <i class="bi bi-heart-pulse"></i>
-                    <span>Emergency Care</span>
+                    <i class="bi bi-shield-check"></i>
+                    <span>Alerte Précoce</span>
                   </div>
                 </div>
               </div>
               <div class="service-details">
-                <h2>Comprehensive Healthcare Excellence</h2>
-                <p>Mauris blandit aliquet elit, eget tincidunt nibh pulvinar a. Vestibulum ante ipsum primis in faucibus
-                  orci luctus et ultrices posuere cubilia curae donec velit neque.</p>
-                <a href="#!" class="main-cta">Explore Our Services</a>
+                <h2>Surveillance Météo Intelligente & Indice Ressenti</h2>
+                <p>HeatAlert combine les observations météorologiques des stations tunisiennes (température maximale, taux d'humidité, vents) pour calculer le stress thermique réel subi par le corps humain et déclencher les alertes sanitaires adaptées.</p>
+                <a href="#call-to-action" class="main-cta">Recevoir les Alertes Météo</a>
               </div>
             </div>
           </div>
@@ -407,36 +396,34 @@
 
               <div class="service-item" data-aos="fade-up" data-aos-delay="400">
                 <div class="service-icon-wrapper">
-                  <i class="bi bi-capsule"></i>
+                  <i class="bi bi-bell-fill text-warning"></i>
                 </div>
                 <div class="service-info">
-                  <h4>Dermatology Clinic</h4>
-                  <p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-                  <a href="#!" class="service-link">Learn More</a>
+                  <h4>Alertes Citoyennes en Direct</h4>
+                  <p>Diffusion instantanée des avis de vigilance Orange et Rouge par gouvernorat et par ville.</p>
+                  <a href="#featured-departments" class="service-link">Consulter les alertes</a>
                 </div>
               </div>
 
               <div class="service-item" data-aos="fade-up" data-aos-delay="500">
                 <div class="service-icon-wrapper">
-                  <i class="bi bi-bandaid"></i>
+                  <i class="bi bi-hospital text-danger"></i>
                 </div>
                 <div class="service-info">
-                  <h4>Surgery Center</h4>
-                  <p>Donec rutrum congue leo eget malesuada curabitur arcu erat accumsan id imperdiet et porttitor at
-                    sem.</p>
-                  <a href="#!" class="service-link">Learn More</a>
+                  <h4>Liaison Hôpitaux & SAMU</h4>
+                  <p>Partage des bulletins de chaleur extrême avec les services d'urgence pour la mobilisation préventive.</p>
+                  <a href="#call-to-action" class="service-link">Numéros d'urgence</a>
                 </div>
               </div>
 
               <div class="service-item" data-aos="fade-up" data-aos-delay="600">
                 <div class="service-icon-wrapper">
-                  <i class="bi bi-activity"></i>
+                  <i class="bi bi-geo-alt-fill text-primary"></i>
                 </div>
                 <div class="service-info">
-                  <h4>Diagnostics Lab</h4>
-                  <p>Vestibulum ac diam sit amet quam vehicula elementum sed sit amet dui cras ultricies ligula sed
-                    magna.</p>
-                  <a href="#!" class="service-link">Learn More</a>
+                  <h4>Cartographie des Risques</h4>
+                  <p>Visualisation précise des zones les plus chaudes et des seuils thermiques dépassés en Tunisie.</p>
+                  <a href="#home-about" class="service-link">Voir la couverture</a>
                 </div>
               </div>
 
@@ -451,11 +438,11 @@
             <div class="col-lg-3 col-md-6">
               <div class="specialty-card">
                 <div class="specialty-image">
-                  <img src={{ asset('assets/front/img/health/maternal-2.webp') }} alt="Maternal Care" class="img-fluid" loading="lazy">
+                  <img src={{ asset('assets/front/img/health/maternal-2.webp') }} alt="Hydratation" class="img-fluid" loading="lazy">
                 </div>
                 <div class="specialty-content">
-                  <h5>Maternal Care</h5>
-                  <span>Expert pregnancy &amp; delivery support</span>
+                  <h5>Hydratation Continue</h5>
+                  <span>Boire régulièrement au moins 2L d'eau par jour</span>
                 </div>
               </div>
             </div>
@@ -463,11 +450,11 @@
             <div class="col-lg-3 col-md-6">
               <div class="specialty-card">
                 <div class="specialty-image">
-                  <img src={{ asset('assets/front/img/health/vaccination-3.webp') }} alt="Vaccination" class="img-fluid" loading="lazy">
+                  <img src={{ asset('assets/front/img/health/vaccination-3.webp') }} alt="Protection Solaire" class="img-fluid" loading="lazy">
                 </div>
                 <div class="specialty-content">
-                  <h5>Vaccination</h5>
-                  <span>Complete immunization programs</span>
+                  <h5>Protection UV Maximale</h5>
+                  <span>Chapeaux, lunettes et vêtements en coton clair</span>
                 </div>
               </div>
             </div>
@@ -475,11 +462,11 @@
             <div class="col-lg-3 col-md-6">
               <div class="specialty-card">
                 <div class="specialty-image">
-                  <img src={{ asset('assets/front/img/health/emergency-1.webp') }} alt="Emergency Care" class="img-fluid" loading="lazy">
+                  <img src={{ asset('assets/front/img/health/emergency-1.webp') }} alt="Maintien au frais" class="img-fluid" loading="lazy">
                 </div>
                 <div class="specialty-content">
-                  <h5>Emergency Care</h5>
-                  <span>24/7 critical care services</span>
+                  <h5>Habitats Tempérés</h5>
+                  <span>Fermer les volets le jour et aérer la nuit</span>
                 </div>
               </div>
             </div>
@@ -487,11 +474,11 @@
             <div class="col-lg-3 col-md-6">
               <div class="specialty-card">
                 <div class="specialty-image">
-                  <img src={{ asset('assets/front/img/health/facilities-6.webp') }} alt="Advanced Tech" class="img-fluid" loading="lazy">
+                  <img src={{ asset('assets/front/img/health/facilities-6.webp') }} alt="Solidarité" class="img-fluid" loading="lazy">
                 </div>
                 <div class="specialty-content">
-                  <h5>Advanced Technology</h5>
-                  <span>State-of-the-art medical equipment</span>
+                  <h5>Voisinage & Solidarité</h5>
+                  <span>Prendre des nouvelles des proches et aînés isolés</span>
                 </div>
               </div>
             </div>
@@ -503,13 +490,13 @@
 
     </section><!-- /Featured Services Section -->
 
-    <!-- Find A Doctor Section -->
+    <!-- Find A Doctor Section (Conseils & Gestes Santé des Experts) -->
     <section id="find-a-doctor" class="find-a-doctor section">
 
       <!-- Section Title -->
       <div class="container section-title" data-aos="fade-up">
-        <h2>Find A Doctor</h2>
-        <p>Necessitatibus eius consequatur ex aliquid fuga eum quidem sint consectetur velit</p>
+        <h2>Conseils & Gestes Santé des Experts</h2>
+        <p>Recommandations validées par les professionnels de santé pour faire face aux vagues de chaleur en Tunisie.</p>
       </div><!-- End Section Title -->
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -517,30 +504,28 @@
         <div class="row justify-content-center mb-5" data-aos="fade-up" data-aos-delay="200">
           <div class="col-lg-8 text-center">
             <div class="search-section">
-              <h3 class="search-title">Find Your Perfect Healthcare Provider</h3>
-              <p class="search-subtitle">Search through our comprehensive directory of experienced medical professionals
-              </p>
-              <form class="search-form" action="#!" method="#">
+              <h3 class="search-title">Trouver une consigne adaptée à votre situation</h3>
+              <p class="search-subtitle">Consultez les bonnes pratiques ciblées selon le profil des personnes exposées</p>
+              <form class="search-form" action="#!" method="#" onsubmit="return false;">
                 <div class="search-input-group">
                   <div class="input-wrapper">
-                    <i class="bi bi-person"></i>
-                    <input type="text" class="form-control" name="doctor_name" placeholder="Enter doctor name">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="form-control" name="doctor_name" placeholder="Ex: hydratation, bébé, personnes âgées, coup de chaleur...">
                   </div>
                   <div class="select-wrapper">
-                    <i class="bi bi-heart-pulse"></i>
+                    <i class="bi bi-filter"></i>
                     <select class="form-select" name="specialty">
-                      <option value="">All Specialties</option>
-                      <option value="cardiology">Cardiology</option>
-                      <option value="neurology">Neurology</option>
-                      <option value="orthopedics">Orthopedics</option>
-                      <option value="pediatrics">Pediatrics</option>
-                      <option value="dermatology">Dermatology</option>
-                      <option value="oncology">Oncology</option>
+                      <option value="">Toutes les catégories</option>
+                      <option value="seniors">Seniors & Personnes Âgées</option>
+                      <option value="enfants">Nourrissons & Enfants</option>
+                      <option value="travail">Travail Extérieur & Chantiers</option>
+                      <option value="sport">Sport & Activité Physique</option>
+                      <option value="maladies">Maladies Chroniques</option>
                     </select>
                   </div>
-                  <button type="submit" class="search-btn">
+                  <button type="button" class="search-btn">
                     <i class="bi bi-search"></i>
-                    Find Doctors
+                    Rechercher
                   </button>
                 </div>
               </form>
@@ -552,200 +537,212 @@
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="100">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-2.webp') }} alt="Dr. Amanda Foster" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/staff-2.webp') }} alt="Dr. Sonia Ben Romdhane" class="img-fluid">
                 <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
-                <h4>Dr. Amanda Foster</h4>
-                <span class="specialty-tag">Cardiology Specialist</span>
+                <h4>Dr. Sonia Ben Romdhane</h4>
+                <span class="specialty-tag">Gériatrie · CHU Tunis</span>
                 <div class="experience-info">
                   <i class="bi bi-award"></i>
-                  <span>14 years experience</span>
+                  <span>18 ans d'expérience</span>
                 </div>
               </div>
             </div>
             <div class="rating-section">
-              <div class="stars">
+              <div class="stars text-warning">
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
               </div>
-              <span class="rating-score">4.9</span>
-              <span class="review-count">(127 reviews)</span>
+              <span class="rating-score">Priorité</span>
+              <span class="review-count">Aînés & Seniors</span>
             </div>
+            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
+              « Ne pas attendre la soif pour boire. Proposer de l'eau fraîche toutes les 20 minutes et maintenir le contact quotidien avec les personnes isolées. »
+            </p>
             <div class="action-buttons">
-              <a href="#!" class="btn-secondary">View Details</a>
-              <a href="#!" class="btn-primary">Book Now</a>
+              <a href="#call-to-action" class="btn-primary w-100 text-center">Consignes Seniors</a>
             </div>
           </div><!-- End Doctor Profile -->
 
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="200">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-6.webp') }} alt="Dr. Marcus Johnson" class="img-fluid">
-                <div class="status-indicator busy"></div>
+                <img src={{ asset('assets/front/img/health/staff-6.webp') }} alt="Dr. Karim Mansour" class="img-fluid">
+                <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
-                <h4>Dr. Marcus Johnson</h4>
-                <span class="specialty-tag">Neurology Expert</span>
+                <h4>Dr. Karim Mansour</h4>
+                <span class="specialty-tag">Pédiatrie · Hôpital d'Enfants</span>
                 <div class="experience-info">
                   <i class="bi bi-award"></i>
-                  <span>16 years experience</span>
+                  <span>15 ans d'expérience</span>
                 </div>
               </div>
             </div>
             <div class="rating-section">
-              <div class="stars">
+              <div class="stars text-warning">
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-half"></i>
+                <i class="bi bi-star-fill"></i>
               </div>
-              <span class="rating-score">4.8</span>
-              <span class="review-count">(89 reviews)</span>
+              <span class="rating-score">Vigilance</span>
+              <span class="review-count">Bébés & Enfants</span>
             </div>
+            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
+              « Ne jamais laisser un enfant seul dans une voiture fermée, même pour 2 minutes. Éviter toute sortie entre 11h et 16h et hydrater régulièrement. »
+            </p>
             <div class="action-buttons">
-              <a href="#!" class="btn-secondary">View Details</a>
-              <a href="#!" class="btn-primary">Schedule</a>
+              <a href="#call-to-action" class="btn-primary w-100 text-center">Consignes Enfants</a>
             </div>
           </div><!-- End Doctor Profile -->
 
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="300">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-4.webp') }} alt="Dr. Rachel Williams" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/staff-4.webp') }} alt="Dr. Leila Trabelsi" class="img-fluid">
                 <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
-                <h4>Dr. Rachel Williams</h4>
-                <span class="specialty-tag">Pediatrics Care</span>
+                <h4>Dr. Leila Trabelsi</h4>
+                <span class="specialty-tag">Médecine du Travail</span>
                 <div class="experience-info">
                   <i class="bi bi-award"></i>
-                  <span>11 years experience</span>
+                  <span>12 ans d'expérience</span>
                 </div>
               </div>
             </div>
             <div class="rating-section">
-              <div class="stars">
+              <div class="stars text-warning">
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
               </div>
-              <span class="rating-score">5.0</span>
-              <span class="review-count">(203 reviews)</span>
+              <span class="rating-score">Chantiers</span>
+              <span class="review-count">Travail Extérieur</span>
             </div>
+            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
+              « Aménager les horaires de travail physique pour débuter tôt le matin. Prévoir des zones d'ombre ventilées et au moins 3L d'eau fraîche par employé. »
+            </p>
             <div class="action-buttons">
-              <a href="#!" class="btn-secondary">View Details</a>
-              <a href="#!" class="btn-primary">Book Now</a>
+              <a href="#call-to-action" class="btn-primary w-100 text-center">Consignes Travail</a>
             </div>
           </div><!-- End Doctor Profile -->
 
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="400">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-8.webp') }} alt="Dr. David Chen" class="img-fluid">
-                <div class="status-indicator offline"></div>
+                <img src={{ asset('assets/front/img/health/staff-8.webp') }} alt="Lieut-Col. Tarak Mejri" class="img-fluid">
+                <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
-                <h4>Dr. David Chen</h4>
-                <span class="specialty-tag">Orthopedic Surgery</span>
+                <h4>Lieut-Col. Tarak Mejri</h4>
+                <span class="specialty-tag">Protection Civile Tunisienne</span>
                 <div class="experience-info">
                   <i class="bi bi-award"></i>
-                  <span>22 years experience</span>
+                  <span>22 ans de service</span>
                 </div>
               </div>
             </div>
             <div class="rating-section">
-              <div class="stars">
+              <div class="stars text-warning">
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-half"></i>
+                <i class="bi bi-star-fill"></i>
               </div>
-              <span class="rating-score">4.7</span>
-              <span class="review-count">(156 reviews)</span>
+              <span class="rating-score">Secourisme</span>
+              <span class="review-count">Coup de Chaleur</span>
             </div>
+            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
+              « Signes d'alerte : peau très chaude, maux de tête violents, vertiges et somnolence. Déshabiller la victime, refroidir à l'eau et contacter le 198. »
+            </p>
             <div class="action-buttons">
-              <a href="#!" class="btn-secondary">View Details</a>
-              <a href="#!" class="btn-primary">Schedule</a>
+              <a href="#call-to-action" class="btn-primary w-100 text-center">Gestes de Secours</a>
             </div>
           </div><!-- End Doctor Profile -->
 
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="500">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-11.webp') }} alt="Dr. Victoria Torres" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/staff-11.webp') }} alt="Dr. Yasmine Chahed" class="img-fluid">
                 <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
-                <h4>Dr. Victoria Torres</h4>
-                <span class="specialty-tag">Dermatology Care</span>
+                <h4>Dr. Yasmine Chahed</h4>
+                <span class="specialty-tag">Dermatologie & UV</span>
                 <div class="experience-info">
                   <i class="bi bi-award"></i>
-                  <span>9 years experience</span>
+                  <span>10 ans d'expérience</span>
                 </div>
               </div>
             </div>
             <div class="rating-section">
-              <div class="stars">
+              <div class="stars text-warning">
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star"></i>
+                <i class="bi bi-star-fill"></i>
               </div>
-              <span class="rating-score">4.5</span>
-              <span class="review-count">(74 reviews)</span>
+              <span class="rating-score">Protection</span>
+              <span class="review-count">Peau & Yeux</span>
             </div>
+            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
+              « En été en Tunisie, l'indice UV dépasse souvent 10. Appliquer un écran solaire SPF 50+ toutes les 2 heures et porter des lunettes avec filtre certifié. »
+            </p>
             <div class="action-buttons">
-              <a href="#!" class="btn-secondary">View Details</a>
-              <a href="#!" class="btn-primary">Book Now</a>
+              <a href="#call-to-action" class="btn-primary w-100 text-center">Protection Solaire</a>
             </div>
           </div><!-- End Doctor Profile -->
 
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="600">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-14.webp') }} alt="Dr. Benjamin Lee" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/staff-14.webp') }} alt="Dr. Hichem Ben Salem" class="img-fluid">
                 <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
-                <h4>Dr. Benjamin Lee</h4>
-                <span class="specialty-tag">Oncology Treatment</span>
+                <h4>Dr. Hichem Ben Salem</h4>
+                <span class="specialty-tag">Cardiologue Urgentiste</span>
                 <div class="experience-info">
                   <i class="bi bi-award"></i>
-                  <span>19 years experience</span>
+                  <span>19 ans d'expérience</span>
                 </div>
               </div>
             </div>
             <div class="rating-section">
-              <div class="stars">
+              <div class="stars text-warning">
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
                 <i class="bi bi-star-fill"></i>
               </div>
-              <span class="rating-score">4.9</span>
-              <span class="review-count">(194 reviews)</span>
+              <span class="rating-score">Cardio</span>
+              <span class="review-count">Hypertension</span>
             </div>
+            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
+              « La chaleur dilate les vaisseaux et fatigue le cœur. Les patients hypertendus ne doivent jamais modifier leur traitement sans avis médical préalable. »
+            </p>
             <div class="action-buttons">
-              <a href="#!" class="btn-secondary">View Details</a>
-              <a href="#!" class="btn-primary">Schedule</a>
+              <a href="#call-to-action" class="btn-primary w-100 text-center">Consignes Cardio</a>
             </div>
           </div><!-- End Doctor Profile -->
 
         </div>
 
         <div class="text-center mt-5" data-aos="fade-up" data-aos-delay="700">
-          <a href="doctors.html" class="btn-view-all">
-            View All Doctors
+          <a href="#featured-departments" class="btn-view-all">
+            Consulter la Carte des Alertes Météo
             <i class="bi bi-arrow-right"></i>
           </a>
         </div>
@@ -764,17 +761,16 @@
 
             <div class="col-lg-6">
               <div class="content-wrapper" data-aos="fade-up" data-aos-delay="200">
-                <h1>Excellence in Medical Care, Every Day</h1>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore
-                  et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.</p>
+                <h1>Adoptez les Bons Réflexes Face à la Chaleur</h1>
+                <p>La prévention et la réactivité sauvent des vies. Restez informé des alertes météo de votre gouvernorat et appliquez les gestes essentiels pour vous protéger et veiller sur votre entourage.</p>
 
                 <div class="cta-wrapper">
-                  <a href="appointment.html" class="primary-cta">
-                    <span>Schedule Consultation</span>
+                  <a href="#featured-departments" class="primary-cta">
+                    <span>Voir les Alertes Météo</span>
                     <i class="bi bi-arrow-right"></i>
                   </a>
-                  <a href="services.html" class="secondary-cta">
-                    <span>Explore Services</span>
+                  <a href="#find-a-doctor" class="secondary-cta">
+                    <span>Conseils Santé</span>
                     <i class="bi bi-arrow-right"></i>
                   </a>
                 </div>
@@ -783,7 +779,7 @@
 
             <div class="col-lg-6">
               <div class="image-container" data-aos="fade-left" data-aos-delay="300">
-                <img src={{ asset('assets/front/img/health/facilities-9.webp') }} alt="Medical Excellence" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/facilities-9.webp') }} alt="Protection Canicule HeatAlert" class="img-fluid">
               </div>
             </div>
 
@@ -799,9 +795,8 @@
                 <div class="feature-icon">
                   <i class="bi bi-shield-check"></i>
                 </div>
-                <h3>Advanced Technology</h3>
-                <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-                  laborum.</p>
+                <h3>Veille Météorologique Active</h3>
+                <p>Surveillance continue des températures maximales, de l'humidité relative, des vents et de l'indice de stress thermique.</p>
               </div>
             </div>
 
@@ -810,9 +805,8 @@
                 <div class="feature-icon">
                   <i class="bi bi-clock"></i>
                 </div>
-                <h3>24/7 Availability</h3>
-                <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur
-                  excepteur.</p>
+                <h3>Disponibilité Secours 24/7</h3>
+                <p>Coordination directe avec la Protection Civile (198) et le SAMU (190) pour les interventions d'urgence.</p>
               </div>
             </div>
 
@@ -821,9 +815,8 @@
                 <div class="feature-icon">
                   <i class="bi bi-people"></i>
                 </div>
-                <h3>Expert Team</h3>
-                <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium
-                  totam rem.</p>
+                <h3>Solidarité Communautaire</h3>
+                <p>Protocoles clairs et fiches pratiques accessibles à tous les citoyens et soignants à travers la Tunisie.</p>
               </div>
             </div>
 
@@ -836,19 +829,18 @@
 
             <div class="col-lg-8">
               <div class="contact-content" data-aos="fade-up" data-aos-delay="200">
-                <h2>Need Immediate Medical Assistance?</h2>
-                <p>Our emergency response team is available around the clock to provide immediate medical support when
-                  you need it most.</p>
+                <h2>Une Urgence Médicale Liée à la Chaleur ?</h2>
+                <p>En cas de malaise, déshydratation aiguë ou coup de chaleur chez un proche, contactez immédiatement les secours disponibles jour et nuit.</p>
               </div>
             </div>
 
             <div class="col-lg-4">
               <div class="contact-actions" data-aos="fade-up" data-aos-delay="300">
-                <a href="tel:5551234567" class="emergency-call">
+                <a href="tel:198" class="emergency-call">
                   <i class="bi bi-telephone"></i>
-                  <span>(555) 123-4567</span>
+                  <span>Protection Civile : 198</span>
                 </a>
-                <a href="contact.html" class="contact-link">Find Location</a>
+                <a href="tel:190" class="contact-link">SAMU : 190</a>
               </div>
             </div>
 

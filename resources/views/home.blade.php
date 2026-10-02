@@ -108,7 +108,7 @@
       display:flex; align-items:center; justify-content:center;
       font-size:1.1rem; color:#fff;
     }
-    .nav-logo-text { font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.25rem; color:#fff; }
+    .nav-logo-text { font-family:'Montserrat',sans-serif; font-weight:800; font-size:1.25rem; color:#ffff; }
     .nav-links { display:flex; align-items:center; gap:32px; list-style:none; }
     .nav-links a { color:rgba(255,255,255,.8); text-decoration:none; font-size:.9rem; font-weight:500; transition:.2s; }
     .nav-links a:hover { color:#fff; }
@@ -314,7 +314,7 @@
         <i class="fa-solid fa-temperature-high"></i>
       </div>
       <div class="splash-wordmark">
-        <h1>HeatAlert</h1>
+        <h1 style="color:white">HeatAlert</h1>
         <span>Tunisia · Météo & Canicule</span>
       </div>
     </div>
