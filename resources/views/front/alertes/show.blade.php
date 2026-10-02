@@ -1,98 +1,127 @@
 @extends('layouts.front.front')
 
+@push('styles')
+{{-- Leaflet.js CSS --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  #alerte-map { min-height: 350px; height: 350px; width: 100%; z-index: 10; }
+  .leaflet-container { font-family: inherit; }
+</style>
+@endpush
+
 @push('scripts')
-{{-- Leaflet.js --}}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPdg=" crossorigin=""></script>
-{{-- Chart.js --}}
+{{-- Leaflet.js & Chart.js --}}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ─── Radar Chart Météo ───
-    const radarCtx = document.getElementById('meteoRadarChart');
-    if (radarCtx) {
-        new Chart(radarCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Temp. Max', 'Ressentie', 'Indice UV', 'Humidité', 'Vent', 'Risque Électr.'],
-                datasets: [{
-                    label: 'Indicateurs de Risque',
-                    data: [
-                        {{ min(100, (($alerte->temperature_max ?? 30) / 55) * 100) }},
-                        {{ min(100, (($alerte->temperature_ressentie ?? 30) / 60) * 100) }},
-                        {{ min(100, (($alerte->indice_uv ?? 5) / 12) * 100) }},
-                        {{ $alerte->humidite ?? 40 }},
-                        {{ min(100, (($alerte->vitesse_vent ?? 20) / 120) * 100) }},
-                        {{ $alerte->risque_coupure ? 90 : 15 }}
-                    ],
-                    backgroundColor: 'rgba(220, 38, 38, 0.25)',
-                    borderColor: '#dc2626',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#dc2626',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#dc2626'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(0,0,0,0.1)' },
-                        grid: { color: 'rgba(0,0,0,0.06)' },
-                        suggestedMin: 0,
-                        suggestedMax: 100,
-                        ticks: { display: false }
-                    }
+(function() {
+    function initAlerteComponents() {
+        // ─── Radar Chart Météo ───
+        const radarCtx = document.getElementById('meteoRadarChart');
+        if (radarCtx && typeof Chart !== 'undefined') {
+            new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Temp. Max', 'Ressentie', 'Indice UV', 'Humidité', 'Vent', 'Risque Électr.'],
+                    datasets: [{
+                        label: 'Indicateurs de Risque',
+                        data: [
+                            {{ min(100, (($alerte->temperature_max ?? 30) / 55) * 100) }},
+                            {{ min(100, (($alerte->temperature_ressentie ?? 30) / 60) * 100) }},
+                            {{ min(100, (($alerte->indice_uv ?? 5) / 12) * 100) }},
+                            {{ $alerte->humidite ?? 40 }},
+                            {{ min(100, (($alerte->vitesse_vent ?? 20) / 120) * 100) }},
+                            {{ $alerte->risque_coupure ? 90 : 15 }}
+                        ],
+                        backgroundColor: 'rgba(220, 38, 38, 0.25)',
+                        borderColor: '#dc2626',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#dc2626',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#dc2626'
+                    }]
                 },
-                plugins: {
-                    legend: { display: false }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        @if($alerte->zone && $alerte->zone->latitude && $alerte->zone->longitude)
+        // ─── Leaflet Map ───
+        const mapContainer = document.getElementById('alerte-map');
+        if (mapContainer && !mapContainer._leaflet_id && typeof L !== 'undefined') {
+            const map = L.map('alerte-map', {
+                zoomControl: true,
+                scrollWheelZoom: false
+            }).setView([{{ $alerte->zone->latitude }}, {{ $alerte->zone->longitude }}], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            const alerteNiveau = '{{ $alerte->niveau }}';
+            const mapColors = { 'rouge': '#dc2626', 'orange': '#ea580c', 'jaune': '#d97706', 'vert': '#16a34a' };
+            const markerColor = mapColors[alerteNiveau] || '#dc2626';
+
+            const icon = L.divIcon({
+                className: '',
+                html: `<div style="width:46px;height:46px;border-radius:50%;background:${markerColor};border:3px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;">
+                         <i class="bi bi-exclamation-triangle-fill"></i>
+                       </div>`,
+                iconSize: [46, 46],
+                iconAnchor: [23, 46],
+                popupAnchor: [0, -48]
+            });
+
+            L.marker([{{ $alerte->zone->latitude }}, {{ $alerte->zone->longitude }}], { icon })
+                .addTo(map)
+                .bindPopup(`<strong>{{ $alerte->titre }}</strong><br><span style="color:${markerColor};font-weight:bold;">Vigilance ${alerteNiveau.toUpperCase()}</span><br><small>{{ $alerte->zone->nom }}</small>`)
+                .openPopup();
+
+            L.circle([{{ $alerte->zone->latitude }}, {{ $alerte->zone->longitude }}], {
+                radius: 15000,
+                color: markerColor,
+                fillColor: markerColor,
+                fillOpacity: 0.1,
+                weight: 2,
+                dashArray: '6,4'
+            }).addTo(map);
+
+            window.alerteMapInstance = map;
+            setTimeout(() => { map.invalidateSize(); }, 300);
+        }
+        @endif
     }
 
-    @if($alerte->zone && $alerte->zone->latitude && $alerte->zone->longitude)
-    // ─── Leaflet Map ───
-    const map = L.map('alerte-map', { zoomControl: true, scrollWheelZoom: false })
-        .setView([{{ $alerte->zone->latitude }}, {{ $alerte->zone->longitude }}], 11);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
-
-    const alerteNiveau = '{{ $alerte->niveau }}';
-    const mapColors = { 'rouge': '#dc2626', 'orange': '#ea580c', 'jaune': '#d97706', 'vert': '#16a34a' };
-    const markerColor = mapColors[alerteNiveau] || '#dc2626';
-
-    const icon = L.divIcon({
-        className: '',
-        html: `<div style="width:46px;height:46px;border-radius:50%;background:${markerColor};border:3px solid #fff;box-shadow:0 4px 18px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.3rem;">
-                 <i class="bi bi-exclamation-triangle-fill"></i>
-               </div>`,
-        iconSize: [46, 46],
-        iconAnchor: [23, 46],
-        popupAnchor: [0, -48]
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAlerteComponents);
+    } else {
+        initAlerteComponents();
+    }
+    window.addEventListener('load', function() {
+        initAlerteComponents();
+        if (window.alerteMapInstance) {
+            window.alerteMapInstance.invalidateSize();
+        }
     });
-
-    L.marker([{{ $alerte->zone->latitude }}, {{ $alerte->zone->longitude }}], { icon })
-        .addTo(map)
-        .bindPopup(`<strong>{{ $alerte->titre }}</strong><br><span style="color:${markerColor}">Vigilance ${alerteNiveau.toUpperCase()}</span>`)
-        .openPopup();
-
-    L.circle([{{ $alerte->zone->latitude }}, {{ $alerte->zone->longitude }}], {
-        radius: 15000,
-        color: markerColor,
-        fillColor: markerColor,
-        fillOpacity: 0.1,
-        weight: 2,
-        dashArray: '6,4'
-    }).addTo(map);
-    @endif
-});
+})();
 </script>
 @endpush
 
@@ -165,12 +194,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="badge bg-danger rounded-pill px-3 py-2 small">
                   <i class="bi bi-circle-fill me-1" style="font-size: 8px;"></i>En cours
                 </span>
+              @else
+                <span class="badge bg-secondary rounded-pill px-3 py-2 small">
+                  {{ ucfirst($alerte->statut) }}
+                </span>
               @endif
             </div>
 
             @if($alerte->zone)
               <a href="{{ route('front.zones.show', $alerte->zone) }}" class="text-decoration-none small fw-semibold text-secondary">
-                <i class="bi bi-geo-alt-fill text-danger me-1"></i>Zone : <strong>{{ $alerte->zone->nom }}</strong> ({{ $alerte->zone->gouvernorat }})
+                <i class="bi bi-geo-alt-fill text-danger me-1"></i>Zone : <strong>{{ $alerte->zone->nom }}</strong> (Gvt. {{ $alerte->zone->gouvernorat ?? 'N/D' }})
               </a>
             @endif
           </div>
@@ -249,22 +282,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         </div>
 
-        <!-- Carte Leaflet Géolocalisée -->
+        <!-- Carte Leaflet Géolocalisée (Périmètre Géographique Affecté) -->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
           <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
             <h5 class="fw-bold mb-0" style="color: #1e3a5f;">
               <i class="bi bi-geo-alt-fill text-danger me-2"></i>Périmètre Géographique Affecté
             </h5>
             @if($alerte->zone)
-              <span class="badge bg-light text-secondary border">{{ $alerte->zone->nom }}</span>
+              <span class="badge bg-light text-secondary border">{{ $alerte->zone->nom }} (Gvt. {{ $alerte->zone->gouvernorat }})</span>
             @endif
           </div>
           <div class="card-body p-0">
             @if($alerte->zone && $alerte->zone->latitude && $alerte->zone->longitude)
-              <div id="alerte-map" style="height: 340px; width: 100%;"></div>
+              <div id="alerte-map" style="height: 350px; width: 100%; min-height: 350px;"></div>
             @else
-              <div class="p-4 text-center text-muted">
-                Coordonnées non disponibles pour cette zone.
+              <div class="p-5 text-center text-muted">
+                <i class="bi bi-geo-alt-slash fs-1 d-block mb-2"></i>
+                Coordonnées géographiques non disponibles pour la zone de cette alerte.
               </div>
             @endif
           </div>

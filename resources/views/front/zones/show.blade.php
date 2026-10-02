@@ -1,82 +1,141 @@
 @extends('layouts.front.front')
 
+@push('styles')
+{{-- Leaflet.js CSS --}}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  #zone-map { min-height: 380px; height: 380px; width: 100%; z-index: 10; }
+  .leaflet-container { font-family: inherit; }
+</style>
+@endpush
+
 @push('scripts')
-{{-- Leaflet.js pour la carte --}}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WPdg=" crossorigin=""></script>
-{{-- Chart.js --}}
+{{-- Leaflet.js & Chart.js --}}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    @if($zone->latitude && $zone->longitude)
-    // ─── Leaflet Map ───
-    const map = L.map('zone-map', { zoomControl: true, scrollWheelZoom: false }).setView([{{ $zone->latitude }}, {{ $zone->longitude }}], 11);
+(function() {
+    function initZoneComponents() {
+        @if($zone->latitude && $zone->longitude)
+        // ─── Leaflet Map ───
+        const mapContainer = document.getElementById('zone-map');
+        if (mapContainer && !mapContainer._leaflet_id && typeof L !== 'undefined') {
+            const map = L.map('zone-map', {
+                zoomControl: true,
+                scrollWheelZoom: false
+            }).setView([{{ $zone->latitude }}, {{ $zone->longitude }}], 11);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
-    }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
 
-    const hasActiveAlert = {{ $zone->alertes_actives_count > 0 ? 'true' : 'false' }};
-    const markerColor = hasActiveAlert ? '#dc2626' : '#16a34a';
+            const hasActiveAlert = {{ $zone->alertes_actives_count > 0 ? 'true' : 'false' }};
+            const markerColor = hasActiveAlert ? '#dc2626' : '#16a34a';
 
-    const customIcon = L.divIcon({
-        className: '',
-        html: `<div style="width:44px;height:44px;border-radius:50%;background:${markerColor};border:3px solid #fff;box-shadow:0 4px 15px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;">
-                 <i class="bi bi-geo-alt-fill"></i>
-               </div>`,
-        iconSize: [44, 44],
-        iconAnchor: [22, 44],
-        popupAnchor: [0, -45]
-    });
+            const customIcon = L.divIcon({
+                className: '',
+                html: `<div style="width:44px;height:44px;border-radius:50%;background:${markerColor};border:3px solid #fff;box-shadow:0 4px 15px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.2rem;">
+                         <i class="bi bi-geo-alt-fill"></i>
+                       </div>`,
+                iconSize: [44, 44],
+                iconAnchor: [22, 44],
+                popupAnchor: [0, -45]
+            });
 
-    L.marker([{{ $zone->latitude }}, {{ $zone->longitude }}], { icon: customIcon })
-        .addTo(map)
-        .bindPopup(`<div style="min-width:180px;padding:6px;">
-            <strong style="font-size:1rem;color:#1e3a5f;">{{ $zone->nom }}</strong><br>
-            <span style="color:#64748b;font-size:.85rem;">{{ $zone->ville }}{{ $zone->gouvernorat ? ', Gvt. '.$zone->gouvernorat : '' }}</span>
-            @if($zone->alertes_actives_count > 0)
-            <br><span style="color:#dc2626;font-weight:700;font-size:.82rem;"><i class="bi bi-exclamation-triangle"></i> {{ $zone->alertes_actives_count }} alerte(s) active(s)</span>
+            L.marker([{{ $zone->latitude }}, {{ $zone->longitude }}], { icon: customIcon })
+                .addTo(map)
+                .bindPopup(`<div style="min-width:180px;padding:6px;">
+                    <strong style="font-size:1rem;color:#1e3a5f;">{{ $zone->nom }}</strong><br>
+                    <span style="color:#64748b;font-size:.85rem;">{{ $zone->ville }}{{ $zone->gouvernorat ? ', Gvt. '.$zone->gouvernorat : '' }}</span>
+                    @if($zone->alertes_actives_count > 0)
+                    <br><span style="color:#dc2626;font-weight:700;font-size:.82rem;"><i class="bi bi-exclamation-triangle"></i> {{ $zone->alertes_actives_count }} alerte(s) active(s)</span>
+                    @else
+                    <br><span style="color:#16a34a;font-weight:600;font-size:.82rem;"><i class="bi bi-check-circle"></i> Situation normale</span>
+                    @endif
+                </div>`)
+                .openPopup();
+
+            L.circle([{{ $zone->latitude }}, {{ $zone->longitude }}], {
+                radius: 12000,
+                color: markerColor,
+                fillColor: markerColor,
+                fillOpacity: 0.08,
+                weight: 2,
+                dashArray: '6,4'
+            }).addTo(map);
+
+            window.zoneMapInstance = map;
+            setTimeout(() => { map.invalidateSize(); }, 300);
+        }
+        @endif
+
+        // ─── Chart Niveaux ───
+        const ctx = document.getElementById('niveauxChart');
+        if (ctx && typeof Chart !== 'undefined') {
+            @php
+              $totalNiveaux = array_sum($niveauxData);
+            @endphp
+
+            @if($totalNiveaux > 0)
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Rouge', 'Orange', 'Jaune', 'Vert'],
+                        datasets: [{
+                            data: [{{ $niveauxData['rouge'] }}, {{ $niveauxData['orange'] }}, {{ $niveauxData['jaune'] }}, {{ $niveauxData['vert'] }}],
+                            backgroundColor: ['#dc2626', '#ea580c', '#d97706', '#16a34a'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
+                            tooltip: { callbacks: { label: (c) => ` ${c.label} : ${c.parsed} alerte(s)` } }
+                        }
+                    }
+                });
+            @else
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Calme (0 alerte)'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#22c55e'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
+                            tooltip: { callbacks: { label: () => ' Situation 100% Calme' } }
+                        }
+                    }
+                });
             @endif
-        </div>`)
-        .openPopup();
-
-    L.circle([{{ $zone->latitude }}, {{ $zone->longitude }}], {
-        radius: 12000,
-        color: markerColor,
-        fillColor: markerColor,
-        fillOpacity: 0.08,
-        weight: 2,
-        dashArray: '6,4'
-    }).addTo(map);
-    @endif
-
-    // ─── Chart Niveaux ───
-    const ctx = document.getElementById('niveauxChart');
-    if (ctx) {
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Rouge', 'Orange', 'Jaune', 'Vert'],
-                datasets: [{
-                    data: [{{ $niveauxData['rouge'] }}, {{ $niveauxData['orange'] }}, {{ $niveauxData['jaune'] }}, {{ $niveauxData['vert'] }}],
-                    backgroundColor: ['#dc2626', '#ea580c', '#d97706', '#16a34a'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } },
-                    tooltip: { callbacks: { label: (c) => ` ${c.label} : ${c.parsed} alerte(s)` } }
-                }
-            }
-        });
+        }
     }
-});
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initZoneComponents);
+    } else {
+        initZoneComponents();
+    }
+    window.addEventListener('load', function() {
+        initZoneComponents();
+        if (window.zoneMapInstance) {
+            window.zoneMapInstance.invalidateSize();
+        }
+    });
+})();
 </script>
 @endpush
 
@@ -162,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     <div class="row g-4">
 
-      <!-- Carte Leaflet & Graphique -->
+      <!-- Carte Leaflet & Liste des Alertes -->
       <div class="col-lg-8">
         <!-- Carte Interactive -->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
@@ -174,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
           <div class="card-body p-0">
             @if($zone->latitude && $zone->longitude)
-              <div id="zone-map" style="height: 380px; width: 100%;"></div>
+              <div id="zone-map" style="height: 380px; width: 100%; min-height: 380px;"></div>
             @else
               <div class="p-5 text-center text-muted">
                 <i class="bi bi-geo-alt-slash fs-1 d-block mb-2"></i>
@@ -245,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           @if($alertes->hasPages())
             <div class="d-flex justify-content-center mt-3">
-              {{ $alertes->links('pagination::bootstrap-5') }}
+              {{ $alertes->links('front.components.pagination') }}
             </div>
           @endif
         </div>
@@ -268,6 +327,11 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-3"><span class="badge bg-warning w-100 py-1 text-dark">{{ $niveauxData['jaune'] }} Jaun.</span></div>
             <div class="col-3"><span class="badge bg-success w-100 py-1">{{ $niveauxData['vert'] }} Vert</span></div>
           </div>
+          @if(array_sum($niveauxData) === 0)
+            <div class="text-center text-success small mt-2">
+              <i class="bi bi-check2-circle me-1"></i>Aucune alerte historique enregistrée
+            </div>
+          @endif
         </div>
 
         <!-- Carte d'Urgence (Clinic Template Style) -->

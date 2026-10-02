@@ -5,21 +5,27 @@
      PAGE CONSEILS SANTÉ — CATALOGUE DE PRÉVENTION
 ═══════════════════════════════════════════════════════ --}}
 
-<!-- Page Title (Standard Template Header Blanc) -->
-<div class="page-title">
+<!-- Page Title avec image de fond contextuelle et overlay blanc épuré -->
+<div class="page-title position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.72) 100%), url('{{ asset('assets/front/img/health/consultation-4.webp') }}') center/cover no-repeat; padding-top: 130px; padding-bottom: 35px; border-bottom: 1px solid #e2e8f0;">
   <div class="heading">
     <div class="container">
       <div class="row d-flex justify-content-center text-center">
         <div class="col-lg-8">
-          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 700;">Conseils Santé & Prévention Canicule</h1>
-          <p class="mb-0 text-muted" style="font-size: 15px;">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-warning-subtle text-dark border small fw-bold">
+            <i class="bi bi-lightbulb-fill text-warning"></i>
+            <span>Guide Médical & Gestes Réflexes Canicule</span>
+          </div>
+          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 800; font-size: 34px;">
+            Conseils Santé & Prévention Canicule
+          </h1>
+          <p class="mb-0 text-muted" style="font-size: 15px; max-width: 680px; margin: 0 auto;">
             Recommandations officielles et gestes de protection pour préserver votre santé et celle de vos proches durant les épisodes de fortes chaleurs en Tunisie.
           </p>
         </div>
       </div>
     </div>
   </div>
-  <nav class="breadcrumbs">
+  <nav class="breadcrumbs mt-3" style="background: rgba(255,255,255,0.65); backdrop-filter: blur(4px);">
     <div class="container">
       <ol>
         <li><a href="{{ route('front.home') }}">Accueil</a></li>
@@ -29,46 +35,68 @@
   </nav>
 </div><!-- End Page Title -->
 
-<!-- Stats Rapides / Compteurs PureCounter -->
-<section class="py-4 border-bottom bg-white">
+<!-- Barre de Recherche & Filtres Avancés -->
+<section class="py-4 bg-white border-bottom shadow-sm">
   <div class="container">
-    <div class="row g-3 text-center">
-      <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3 bg-light">
-          <div class="fs-2 fw-bold text-primary">{{ $conseils->total() }}</div>
-          <div class="small text-muted text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Guides Pratiques</div>
+    <form method="GET" action="{{ route('front.conseils.index') }}" class="row g-3 align-items-center">
+
+      <!-- Recherche Textuelle -->
+      <div class="col-lg-4 col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" name="search" class="form-control bg-light border-start-0 ps-0" placeholder="Rechercher un conseil, mot-clé, symptôme..." value="{{ request('search') }}">
         </div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3 bg-light">
-          <div class="fs-2 fw-bold text-success">{{ $categories->count() }}</div>
-          <div class="small text-muted text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Thématiques Santé</div>
-        </div>
+
+      <!-- Filtre Thématique / Catégorie -->
+      <div class="col-lg-3 col-md-6">
+        <select name="categorie" class="form-select bg-light">
+          <option value="">Toutes les thématiques ({{ $categories->count() }})</option>
+          @foreach($categories as $cat)
+            <option value="{{ $cat }}" {{ request('categorie') == $cat ? 'selected' : '' }}>
+              {{ ucfirst(str_replace('_', ' ', $cat)) }}
+            </option>
+          @endforeach
+        </select>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3 bg-light">
-          <div class="fs-2 fw-bold text-danger">198 / 190</div>
-          <div class="small text-muted text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Lignes d'Urgence</div>
-        </div>
+
+      <!-- Filtre Niveau de Vigilance Cible -->
+      <div class="col-lg-3 col-md-6">
+        <select name="niveau_cible" class="form-select bg-light">
+          <option value="">Tous niveaux d'alerte cibles</option>
+          <option value="rouge" {{ request('niveau_cible') == 'rouge' ? 'selected' : '' }}>🔴 Alerte Rouge (Urgence)</option>
+          <option value="orange" {{ request('niveau_cible') == 'orange' ? 'selected' : '' }}>🟠 Alerte Orange (Forte)</option>
+          <option value="jaune" {{ request('niveau_cible') == 'jaune' ? 'selected' : '' }}>🟡 Alerte Jaune (Modérée)</option>
+          <option value="vert" {{ request('niveau_cible') == 'vert' ? 'selected' : '' }}>🟢 Prévention Générale</option>
+        </select>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3 bg-light">
-          <div class="fs-2 fw-bold text-warning">100%</div>
-          <div class="small text-muted text-uppercase fw-semibold" style="letter-spacing: 0.5px;">Validé Médicalement</div>
-        </div>
+
+      <!-- Actions -->
+      <div class="col-lg-2 col-md-6 d-flex gap-2">
+        <button type="submit" class="btn btn-danger w-100 rounded-pill fw-semibold shadow-sm">
+          <i class="bi bi-funnel-fill me-1"></i>Filtrer
+        </button>
+        @if(request('search') || request('categorie') || request('niveau_cible'))
+          <a href="{{ route('front.conseils.index') }}" class="btn btn-outline-secondary rounded-pill" title="Réinitialiser les filtres">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </a>
+        @endif
       </div>
-    </div>
+
+    </form>
   </div>
 </section>
 
-<!-- Section Filtres par Catégorie (Clinic Specialty Navigation) -->
-<section class="py-4 bg-white border-bottom sticky-top" style="top: 75px; z-index: 90;">
+<!-- Catégories Rapides en Pilules -->
+<section class="py-3 bg-light border-bottom">
   <div class="container">
     <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center">
-      <span class="small fw-bold text-muted text-uppercase me-2">Catégories :</span>
+      <span class="small fw-bold text-muted text-uppercase me-2">Accès direct :</span>
       <a href="{{ route('front.conseils.index') }}"
          class="btn btn-sm rounded-pill px-3 {{ !request('categorie') ? 'btn-danger shadow-sm text-white' : 'btn-outline-secondary' }}">
-        Tous les guides ({{ \App\Models\Conseil::where('actif', true)->count() }})
+        Tous les guides
       </a>
       @foreach($categories as $cat)
         <a href="{{ route('front.conseils.index', ['categorie' => $cat]) }}"
@@ -119,7 +147,7 @@
               @if($conseil->niveau_alerte_cible)
                 <div class="position-absolute bottom-0 end-0 m-2">
                   <span class="badge rounded-pill px-2 py-1 shadow-sm text-uppercase" style="background: rgba(0,0,0,0.7); color: #fff; font-size: 10px;">
-                    Cible: {{ $conseil->niveau_alerte_cible }}
+                    Cible : {{ $conseil->niveau_alerte_cible }}
                   </span>
                 </div>
               @endif
@@ -140,7 +168,7 @@
               <!-- Footer de la carte -->
               <div class="pt-3 border-top d-flex justify-content-between align-items-center">
                 <span class="text-muted small">
-                  <i class="bi bi-shield-check text-success me-1"></i>Vérifié
+                  <i class="bi bi-shield-check text-success me-1"></i>Validé Médicalement
                 </span>
                 <a href="{{ route('front.conseils.show', $conseil) }}" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold">
                   <span>Lire les conseils</span>
@@ -156,19 +184,19 @@
         <div class="col-12 text-center py-5">
           <div class="p-5 rounded-4 bg-white shadow-sm border d-inline-block">
             <i class="bi bi-info-circle text-muted" style="font-size: 3rem;"></i>
-            <h5 class="mt-3 text-secondary">Aucun conseil trouvé dans cette catégorie.</h5>
-            <a href="{{ route('front.conseils.index') }}" class="btn btn-primary rounded-pill mt-2">
-              Voir tous les conseils
+            <h5 class="mt-3 text-secondary">Aucun conseil ne correspond à vos critères de recherche.</h5>
+            <a href="{{ route('front.conseils.index') }}" class="btn btn-outline-primary rounded-pill mt-2">
+              Afficher tous les conseils
             </a>
           </div>
         </div>
       @endforelse
     </div>
 
-    <!-- Pagination -->
+    <!-- Pagination Personnalisée Sans Bug -->
     @if($conseils->hasPages())
       <div class="d-flex justify-content-center mt-5">
-        {{ $conseils->links('pagination::bootstrap-5') }}
+        {{ $conseils->links('front.components.pagination') }}
       </div>
     @endif
 
@@ -182,7 +210,7 @@
       <div class="col-lg-8">
         <div class="p-4 p-md-5 rounded-4 text-white shadow-sm" style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);">
           <i class="bi bi-telephone-plus-fill text-danger fs-1 mb-3 d-inline-block"></i>
-          <h3 class="fw-bold mb-2" style="color:white">Besoin d'une Assistance d'Urgence Canicule ?</h3>
+          <h3 class="fw-bold mb-2 text-white">Besoin d'une Assistance d'Urgence Canicule ?</h3>
           <p class="text-white-50 mb-4" style="max-width: 600px; margin: 0 auto;">
             En cas de malaise, déshydratation sévère ou perte de connaissance liée à la chaleur, contactez immédiatement les secours.
           </p>

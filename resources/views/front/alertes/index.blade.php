@@ -5,25 +5,27 @@
      PAGE ALERTES — LISTE DES BULLETINS DE VIGILANCE
 ═══════════════════════════════════════════════════════ --}}
 
-<!-- Page Title (Standard Template Header Blanc) -->
-<div class="page-title">
+<!-- Page Title avec image de fond contextuelle et overlay blanc épuré -->
+<div class="page-title position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.88) 55%, rgba(255,255,255,0.72) 100%), url('{{ asset('assets/front/img/health/emergency-1.webp') }}') center/cover no-repeat; padding-top: 130px; padding-bottom: 35px; border-bottom: 1px solid #e2e8f0;">
   <div class="heading">
     <div class="container">
       <div class="row d-flex justify-content-center text-center">
         <div class="col-lg-8">
           <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-danger-subtle text-danger small fw-bold">
             <i class="bi bi-broadcast"></i>
-            <span>Système d'Alerte Précoce & Surveillance Canicule</span>
+            <span>Système d'Alerte Précoce & Vigilance Thermique</span>
           </div>
-          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 700;">Alertes Météo & Vigilance Canicule</h1>
-          <p class="mb-0 text-muted" style="font-size: 15px;">
-            Suivi en temps réel des bulletins météorologiques d'urgence, des vagues de chaleur et des indices de risque thermique en Tunisie.
+          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 800; font-size: 34px;">
+            Alertes Météo & Vigilance Canicule
+          </h1>
+          <p class="mb-0 text-muted" style="font-size: 15px; max-width: 680px; margin: 0 auto;">
+            Suivez en temps réel les bulletins de canicule, les niveaux de vigilance par région et les prévisions de risques thermiques en Tunisie.
           </p>
         </div>
       </div>
     </div>
   </div>
-  <nav class="breadcrumbs">
+  <nav class="breadcrumbs mt-3" style="background: rgba(255,255,255,0.65); backdrop-filter: blur(4px);">
     <div class="container">
       <ol>
         <li><a href="{{ route('front.home') }}">Accueil</a></li>
@@ -38,30 +40,101 @@
   <div class="container">
     <div class="row g-3 text-center">
       <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3" style="background: #fee2e2;">
-          <div class="fs-2 fw-bold text-danger">{{ $statsNiveaux['rouge'] ?? 0 }}</div>
-          <div class="small fw-bold text-danger text-uppercase" style="letter-spacing: 0.5px;">Vigilance Rouge</div>
-        </div>
+        <a href="{{ route('front.alertes.index', ['niveau' => 'rouge']) }}" class="text-decoration-none d-block">
+          <div class="p-3 rounded-3 transition shadow-sm" style="background: #fee2e2; border: 1px solid #fca5a5;">
+            <div class="fs-2 fw-bold text-danger">{{ $statsNiveaux['rouge'] ?? 0 }}</div>
+            <div class="small fw-bold text-danger text-uppercase" style="letter-spacing: 0.5px;">Vigilance Rouge</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3" style="background: #ffedd5;">
-          <div class="fs-2 fw-bold" style="color: #ea580c;">{{ $statsNiveaux['orange'] ?? 0 }}</div>
-          <div class="small fw-bold text-uppercase" style="color: #ea580c; letter-spacing: 0.5px;">Vigilance Orange</div>
-        </div>
+        <a href="{{ route('front.alertes.index', ['niveau' => 'orange']) }}" class="text-decoration-none d-block">
+          <div class="p-3 rounded-3 transition shadow-sm" style="background: #ffedd5; border: 1px solid #fdba74;">
+            <div class="fs-2 fw-bold" style="color: #ea580c;">{{ $statsNiveaux['orange'] ?? 0 }}</div>
+            <div class="small fw-bold text-uppercase" style="color: #ea580c; letter-spacing: 0.5px;">Vigilance Orange</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3" style="background: #fef3c7;">
-          <div class="fs-2 fw-bold" style="color: #d97706;">{{ $statsNiveaux['jaune'] ?? 0 }}</div>
-          <div class="small fw-bold text-uppercase" style="color: #d97706; letter-spacing: 0.5px;">Vigilance Jaune</div>
-        </div>
+        <a href="{{ route('front.alertes.index', ['niveau' => 'jaune']) }}" class="text-decoration-none d-block">
+          <div class="p-3 rounded-3 transition shadow-sm" style="background: #fef3c7; border: 1px solid #fde047;">
+            <div class="fs-2 fw-bold" style="color: #d97706;">{{ $statsNiveaux['jaune'] ?? 0 }}</div>
+            <div class="small fw-bold text-uppercase" style="color: #d97706; letter-spacing: 0.5px;">Vigilance Jaune</div>
+          </div>
+        </a>
       </div>
       <div class="col-6 col-md-3">
-        <div class="p-3 rounded-3" style="background: #dcfce7;">
-          <div class="fs-2 fw-bold text-success">{{ $statsNiveaux['vert'] ?? 0 }}</div>
-          <div class="small fw-bold text-success text-uppercase" style="letter-spacing: 0.5px;">Situation Normale</div>
-        </div>
+        <a href="{{ route('front.alertes.index', ['niveau' => 'vert']) }}" class="text-decoration-none d-block">
+          <div class="p-3 rounded-3 transition shadow-sm" style="background: #dcfce7; border: 1px solid #86efac;">
+            <div class="fs-2 fw-bold text-success">{{ $statsNiveaux['vert'] ?? 0 }}</div>
+            <div class="small fw-bold text-success text-uppercase" style="letter-spacing: 0.5px;">Situation Normale</div>
+          </div>
+        </a>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- Barre de Recherche & Filtres Multi-critères -->
+<section class="py-4 bg-white border-bottom shadow-sm">
+  <div class="container">
+    <form method="GET" action="{{ route('front.alertes.index') }}" class="row g-3 align-items-center">
+
+      <!-- Recherche Textuelle -->
+      <div class="col-lg-3 col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted">
+            <i class="bi bi-search"></i>
+          </span>
+          <input type="text" name="search" class="form-control bg-light border-start-0 ps-0" placeholder="Rechercher une alerte, mot-clé..." value="{{ request('search') }}">
+        </div>
+      </div>
+
+      <!-- Filtre Niveau de Vigilance -->
+      <div class="col-lg-2 col-md-6">
+        <select name="niveau" class="form-select bg-light">
+          <option value="">Tous Niveaux</option>
+          <option value="rouge" {{ request('niveau') == 'rouge' ? 'selected' : '' }}>🔴 Rouge (Extrême)</option>
+          <option value="orange" {{ request('niveau') == 'orange' ? 'selected' : '' }}>🟠 Orange (Forte)</option>
+          <option value="jaune" {{ request('niveau') == 'jaune' ? 'selected' : '' }}>🟡 Jaune (Modérée)</option>
+          <option value="vert" {{ request('niveau') == 'vert' ? 'selected' : '' }}>🟢 Vert (Normal)</option>
+        </select>
+      </div>
+
+      <!-- Filtre Zone Géographique -->
+      <div class="col-lg-3 col-md-6">
+        <select name="zone_id" class="form-select bg-light">
+          <option value="">Toutes les zones</option>
+          @foreach($zonesList as $z)
+            <option value="{{ $z->id }}" {{ request('zone_id') == $z->id ? 'selected' : '' }}>
+              {{ $z->nom }} ({{ $z->gouvernorat }})
+            </option>
+          @endforeach
+        </select>
+      </div>
+
+      <!-- Filtre Statut de l'alerte -->
+      <div class="col-lg-2 col-md-6">
+        <select name="statut" class="form-select bg-light">
+          <option value="active" {{ request('statut', 'active') == 'active' ? 'selected' : '' }}>Actives en cours</option>
+          <option value="tous" {{ request('statut') == 'tous' ? 'selected' : '' }}>Toutes les alertes</option>
+          <option value="terminee" {{ request('statut') == 'terminee' ? 'selected' : '' }}>Terminées</option>
+        </select>
+      </div>
+
+      <!-- Actions -->
+      <div class="col-lg-2 col-md-12 d-flex gap-2">
+        <button type="submit" class="btn btn-danger w-100 rounded-pill fw-semibold shadow-sm">
+          <i class="bi bi-funnel-fill me-1"></i>Filtrer
+        </button>
+        @if(request('search') || request('niveau') || request('zone_id') || request('statut') && request('statut') !== 'active')
+          <a href="{{ route('front.alertes.index') }}" class="btn btn-outline-secondary rounded-pill" title="Réinitialiser les filtres">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </a>
+        @endif
+      </div>
+
+    </form>
   </div>
 </section>
 
@@ -89,12 +162,12 @@
                onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 30px rgba(0,0,0,0.1)';"
                onmouseout="this.style.transform='';this.style.boxShadow='';">
 
-            <!-- Bandeau de statut supérieur -->
+            <!-- Bandeau de couleur de niveau supérieur -->
             <div style="height: 6px; background: {{ $cfg[0] }};"></div>
 
             <div class="card-body p-4 d-flex flex-column">
 
-              <!-- En-tête de la carte : Niveau & Zone -->
+              <!-- En-tête : Niveau & Zone -->
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <span class="badge rounded-pill px-3 py-1 text-uppercase fw-bold" style="background: {{ $cfg[1] }}; color: {{ $cfg[0] }}; font-size: 11px;">
                   <i class="bi {{ $cfg[3] }} me-1"></i>{{ $cfg[2] }}
@@ -179,17 +252,19 @@
         <div class="col-12 text-center py-5">
           <div class="p-5 rounded-4 bg-white shadow-sm border d-inline-block">
             <i class="bi bi-shield-check text-success" style="font-size: 3rem;"></i>
-            <h5 class="mt-3 text-secondary">Aucune alerte active pour le moment.</h5>
-            <p class="text-muted small">Toutes les zones surveillées sont actuellement en situation normale.</p>
+            <h5 class="mt-3 text-secondary">Aucune alerte ne correspond à vos critères.</h5>
+            <a href="{{ route('front.alertes.index') }}" class="btn btn-outline-primary rounded-pill mt-2">
+              Afficher toutes les alertes
+            </a>
           </div>
         </div>
       @endforelse
     </div>
 
-    <!-- Pagination -->
+    <!-- Pagination Personnalisée Sans Bug -->
     @if($alertes->hasPages())
       <div class="d-flex justify-content-center mt-5">
-        {{ $alertes->links('pagination::bootstrap-5') }}
+        {{ $alertes->links('front.components.pagination') }}
       </div>
     @endif
 
@@ -203,7 +278,7 @@
       <div class="col-lg-8">
         <div class="p-4 p-md-5 rounded-4 text-white shadow-sm" style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);">
           <i class="bi bi-heart-pulse-fill text-danger fs-1 mb-3 d-inline-block"></i>
-          <h3 class="fw-bold mb-2" style="color:white">Protégez-vous Face à ces Alertes</h3>
+          <h3 class="fw-bold mb-2 text-white">Protégez-vous Face à ces Alertes</h3>
           <p class="text-white-50 mb-4" style="max-width: 600px; margin: 0 auto;">
             Consultez les recommandations de santé validées par nos médecins et spécialistes pour chaque niveau d'alerte météo.
           </p>

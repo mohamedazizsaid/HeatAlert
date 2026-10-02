@@ -30,6 +30,8 @@
   <!-- Main CSS File -->
   <link href={{ asset("assets/front/css/main.css") }} rel="stylesheet">
 
+  @stack('styles')
+
 </head>
 
 <body class="index-page">
@@ -303,7 +305,7 @@
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
             <div class="department-highlight">
               <div class="highlight-icon">
-                <i class="bi bi-lightning-charge text-danger"></i>
+                <i class="bi bi-lightning-charge " style="color: white ;"></i>
               </div>
               <h4>Réseau Électrique & Délestages</h4>
               <p>Anticipation des pics de charge énergétique dus à la climatisation pour limiter les risques de coupures de courant.</p>
@@ -319,7 +321,7 @@
           <div class="col-lg-4" data-aos="fade-up" data-aos-delay="300">
             <div class="department-highlight">
               <div class="highlight-icon">
-                <i class="bi bi-fire text-danger"></i>
+                <i class="bi bi-fire text-warning"></i>
               </div>
               <h4>Vents de Sirocco & Feux de Forêt</h4>
               <p>Évaluation des vents chauds (Chehili) et de l'humidité critique pour prévenir les départs d'incendies estivaux.</p>
@@ -633,107 +635,6 @@
             </div>
           </div><!-- End Doctor Profile -->
 
-          <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="400">
-            <div class="profile-header">
-              <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-8.webp') }} alt="Lieut-Col. Tarak Mejri" class="img-fluid">
-                <div class="status-indicator available"></div>
-              </div>
-              <div class="doctor-details">
-                <h4>Lieut-Col. Tarak Mejri</h4>
-                <span class="specialty-tag">Protection Civile Tunisienne</span>
-                <div class="experience-info">
-                  <i class="bi bi-award"></i>
-                  <span>22 ans de service</span>
-                </div>
-              </div>
-            </div>
-            <div class="rating-section">
-              <div class="stars text-warning">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-              </div>
-              <span class="rating-score">Secourisme</span>
-              <span class="review-count">Coup de Chaleur</span>
-            </div>
-            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
-              « Signes d'alerte : peau très chaude, maux de tête violents, vertiges et somnolence. Déshabiller la victime, refroidir à l'eau et contacter le 198. »
-            </p>
-            <div class="action-buttons">
-              <a href="#call-to-action" class="btn-primary w-100 text-center">Gestes de Secours</a>
-            </div>
-          </div><!-- End Doctor Profile -->
-
-          <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="500">
-            <div class="profile-header">
-              <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-11.webp') }} alt="Dr. Yasmine Chahed" class="img-fluid">
-                <div class="status-indicator available"></div>
-              </div>
-              <div class="doctor-details">
-                <h4>Dr. Yasmine Chahed</h4>
-                <span class="specialty-tag">Dermatologie & UV</span>
-                <div class="experience-info">
-                  <i class="bi bi-award"></i>
-                  <span>10 ans d'expérience</span>
-                </div>
-              </div>
-            </div>
-            <div class="rating-section">
-              <div class="stars text-warning">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-              </div>
-              <span class="rating-score">Protection</span>
-              <span class="review-count">Peau & Yeux</span>
-            </div>
-            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
-              « En été en Tunisie, l'indice UV dépasse souvent 10. Appliquer un écran solaire SPF 50+ toutes les 2 heures et porter des lunettes avec filtre certifié. »
-            </p>
-            <div class="action-buttons">
-              <a href="#call-to-action" class="btn-primary w-100 text-center">Protection Solaire</a>
-            </div>
-          </div><!-- End Doctor Profile -->
-
-          <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="600">
-            <div class="profile-header">
-              <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-14.webp') }} alt="Dr. Hichem Ben Salem" class="img-fluid">
-                <div class="status-indicator available"></div>
-              </div>
-              <div class="doctor-details">
-                <h4>Dr. Hichem Ben Salem</h4>
-                <span class="specialty-tag">Cardiologue Urgentiste</span>
-                <div class="experience-info">
-                  <i class="bi bi-award"></i>
-                  <span>19 ans d'expérience</span>
-                </div>
-              </div>
-            </div>
-            <div class="rating-section">
-              <div class="stars text-warning">
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-                <i class="bi bi-star-fill"></i>
-              </div>
-              <span class="rating-score">Cardio</span>
-              <span class="review-count">Hypertension</span>
-            </div>
-            <p class="small text-muted px-3 mb-3" style="font-size: 0.84rem; line-height: 1.5;">
-              « La chaleur dilate les vaisseaux et fatigue le cœur. Les patients hypertendus ne doivent jamais modifier leur traitement sans avis médical préalable. »
-            </p>
-            <div class="action-buttons">
-              <a href="#call-to-action" class="btn-primary w-100 text-center">Consignes Cardio</a>
-            </div>
-          </div><!-- End Doctor Profile -->
 
         </div>
 
