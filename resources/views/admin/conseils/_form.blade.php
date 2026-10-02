@@ -98,57 +98,96 @@
           @enderror
         </div>
 
-        {{-- Liaison multiple aux alertes météo --}}
+        {{-- Liaison multiple aux alertes météo (Sélection simple par cases à cocher) --}}
         <div class="col-12">
-          <div class="d-flex justify-content-between align-items-center mb-1">
-            <label for="alerte_ids" class="form-label fw-semibold mb-0">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="form-label fw-semibold mb-0">
               <i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>
-              Associer ce conseil à des alertes météo (choix multiple)
+              Associer ce conseil à des alertes météo
             </label>
-            <div class="btn-group btn-group-sm">
-              <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-select-all" style="font-size:11px;padding:2px 8px;">
-                <i class="fa-solid fa-check-double me-1"></i>Tout sélectionner
+            <div class="d-flex align-items-center gap-2">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-select-all" style="font-size:11px;padding:3px 9px;">
+                <i class="fa-solid fa-check-double me-1"></i>Tout cocher
               </button>
-              <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-deselect-all" style="font-size:11px;padding:2px 8px;">
-                <i class="fa-solid fa-xmark me-1"></i>Tout désélectionner
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-deselect-all" style="font-size:11px;padding:3px 9px;">
+                <i class="fa-solid fa-xmark me-1"></i>Tout décocher
               </button>
+              <span id="selected-alertes-count" class="badge bg-light text-dark border" style="font-size:.8rem;">
+                0 sélectionnée(s)
+              </span>
             </div>
           </div>
 
-          <select id="alerte_ids" name="alerte_ids[]"
-                  class="form-select @error('alerte_ids') is-invalid @enderror"
-                  multiple
-                  size="6"
-                  style="border-radius:10px;font-size:.88rem;background:#f8fafc;">
+          {{-- Champ de recherche instantané pour filtrer facilement --}}
+          <div class="input-group input-group-sm mb-2">
+            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+            <input type="text" id="alerte-filter" class="form-control border-start-0" placeholder="Filtrer les alertes par titre, zone, niveau..." style="font-size:.84rem;">
+          </div>
+
+          {{-- Liste déroulante à choix multiple avec simple clic --}}
+          <div id="alertes-list" style="max-height: 240px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 8px; background: #f8fafc;">
             @forelse($alertes as $alerte)
               @php
-                $badgeEmoji = match($alerte->niveau) {
-                  'rouge'  => '🔴',
-                  'orange' => '🟠',
-                  'jaune'  => '🟡',
-                  default  => '🟢',
+                $badgeClass = match($alerte->niveau) {
+                  'rouge'  => 'bg-danger text-white',
+                  'orange' => 'bg-warning text-dark',
+                  'jaune'  => 'bg-info text-dark',
+                  default  => 'bg-success text-white',
                 };
                 $zoneName = $alerte->zone ? $alerte->zone->nom . ' (' . $alerte->zone->ville . ')' : 'Nationale';
                 $isSel = in_array($alerte->id, old('alerte_ids', $selectedAlertes ?? []));
+                $searchable = strtolower($alerte->titre . ' ' . $zoneName . ' ' . $alerte->niveau . ' ' . $alerte->type);
               @endphp
-              <option value="{{ $alerte->id }}" {{ $isSel ? 'selected' : '' }}>
-                {{ $badgeEmoji }} [{{ ucfirst($alerte->niveau) }}] {{ Str::limit($alerte->titre, 40) }} — {{ $zoneName }} ({{ $alerte->date_debut ? $alerte->date_debut->format('d/m/Y') : '—' }}) {{ $alerte->statut === 'active' ? '⚡ Active' : '' }}
-              </option>
+              <label class="alerte-item-card d-flex align-items-center justify-content-between p-2 mb-2 rounded border {{ $isSel ? 'border-danger' : '' }}"
+                     style="cursor: pointer; transition: all .15s ease; background: {{ $isSel ? '#fef2f2' : '#ffffff' }};"
+                     data-search="{{ $searchable }}">
+                <div class="d-flex align-items-center gap-3">
+                  <input type="checkbox"
+                         name="alerte_ids[]"
+                         value="{{ $alerte->id }}"
+                         class="form-check-input alerte-cb m-0"
+                         style="width: 18px; height: 18px; accent-color: #dc2626; cursor: pointer; flex-shrink: 0;"
+                         {{ $isSel ? 'checked' : '' }}>
+                  <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <span class="badge {{ $badgeClass }}" style="font-size: .72rem; text-transform: uppercase;">
+                        {{ ucfirst($alerte->niveau) }}
+                      </span>
+                      <strong style="font-size: .9rem; color: #0f172a;">{{ $alerte->titre }}</strong>
+                      @if($alerte->statut === 'active')
+                        <span class="badge bg-danger" style="font-size: .65rem;"><i class="fa-solid fa-bolt me-1"></i>Active</span>
+                      @endif
+                    </div>
+                    <div class="text-muted" style="font-size: .78rem; margin-top: 2px;">
+                      <i class="fa-solid fa-location-dot text-danger me-1"></i>{{ $zoneName }}
+                      <span class="mx-1">•</span>
+                      <i class="fa-regular fa-calendar me-1"></i>{{ $alerte->date_debut ? $alerte->date_debut->format('d/m/Y') : '—' }}
+                      @if($alerte->temperature_max)
+                        <span class="mx-1">•</span>
+                        <span class="text-danger fw-semibold"><i class="fa-solid fa-temperature-high me-1"></i>Max {{ $alerte->temperature_max }}°C</span>
+                      @endif
+                    </div>
+                  </div>
+                </div>
+                <div class="text-muted pe-2 d-none d-sm-block">
+                  <span class="badge bg-light text-dark border" style="font-size: .75rem;">
+                    {{ ucfirst(str_replace('_', ' ', $alerte->type)) }}
+                  </span>
+                </div>
+              </label>
             @empty
-              <option disabled>Aucune alerte météo existante à associer.</option>
+              <div class="text-center py-4 text-muted">
+                <i class="fa-solid fa-triangle-exclamation fa-2x mb-2 d-block"></i>
+                Aucune alerte météo existante en base de données.
+              </div>
             @endforelse
-          </select>
-          @error('alerte_ids')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
-          @error('alerte_ids.*')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
-
-          <div class="form-text mt-1 d-flex justify-content-between align-items-center" style="font-size:.8rem;">
-            <span><i class="fa-solid fa-circle-info me-1 text-primary"></i>Maintenez <code>Ctrl</code> (Windows) ou <code>Cmd</code> (Mac) pour sélectionner ou désélectionner plusieurs alertes.</span>
-            <span id="selected-alertes-count" class="badge bg-light text-dark border">0 alerte(s) sélectionnée(s)</span>
           </div>
+          @error('alerte_ids')
+            <div class="invalid-feedback d-block"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
+          @enderror
+          <small class="text-muted mt-1 d-block" style="font-size:.78rem;">
+            <i class="fa-solid fa-circle-info me-1 text-primary"></i>Cliquez simplement sur une alerte pour la cocher ou la décocher.
+          </small>
         </div>
 
       </div>
@@ -202,40 +241,87 @@
     document.getElementById('icon-display').className = this.value || 'fa-solid fa-circle-info';
   });
 
-  // Compteur et boutons de sélection multiple d'alertes
+  // Gestion de la sélection multiple simple d'alertes météo
   (function() {
-    const selectElem = document.getElementById('alerte_ids');
+    const listContainer = document.getElementById('alertes-list');
     const countBadge = document.getElementById('selected-alertes-count');
+    const filterInput = document.getElementById('alerte-filter');
 
-    function updateAlerteCount() {
-      if (!selectElem || !countBadge) return;
-      const count = Array.from(selectElem.selectedOptions).filter(opt => !opt.disabled).length;
-      countBadge.textContent = count + ' alerte(s) sélectionnée(s)';
-      if (count > 0) {
-        countBadge.className = 'badge bg-danger text-white';
-      } else {
-        countBadge.className = 'badge bg-light text-dark border';
+    if (!listContainer) return;
+
+    function updateCountAndStyle() {
+      const checkboxes = listContainer.querySelectorAll('.alerte-cb');
+      let count = 0;
+
+      checkboxes.forEach(cb => {
+        const card = cb.closest('.alerte-item-card');
+        if (cb.checked) {
+          count++;
+          if (card) {
+            card.classList.add('border-danger');
+            card.style.background = '#fef2f2';
+          }
+        } else {
+          if (card) {
+            card.classList.remove('border-danger');
+            card.style.background = '#ffffff';
+          }
+        }
+      });
+
+      if (countBadge) {
+        countBadge.textContent = count + ' sélectionnée(s)';
+        if (count > 0) {
+          countBadge.className = 'badge bg-danger text-white';
+        } else {
+          countBadge.className = 'badge bg-light text-dark border';
+        }
       }
     }
 
-    if (selectElem) {
-      selectElem.addEventListener('change', updateAlerteCount);
-      updateAlerteCount();
+    // Écoute des changements sur les cases à cocher
+    listContainer.addEventListener('change', function(e) {
+      if (e.target.classList.contains('alerte-cb')) {
+        updateCountAndStyle();
+      }
+    });
 
-      document.getElementById('btn-select-all')?.addEventListener('click', function() {
-        for (let i = 0; i < selectElem.options.length; i++) {
-          if (!selectElem.options[i].disabled) selectElem.options[i].selected = true;
+    // Bouton "Tout cocher"
+    document.getElementById('btn-select-all')?.addEventListener('click', function() {
+      const items = listContainer.querySelectorAll('.alerte-item-card');
+      items.forEach(card => {
+        if (card.style.display !== 'none') {
+          const cb = card.querySelector('.alerte-cb');
+          if (cb) cb.checked = true;
         }
-        updateAlerteCount();
       });
+      updateCountAndStyle();
+    });
 
-      document.getElementById('btn-deselect-all')?.addEventListener('click', function() {
-        for (let i = 0; i < selectElem.options.length; i++) {
-          selectElem.options[i].selected = false;
+    // Bouton "Tout décocher"
+    document.getElementById('btn-deselect-all')?.addEventListener('click', function() {
+      const checkboxes = listContainer.querySelectorAll('.alerte-cb');
+      checkboxes.forEach(cb => cb.checked = false);
+      updateCountAndStyle();
+    });
+
+    // Filtrage instantané
+    filterInput?.addEventListener('input', function() {
+      const query = this.value.toLowerCase().trim();
+      const items = listContainer.querySelectorAll('.alerte-item-card');
+
+      items.forEach(card => {
+        const text = card.getAttribute('data-search') || '';
+        if (text.includes(query)) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
         }
-        updateAlerteCount();
       });
-    }
+    });
+
+    // Initialisation au chargement
+    updateCountAndStyle();
   })();
 </script>
 @endpush
