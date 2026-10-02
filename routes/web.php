@@ -43,6 +43,7 @@ Route::middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+        Route::get('/statistiques', [AdminController::class, 'statistiques'])->name('statistiques');
 
         // Gestion des Zones (avec recherche/filtre et page détails)
         Route::resource('zones', ZoneController::class);

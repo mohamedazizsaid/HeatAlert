@@ -47,6 +47,11 @@
             <li><a href="{{ route('admin.conseils.create') }}"><i class="fa-solid fa-plus"></i>Ajouter un conseil</a></li>
           </ul>
         </li>
+        <li class="{{ request()->routeIs('admin.statistiques') ? 'active' : '' }}">
+          <a href="{{ route('admin.statistiques') }}">
+            <i class="fa-solid fa-chart-line"></i>Statistiques
+          </a>
+        </li>
       </ul>
     </div>
   </nav>
@@ -117,6 +122,19 @@
               <a href="{{ route('admin.conseils.create') }}">Ajouter un conseil</a>
             </li>
           </ul>
+        </li>
+
+        {{-- Statistiques --}}
+        <li class="{{ request()->routeIs('admin.statistiques') ? 'active' : '' }}">
+          <a href="{{ route('admin.statistiques') }}">
+            <i class="fa-solid fa-chart-line"></i>Statistiques
+            @php
+              $nbCritiques = \App\Models\AlerteMeteo::where('statut','active')->whereIn('niveau',['rouge','orange'])->count();
+            @endphp
+            @if($nbCritiques > 0)
+              <span class="badge bg-danger rounded-pill ms-1" style="font-size: 10px;">{{ $nbCritiques }}</span>
+            @endif
+          </a>
         </li>
 
       </ul>

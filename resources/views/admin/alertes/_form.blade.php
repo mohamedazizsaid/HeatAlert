@@ -258,9 +258,8 @@
             <span class="badge bg-black bg-opacity-30 text-uppercase fw-bold text-white px-2 py-1" id="preview-level-badge" style="letter-spacing: 0.5px; font-size: 0.72rem;">
               <i class="fa-solid fa-bell me-1"></i>Vigilance Jaune
             </span>
-            <span class="badge bg-white text-dark fw-bold px-2 py-1 text-uppercase" id="preview-status-badge" style="font-size: 0.68rem; letter-spacing: 0.4px;">
-              Brouillon
-            </span>
+            {{-- Élément conservé pour le JS (caché visuellement) --}}
+            <span id="preview-status-badge" style="display: none;"></span>
           </div>
           <h5 class="fw-bold mb-1 text-white text-truncate position-relative" id="preview-titre" title="Vague de chaleur">
             Vague de chaleur

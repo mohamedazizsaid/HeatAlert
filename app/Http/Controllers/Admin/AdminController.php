@@ -32,4 +32,100 @@ class AdminController extends Controller
 
         return view('admin.dashboard', compact('stats', 'dernieresAlertes'));
     }
+
+    /**
+     * Page Statistiques Avancées — Analyse complète des données HeatAlert.
+     */
+    public function statistiques()
+    {
+        // ── Totaux Globaux ──
+        $totaux = [
+            'zones'           => Zone::count(),
+            'zones_actives'   => Zone::where('actif', true)->count(),
+            'alertes'         => AlerteMeteo::count(),
+            'alertes_actives' => AlerteMeteo::where('statut', 'active')->count(),
+            'alertes_rouge'   => AlerteMeteo::where('niveau', 'rouge')->count(),
+            'alertes_orange'  => AlerteMeteo::where('niveau', 'orange')->count(),
+            'alertes_jaune'   => AlerteMeteo::where('niveau', 'jaune')->count(),
+            'alertes_vert'    => AlerteMeteo::where('niveau', 'vert')->count(),
+            'conseils'        => Conseil::count(),
+            'conseils_actifs' => Conseil::where('actif', true)->count(),
+        ];
+
+        // ── Répartition des alertes par niveau ──
+        $alertesParNiveau = [
+            'rouge'  => AlerteMeteo::where('niveau', 'rouge')->count(),
+            'orange' => AlerteMeteo::where('niveau', 'orange')->count(),
+            'jaune'  => AlerteMeteo::where('niveau', 'jaune')->count(),
+            'vert'   => AlerteMeteo::where('niveau', 'vert')->count(),
+        ];
+
+        // ── Répartition des alertes par statut ──
+        $alertesParStatut = [
+            'active'   => AlerteMeteo::where('statut', 'active')->count(),
+            'brouillon'=> AlerteMeteo::where('statut', 'brouillon')->count(),
+            'terminee' => AlerteMeteo::where('statut', 'terminee')->count(),
+            'annulee'  => AlerteMeteo::where('statut', 'annulee')->count(),
+        ];
+
+        // ── Répartition des alertes par type ──
+        $alertesParType = AlerteMeteo::selectRaw('type, count(*) as total')
+            ->groupBy('type')
+            ->orderByDesc('total')
+            ->get()
+            ->mapWithKeys(fn($r) => [$r->type => $r->total]);
+
+        // ── Top 10 Zones avec le plus d'alertes ──
+        $topZones = Zone::withCount('alertes')
+            ->orderByDesc('alertes_count')
+            ->take(10)
+            ->get();
+
+        // ── Alertes par mois (12 derniers mois) ──
+        $alertesParMois = AlerteMeteo::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as mois, count(*) as total')
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->groupBy('mois')
+            ->orderBy('mois')
+            ->get()
+            ->mapWithKeys(fn($r) => [$r->mois => $r->total]);
+
+        // ── Températures moyennes des alertes ──
+        $tempStats = AlerteMeteo::whereNotNull('temperature_max')->selectRaw('
+            ROUND(AVG(temperature_max), 1) as temp_max_moy,
+            ROUND(MAX(temperature_max), 1) as temp_max_record,
+            ROUND(MIN(temperature_max), 1) as temp_max_min,
+            ROUND(AVG(temperature_ressentie), 1) as ressentie_moy,
+            ROUND(AVG(humidite), 1) as humidite_moy,
+            ROUND(AVG(indice_uv), 1) as uv_moy,
+            ROUND(MAX(indice_uv), 1) as uv_max
+        ')->first();
+
+        // ── Répartition des conseils par catégorie ──
+        $conseilsParCategorie = Conseil::selectRaw('categorie, count(*) as total')
+            ->whereNotNull('categorie')
+            ->groupBy('categorie')
+            ->orderByDesc('total')
+            ->get()
+            ->mapWithKeys(fn($r) => [$r->categorie => $r->total]);
+
+        // ── Dernières alertes récentes ──
+        $dernieresAlertes = AlerteMeteo::with('zone')
+            ->orderByDesc('created_at')
+            ->take(8)
+            ->get();
+
+        // ── Alertes Rouge actives (criticité maximale) ──
+        $alertesCritiques = AlerteMeteo::with('zone')
+            ->where('statut', 'active')
+            ->whereIn('niveau', ['rouge', 'orange'])
+            ->orderByRaw("FIELD(niveau, 'rouge', 'orange')")
+            ->take(5)
+            ->get();
+
+        return view('admin.statistiques', compact(
+            'totaux', 'alertesParNiveau', 'alertesParStatut', 'alertesParType',
+            'topZones', 'alertesParMois', 'tempStats', 'conseilsParCategorie',
+            'dernieresAlertes', 'alertesCritiques'
+        ));
+    }
 }
