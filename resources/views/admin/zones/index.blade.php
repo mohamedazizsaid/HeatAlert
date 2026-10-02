@@ -15,6 +15,19 @@
   </div>
 </div>
 
+@include('admin.partials._search_filter', [
+  'searchRoute' => 'admin.zones.index',
+  'placeholder' => 'Rechercher par nom, ville, gouvernorat…',
+  'resultCount' => $zones->total(),
+  'filters'     => [
+    [
+      'name'    => 'actif',
+      'label'   => '— Statut —',
+      'options' => ['1' => 'Active', '0' => 'Inactive'],
+    ],
+  ],
+])
+
 <section class="m-card">
   <div class="table-responsive">
     <table class="m-table">
@@ -40,12 +53,8 @@
           <td>{{ $zone->code_postal ?? '—' }}</td>
           <td>
             @if($zone->latitude && $zone->longitude)
-              <small class="text-muted">
-                {{ number_format($zone->latitude, 4) }}, {{ number_format($zone->longitude, 4) }}
-              </small>
-            @else
-              <span class="text-muted">—</span>
-            @endif
+              <small class="text-muted">{{ number_format($zone->latitude, 4) }}, {{ number_format($zone->longitude, 4) }}</small>
+            @else <span class="text-muted">—</span> @endif
           </td>
           <td>
             @if($zone->actif)
@@ -55,23 +64,12 @@
             @endif
           </td>
           <td style="text-align:right;">
-            <a href="{{ route('admin.zones.edit', $zone) }}"
-               class="m-btn m-btn--ghost"
-               style="height:28px;padding:0 10px;font-size:12px;"
-               title="Modifier">
+            <a href="{{ route('admin.zones.edit', $zone) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;" title="Modifier">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
-
-            <form action="{{ route('admin.zones.destroy', $zone) }}"
-                  method="POST"
-                  style="display:inline;"
-                  onsubmit="return confirm('Supprimer la zone « {{ addslashes($zone->nom) }} » ?')">
-              @csrf
-              @method('DELETE')
-              <button type="submit"
-                      class="m-btn m-btn--ghost"
-                      style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;"
-                      title="Supprimer">
+            <form action="{{ route('admin.zones.destroy', $zone) }}" method="POST" style="display:inline;" onsubmit="return confirm('Supprimer la zone « {{ addslashes($zone->nom) }} » ?')">
+              @csrf @method('DELETE')
+              <button type="submit" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;" title="Supprimer">
                 <i class="fa-solid fa-trash"></i>
               </button>
             </form>
@@ -90,8 +88,24 @@
   </div>
 
   @if($zones->hasPages())
-  <div class="d-flex justify-content-center mt-3">
-    {{ $zones->links() }}
+  <div class="d-flex justify-content-center align-items-center mt-3 pb-2" style="gap:6px;">
+    @if(!$zones->onFirstPage())
+      <a href="{{ $zones->previousPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
+        <i class="fa-solid fa-chevron-left"></i>
+      </a>
+    @endif
+
+    @foreach($zones->getUrlRange(max(1, $zones->currentPage()-2), min($zones->lastPage(), $zones->currentPage()+2)) as $page => $url)
+      <a href="{{ $url }}" class="m-btn {{ $page == $zones->currentPage() ? 'm-btn--primary' : 'm-btn--ghost' }}" style="height:32px;padding:0 11px;font-size:13px;min-width:32px;text-align:center;">
+        {{ $page }}
+      </a>
+    @endforeach
+
+    @if($zones->hasMorePages())
+      <a href="{{ $zones->nextPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
+        <i class="fa-solid fa-chevron-right"></i>
+      </a>
+    @endif
   </div>
   @endif
 </section>
