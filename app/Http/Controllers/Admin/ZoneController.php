@@ -16,9 +16,25 @@ class ZoneController extends Controller
     /**
      * Liste des zones.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $zones = $this->zoneService->getPaginated(12);
+        $query = Zone::query();
+
+        // Recherche texte
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nom', 'like', "%$search%")
+                  ->orWhere('ville', 'like', "%$search%")
+                  ->orWhere('gouvernorat', 'like', "%$search%");
+            });
+        }
+
+        // Filtres
+        if ($request->filled('actif')) {
+            $query->where('actif', $request->get('actif'));
+        }
+
+        $zones = $query->orderBy('gouvernorat')->orderBy('ville')->paginate(12)->withQueryString();
         return view('admin.zones.index', compact('zones'));
     }
 

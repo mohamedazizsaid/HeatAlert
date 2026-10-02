@@ -21,9 +21,30 @@ class ConseilController extends Controller
     /**
      * Liste des conseils.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $conseils = $this->conseilService->getPaginated(12);
+        $query = Conseil::query();
+
+        // Recherche texte
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('titre', 'like', "%$search%")
+                  ->orWhere('contenu', 'like', "%$search%");
+            });
+        }
+
+        // Filtres
+        if ($request->filled('categorie')) {
+            $query->where('categorie', $request->get('categorie'));
+        }
+        if ($request->filled('niveau_alerte_cible')) {
+            $query->where('niveau_alerte_cible', $request->get('niveau_alerte_cible'));
+        }
+        if ($request->filled('actif')) {
+            $query->where('actif', $request->get('actif'));
+        }
+
+        $conseils = $query->orderBy('categorie')->orderBy('titre')->paginate(12)->withQueryString();
         return view('admin.conseils.index', compact('conseils'));
     }
 

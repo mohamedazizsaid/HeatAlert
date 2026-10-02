@@ -21,9 +21,31 @@ class AlerteMeteoController extends Controller
     /**
      * Liste des alertes météo.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $alertes = $this->alerteService->getPaginated(12);
+        $query = AlerteMeteo::with('zone');
+
+        // Recherche texte
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('titre', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ->orWhereHas('zone', fn($z) => $z->where('ville', 'like', "%$search%"));
+            });
+        }
+
+        // Filtres
+        if ($request->filled('niveau')) {
+            $query->where('niveau', $request->get('niveau'));
+        }
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->get('statut'));
+        }
+        if ($request->filled('type')) {
+            $query->where('type', $request->get('type'));
+        }
+
+        $alertes = $query->orderByDesc('date_debut')->paginate(12)->withQueryString();
         return view('admin.alertes.index', compact('alertes'));
     }
 
