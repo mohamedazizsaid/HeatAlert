@@ -90,12 +90,65 @@
           <label for="contenu" class="form-label fw-semibold">Contenu <span class="text-danger">*</span></label>
           <textarea id="contenu" name="contenu"
                     class="form-control @error('contenu') is-invalid @enderror"
-                    rows="5"
+                    rows="4"
                     placeholder="Rédigez le contenu détaillé du conseil..."
                     minlength="10">{{ old('contenu', $conseil->contenu ?? '') }}</textarea>
           @error('contenu')
             <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
           @enderror
+        </div>
+
+        {{-- Liaison multiple aux alertes météo --}}
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="alerte_ids" class="form-label fw-semibold mb-0">
+              <i class="fa-solid fa-triangle-exclamation text-danger me-1"></i>
+              Associer ce conseil à des alertes météo (choix multiple)
+            </label>
+            <div class="btn-group btn-group-sm">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-select-all" style="font-size:11px;padding:2px 8px;">
+                <i class="fa-solid fa-check-double me-1"></i>Tout sélectionner
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-deselect-all" style="font-size:11px;padding:2px 8px;">
+                <i class="fa-solid fa-xmark me-1"></i>Tout désélectionner
+              </button>
+            </div>
+          </div>
+
+          <select id="alerte_ids" name="alerte_ids[]"
+                  class="form-select @error('alerte_ids') is-invalid @enderror"
+                  multiple
+                  size="6"
+                  style="border-radius:10px;font-size:.88rem;background:#f8fafc;">
+            @forelse($alertes as $alerte)
+              @php
+                $badgeEmoji = match($alerte->niveau) {
+                  'rouge'  => '🔴',
+                  'orange' => '🟠',
+                  'jaune'  => '🟡',
+                  default  => '🟢',
+                };
+                $zoneName = $alerte->zone ? $alerte->zone->nom . ' (' . $alerte->zone->ville . ')' : 'Nationale';
+                $isSel = in_array($alerte->id, old('alerte_ids', $selectedAlertes ?? []));
+              @endphp
+              <option value="{{ $alerte->id }}" {{ $isSel ? 'selected' : '' }}>
+                {{ $badgeEmoji }} [{{ ucfirst($alerte->niveau) }}] {{ Str::limit($alerte->titre, 40) }} — {{ $zoneName }} ({{ $alerte->date_debut ? $alerte->date_debut->format('d/m/Y') : '—' }}) {{ $alerte->statut === 'active' ? '⚡ Active' : '' }}
+              </option>
+            @empty
+              <option disabled>Aucune alerte météo existante à associer.</option>
+            @endforelse
+          </select>
+          @error('alerte_ids')
+            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
+          @enderror
+          @error('alerte_ids.*')
+            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
+          @enderror
+
+          <div class="form-text mt-1 d-flex justify-content-between align-items-center" style="font-size:.8rem;">
+            <span><i class="fa-solid fa-circle-info me-1 text-primary"></i>Maintenez <code>Ctrl</code> (Windows) ou <code>Cmd</code> (Mac) pour sélectionner ou désélectionner plusieurs alertes.</span>
+            <span id="selected-alertes-count" class="badge bg-light text-dark border">0 alerte(s) sélectionnée(s)</span>
+          </div>
         </div>
 
       </div>
@@ -145,8 +198,44 @@
 @push('scripts')
 <script>
   // Live icon preview
-  document.getElementById('icone').addEventListener('input', function() {
+  document.getElementById('icone')?.addEventListener('input', function() {
     document.getElementById('icon-display').className = this.value || 'fa-solid fa-circle-info';
   });
+
+  // Compteur et boutons de sélection multiple d'alertes
+  (function() {
+    const selectElem = document.getElementById('alerte_ids');
+    const countBadge = document.getElementById('selected-alertes-count');
+
+    function updateAlerteCount() {
+      if (!selectElem || !countBadge) return;
+      const count = Array.from(selectElem.selectedOptions).filter(opt => !opt.disabled).length;
+      countBadge.textContent = count + ' alerte(s) sélectionnée(s)';
+      if (count > 0) {
+        countBadge.className = 'badge bg-danger text-white';
+      } else {
+        countBadge.className = 'badge bg-light text-dark border';
+      }
+    }
+
+    if (selectElem) {
+      selectElem.addEventListener('change', updateAlerteCount);
+      updateAlerteCount();
+
+      document.getElementById('btn-select-all')?.addEventListener('click', function() {
+        for (let i = 0; i < selectElem.options.length; i++) {
+          if (!selectElem.options[i].disabled) selectElem.options[i].selected = true;
+        }
+        updateAlerteCount();
+      });
+
+      document.getElementById('btn-deselect-all')?.addEventListener('click', function() {
+        for (let i = 0; i < selectElem.options.length; i++) {
+          selectElem.options[i].selected = false;
+        }
+        updateAlerteCount();
+      });
+    }
+  })();
 </script>
 @endpush

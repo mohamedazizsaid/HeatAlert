@@ -19,19 +19,34 @@ class ConseilService
     }
 
     /**
-     * Crée un nouveau conseil.
+     * Crée un nouveau conseil et synchronise les alertes associées.
      */
     public function create(array $data): Conseil
     {
-        return Conseil::create($data);
+        $alerteIds = $data['alerte_ids'] ?? [];
+        unset($data['alerte_ids']);
+
+        $conseil = Conseil::create($data);
+
+        if (!empty($alerteIds)) {
+            $conseil->alertes()->sync($alerteIds);
+        }
+
+        return $conseil;
     }
 
     /**
-     * Met à jour un conseil existant.
+     * Met à jour un conseil existant et synchronise les alertes.
      */
     public function update(Conseil $conseil, array $data): bool
     {
-        return $conseil->update($data);
+        $alerteIds = $data['alerte_ids'] ?? [];
+        unset($data['alerte_ids']);
+
+        $updated = $conseil->update($data);
+        $conseil->alertes()->sync($alerteIds);
+
+        return $updated;
     }
 
     /**

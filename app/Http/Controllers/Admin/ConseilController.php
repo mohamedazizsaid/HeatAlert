@@ -53,10 +53,13 @@ class ConseilController extends Controller
      */
     public function create(): View
     {
-        $categories = self::$CATEGORIES;
-        $niveaux    = AlerteMeteo::NIVEAUX;
-        $publics    = self::$PUBLICS;
-        return view('admin.conseils.create', compact('categories', 'niveaux', 'publics'));
+        $categories      = self::$CATEGORIES;
+        $niveaux         = AlerteMeteo::NIVEAUX;
+        $publics         = self::$PUBLICS;
+        $alertes         = AlerteMeteo::with('zone')->orderByDesc('date_debut')->get();
+        $selectedAlertes = old('alerte_ids', []);
+
+        return view('admin.conseils.create', compact('categories', 'niveaux', 'publics', 'alertes', 'selectedAlertes'));
     }
 
     /**
@@ -86,10 +89,13 @@ class ConseilController extends Controller
      */
     public function edit(Conseil $conseil): View
     {
-        $categories = self::$CATEGORIES;
-        $niveaux    = AlerteMeteo::NIVEAUX;
-        $publics    = self::$PUBLICS;
-        return view('admin.conseils.edit', compact('conseil', 'categories', 'niveaux', 'publics'));
+        $categories      = self::$CATEGORIES;
+        $niveaux         = AlerteMeteo::NIVEAUX;
+        $publics         = self::$PUBLICS;
+        $alertes         = AlerteMeteo::with('zone')->orderByDesc('date_debut')->get();
+        $selectedAlertes = old('alerte_ids', $conseil->alertes->pluck('id')->toArray());
+
+        return view('admin.conseils.edit', compact('conseil', 'categories', 'niveaux', 'publics', 'alertes', 'selectedAlertes'));
     }
 
     /**
@@ -129,6 +135,8 @@ class ConseilController extends Controller
             'niveau_alerte_cible' => ['nullable', Rule::in(AlerteMeteo::NIVEAUX)],
             'icone'               => ['nullable', 'string', 'max:60'],
             'actif'               => ['nullable', 'boolean'],
+            'alerte_ids'          => ['nullable', 'array'],
+            'alerte_ids.*'        => ['exists:alertes_meteo,id'],
         ]);
     }
 }
