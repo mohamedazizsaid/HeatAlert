@@ -203,7 +203,7 @@
       <div class="col-lg-8">
         <div class="p-4 p-md-5 rounded-4 text-white shadow-sm" style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);">
           <i class="bi bi-heart-pulse-fill text-danger fs-1 mb-3 d-inline-block"></i>
-          <h3 class="fw-bold mb-2">Protégez-vous Face à ces Alertes</h3>
+          <h3 class="fw-bold mb-2" style="color:white">Protégez-vous Face à ces Alertes</h3>
           <p class="text-white-50 mb-4" style="max-width: 600px; margin: 0 auto;">
             Consultez les recommandations de santé validées par nos médecins et spécialistes pour chaque niveau d'alerte météo.
           </p>

@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <i class="bi bi-geo-alt-fill text-danger"></i>
             <span>Gouvernorat de {{ $zone->gouvernorat ?? 'Tunisie' }}</span>
           </div>
-          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 700;">Zone {{ $zone->nom }}</h1>
+          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 700;">{{ $zone->nom }}</h1>
           <p class="mb-0 text-muted" style="font-size: 15px;">
             Données de surveillance météorologique en temps réel, cartographie des risques et historique des alertes de chaleur.
           </p>

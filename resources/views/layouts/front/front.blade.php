@@ -37,6 +37,9 @@
   @include('layouts.front.components.headerfront')
 
   <main class="main">
+    <br>
+<br>
+
 
     @if(request()->routeIs('front.home') || request()->routeIs('home') || request()->is('/'))
       @yield('content')
