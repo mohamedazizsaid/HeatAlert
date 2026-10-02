@@ -5,54 +5,57 @@
      PAGE ZONES — LISTE DES ZONES DE SURVEILLANCE
 ═══════════════════════════════════════════════════════ --}}
 
-<!-- Page Title avec image de fond contextuelle et overlay blanc épuré -->
-<div class="page-title position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 60%, rgba(255,255,255,0.72) 100%), url('{{ asset('assets/front/img/health/facilities-9.webp') }}') center/cover no-repeat; padding-top: 130px; padding-bottom: 35px; border-bottom: 1px solid #e2e8f0;">
+<!-- Page Title avec image de fond contextuelle et cache sombre élégant -->
+<div class="page-title position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.84) 0%, rgba(30, 58, 95, 0.82) 100%), url('{{ asset('assets/front/img/health/facilities-9.webp') }}') center/cover no-repeat; padding-top: 135px; padding-bottom: 45px; border-bottom: 1px solid rgba(255,255,255,0.1);">
   <div class="heading">
     <div class="container">
       <div class="row d-flex justify-content-center text-center">
         <div class="col-lg-8">
-          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-primary-subtle text-primary border small fw-bold">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill bg-primary text-white small fw-bold shadow-sm">
             <i class="bi bi-geo-alt-fill"></i>
             <span>Réseau National de Surveillance Thermique</span>
           </div>
-          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 800; font-size: 34px;">
+          <h1 class="heading-title text-white" style="font-weight: 800; font-size: 36px; letter-spacing: -0.5px;">
             Zones de Surveillance Météorologique
           </h1>
-          <p class="mb-0 text-muted" style="font-size: 15px; max-width: 680px; margin: 0 auto;">
+          <p class="mb-0" style="font-size: 16px; color: #f1f5f9; max-width: 680px; margin: 0 auto; line-height: 1.6;">
             Consultez en direct les indicateurs météo, l'état de vigilance canicule et les alertes thermiques par zone géographique en Tunisie.
           </p>
         </div>
       </div>
     </div>
   </div>
-  <nav class="breadcrumbs mt-3" style="background: rgba(255,255,255,0.65); backdrop-filter: blur(4px);">
+  <nav class="breadcrumbs mt-4" style="background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); border-top: 1px solid rgba(255,255,255,0.1);">
     <div class="container">
-      <ol>
-        <li><a href="{{ route('front.home') }}">Accueil</a></li>
-        <li class="current">Zones de Surveillance</li>
+      <ol class="mb-0">
+        <li><a href="{{ route('front.home') }}" class="text-white-50">Accueil</a></li>
+        <li class="current text-white fw-semibold">Zones de Surveillance</li>
       </ol>
     </div>
   </nav>
 </div><!-- End Page Title -->
 
-<!-- Barre de Recherche & Filtres Avancés -->
+<!-- Barre de Recherche & Filtres 100% Smooth (Instantané côté client sans rechargement de page) -->
 <section class="py-4 bg-white border-bottom shadow-sm">
   <div class="container">
-    <form method="GET" action="{{ route('front.zones.index') }}" class="row g-3 align-items-center">
+    <div class="row g-3 align-items-center">
 
-      <!-- Recherche Textuelle -->
-      <div class="col-lg-4 col-md-6">
+      <!-- Recherche Textuelle en direct -->
+      <div class="col-lg-5 col-md-6">
         <div class="input-group">
           <span class="input-group-text bg-light border-end-0 text-muted">
             <i class="bi bi-search"></i>
           </span>
-          <input type="text" name="search" class="form-control bg-light border-start-0 ps-0" placeholder="Rechercher une zone, ville, code postal..." value="{{ request('search') }}">
+          <input type="text" id="zonesSearchInput" class="form-control bg-light border-start-0 ps-0" placeholder="Filtrer en direct (zone, ville, code postal...)" autocomplete="off">
+          <button class="btn btn-light border-start-0 text-muted" type="button" id="clearZonesSearchBtn" style="display: none;" onclick="clearZonesSearch()">
+            <i class="bi bi-x-circle"></i>
+          </button>
         </div>
       </div>
 
       <!-- Filtre Gouvernorat -->
       <div class="col-lg-3 col-md-6">
-        <select name="gouvernorat" class="form-select bg-light">
+        <select id="filterGouvernorat" class="form-select bg-light">
           <option value="">Tous les Gouvernorats ({{ $gouvernorats->count() }})</option>
           @foreach($gouvernorats as $gvt)
             <option value="{{ $gvt }}" {{ request('gouvernorat') == $gvt ? 'selected' : '' }}>
@@ -64,26 +67,21 @@
 
       <!-- Filtre Statut Alerte -->
       <div class="col-lg-3 col-md-6">
-        <select name="statut_alerte" class="form-select bg-light">
+        <select id="filterStatutAlerte" class="form-select bg-light">
           <option value="">Tous les statuts de vigilance</option>
           <option value="avec_alertes" {{ request('statut_alerte') == 'avec_alertes' ? 'selected' : '' }}>🚨 Avec alerte(s) active(s)</option>
           <option value="calme" {{ request('statut_alerte') == 'calme' ? 'selected' : '' }}>✅ Situation calme</option>
         </select>
       </div>
 
-      <!-- Actions : Filtrer & Réinitialiser -->
-      <div class="col-lg-2 col-md-6 d-flex gap-2">
-        <button type="submit" class="btn btn-danger w-100 rounded-pill fw-semibold shadow-sm">
-          <i class="bi bi-funnel-fill me-1"></i>Filtrer
+      <!-- Réinitialisation instantanée -->
+      <div class="col-lg-1 col-md-6 d-flex justify-content-end">
+        <button type="button" class="btn btn-outline-danger w-100 rounded-pill" onclick="resetZonesFilters()" title="Effacer tous les filtres">
+          <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
         </button>
-        @if(request('search') || request('gouvernorat') || request('statut_alerte'))
-          <a href="{{ route('front.zones.index') }}" class="btn btn-outline-secondary rounded-pill" title="Réinitialiser les filtres">
-            <i class="bi bi-arrow-counterclockwise"></i>
-          </a>
-        @endif
       </div>
 
-    </form>
+    </div>
   </div>
 </section>
 
@@ -102,14 +100,22 @@
       ];
     @endphp
 
-    <div class="row g-4">
+    <div class="row g-4" id="zonesContainer">
       @forelse($zones as $index => $zone)
         @php
           $hasAlert = $zone->alertes_actives_count > 0;
           $img = $zoneImages[$index % count($zoneImages)];
+          $searchData = strtolower($zone->nom . ' ' . $zone->ville . ' ' . ($zone->gouvernorat ?? '') . ' ' . ($zone->code_postal ?? '') . ' ' . ($zone->description ?? ''));
         @endphp
-        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="{{ ($loop->index % 3) * 100 }}">
-          <div class="department-card h-100 shadow-sm bg-white border-0 rounded-4 overflow-hidden position-relative">
+        <div class="col-lg-4 col-md-6 zone-item"
+             data-search="{{ $searchData }}"
+             data-gouvernorat="{{ strtolower($zone->gouvernorat ?? '') }}"
+             data-has-alert="{{ $hasAlert ? '1' : '0' }}"
+             style="transition: all 0.25s ease;">
+          <div class="department-card h-100 shadow-sm bg-white border-0 rounded-4 overflow-hidden position-relative"
+               style="transition: all 0.3s ease;"
+               onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 12px 30px rgba(0,0,0,0.1)';"
+               onmouseout="this.style.transform='';this.style.boxShadow='';">
 
             <!-- Statut Badge Icon -->
             <div class="department-icon shadow-sm" style="background: {{ $hasAlert ? '#fee2e2' : '#dcfce7' }}; color: {{ $hasAlert ? '#dc2626' : '#16a34a' }};">
@@ -172,22 +178,106 @@
         <div class="col-12 text-center py-5">
           <div class="p-5 rounded-4 bg-white shadow-sm border d-inline-block">
             <i class="bi bi-geo-alt text-muted" style="font-size: 3rem;"></i>
-            <h5 class="mt-3 text-secondary">Aucune zone ne correspond à vos critères de recherche.</h5>
-            <a href="{{ route('front.zones.index') }}" class="btn btn-outline-primary rounded-pill mt-2">
-              Réinitialiser la recherche
-            </a>
+            <h5 class="mt-3 text-secondary">Aucune zone enregistrée pour le moment.</h5>
           </div>
         </div>
       @endforelse
+
+      <!-- Message Aucun Résultat en direct -->
+      <div id="noZonesResults" class="col-12 text-center py-5" style="display: none;">
+        <div class="p-5 rounded-4 bg-white shadow-sm border d-inline-block">
+          <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+          <h5 class="mt-3 text-secondary">Aucune zone ne correspond à votre recherche.</h5>
+          <button type="button" class="btn btn-outline-danger rounded-pill mt-2" onclick="resetZonesFilters()">
+            Effacer la recherche
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Pagination Personnalisée Sans Bug -->
+    <!-- Pagination Personnalisée -->
     @if($zones->hasPages())
-      <div class="d-flex justify-content-center mt-5">
+      <div class="d-flex justify-content-center mt-5" id="zonesPaginationNav">
         {{ $zones->links('front.components.pagination') }}
       </div>
     @endif
 
   </div>
 </section>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('zonesSearchInput');
+    const filterGouvernorat = document.getElementById('filterGouvernorat');
+    const filterStatutAlerte = document.getElementById('filterStatutAlerte');
+    const clearBtn = document.getElementById('clearZonesSearchBtn');
+
+    function applyZonesFilters() {
+        const q = searchInput.value.trim().toLowerCase();
+        const gvt = filterGouvernorat.value.toLowerCase();
+        const statut = filterStatutAlerte.value;
+
+        if (clearBtn) {
+            clearBtn.style.display = q ? 'block' : 'none';
+        }
+
+        let visibleCount = 0;
+        const items = document.querySelectorAll('.zone-item');
+
+        items.forEach(el => {
+            const text = el.getAttribute('data-search') || '';
+            const elGvt = el.getAttribute('data-gouvernorat') || '';
+            const elHasAlert = el.getAttribute('data-has-alert') || '0';
+
+            const matchQ = !q || text.includes(q);
+            const matchGvt = !gvt || elGvt === gvt;
+            let matchStatut = true;
+            if (statut === 'avec_alertes') {
+                matchStatut = elHasAlert === '1';
+            } else if (statut === 'calme') {
+                matchStatut = elHasAlert === '0';
+            }
+
+            if (matchQ && matchGvt && matchStatut) {
+                el.style.display = '';
+                el.style.opacity = '1';
+                visibleCount++;
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        const noResults = document.getElementById('noZonesResults');
+        if (noResults) {
+            noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        const paginationNav = document.getElementById('zonesPaginationNav');
+        if (paginationNav) {
+            paginationNav.style.display = (q || gvt || statut) ? 'none' : '';
+        }
+    }
+
+    searchInput.addEventListener('input', applyZonesFilters);
+    filterGouvernorat.addEventListener('change', applyZonesFilters);
+    filterStatutAlerte.addEventListener('change', applyZonesFilters);
+
+    window.clearZonesSearch = function() {
+        searchInput.value = '';
+        applyZonesFilters();
+    };
+
+    window.resetZonesFilters = function() {
+        searchInput.value = '';
+        filterGouvernorat.value = '';
+        filterStatutAlerte.value = '';
+        applyZonesFilters();
+    };
+
+    // Initial check
+    applyZonesFilters();
+});
+</script>
+@endpush
 @endsection

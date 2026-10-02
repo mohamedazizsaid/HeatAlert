@@ -27,32 +27,32 @@
   $nivCfg = $niveauColors[$conseil->niveau_alerte_cible] ?? ['#2563eb', '#eff6ff', 'Tous niveaux de vigilance'];
 @endphp
 
-<!-- Page Title (Standard Template Header Blanc) -->
-<div class="page-title">
+<!-- Page Title avec image de fond contextuelle et cache sombre élégant -->
+<div class="page-title position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 58, 95, 0.82) 100%), url('{{ asset('assets/front/img/health/consultation-4.webp') }}') center/cover no-repeat; padding-top: 135px; padding-bottom: 45px; border-bottom: 1px solid rgba(255,255,255,0.1);">
   <div class="heading">
     <div class="container">
       <div class="row d-flex justify-content-center text-center">
         <div class="col-lg-9">
-          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill" style="background: {{ $cfg[2] }}; color: {{ $cfg[1] }}; font-size: 13px; font-weight: 700;">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill shadow-sm" style="background: {{ $cfg[1] }}; color: #ffffff; font-size: 13px; font-weight: 700;">
             <i class="bi {{ $cfg[0] }}"></i>
             <span>{{ $cfg[3] }}</span>
           </div>
-          <h1 class="heading-title mb-3" style="font-size: 32px; font-weight: 700; color: #1e3a5f;">
+          <h1 class="heading-title mb-3 text-white" style="font-size: 34px; font-weight: 800; letter-spacing: -0.5px;">
             {{ $conseil->titre }}
           </h1>
-          <p class="mb-0 text-muted" style="font-size: 15px;">
+          <p class="mb-0" style="font-size: 16px; color: #f1f5f9; line-height: 1.6;">
             Recommandations officielles et gestes de prévention santé validés face aux vagues de chaleur en Tunisie.
           </p>
         </div>
       </div>
     </div>
   </div>
-  <nav class="breadcrumbs">
+  <nav class="breadcrumbs mt-4" style="background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); border-top: 1px solid rgba(255,255,255,0.1);">
     <div class="container">
-      <ol>
-        <li><a href="{{ route('front.home') }}">Accueil</a></li>
-        <li><a href="{{ route('front.conseils.index') }}">Conseils Santé</a></li>
-        <li class="current">{{ Str::limit($conseil->titre, 40) }}</li>
+      <ol class="mb-0">
+        <li><a href="{{ route('front.home') }}" class="text-white-50">Accueil</a></li>
+        <li><a href="{{ route('front.conseils.index') }}" class="text-white-50">Conseils Santé</a></li>
+        <li class="current text-white fw-semibold">{{ Str::limit($conseil->titre, 40) }}</li>
       </ol>
     </div>
   </nav>

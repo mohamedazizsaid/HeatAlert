@@ -140,30 +140,30 @@
   $cfg = $niveauColors[$alerte->niveau] ?? ['#64748b', '#f1f5f9', 'Vigilance ' . ucfirst($alerte->niveau)];
 @endphp
 
-<!-- Page Title (Standard Template Header Blanc) -->
-<div class="page-title">
+<!-- Page Title avec image de fond contextuelle et cache sombre élégant -->
+<div class="page-title position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(127, 29, 29, 0.82) 100%), url('{{ asset('assets/front/img/health/emergency-1.webp') }}') center/cover no-repeat; padding-top: 135px; padding-bottom: 45px; border-bottom: 1px solid rgba(255,255,255,0.1);">
   <div class="heading">
     <div class="container">
       <div class="row d-flex justify-content-center text-center">
         <div class="col-lg-8">
-          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill text-uppercase fw-bold" style="background: {{ $cfg[1] }}; color: {{ $cfg[0] }}; font-size: 12px;">
+          <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-3 rounded-pill text-uppercase fw-bold shadow-sm" style="background: {{ $cfg[0] }}; color: #ffffff; font-size: 12px;">
             <i class="bi bi-exclamation-triangle-fill"></i>
             <span>{{ $cfg[2] }}</span>
           </div>
-          <h1 class="heading-title" style="color: #1e3a5f; font-weight: 700;">{{ $alerte->titre }}</h1>
-          <p class="mb-0 text-muted" style="font-size: 15px;">
+          <h1 class="heading-title text-white" style="font-weight: 800; font-size: 34px; letter-spacing: -0.5px;">{{ $alerte->titre }}</h1>
+          <p class="mb-0" style="font-size: 16px; color: #f1f5f9; line-height: 1.6;">
             Bulletin météorologique officiel émis pour la zone de {{ $alerte->zone->nom ?? 'Tunisie' }}.
           </p>
         </div>
       </div>
     </div>
   </div>
-  <nav class="breadcrumbs">
+  <nav class="breadcrumbs mt-4" style="background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); border-top: 1px solid rgba(255,255,255,0.1);">
     <div class="container">
-      <ol>
-        <li><a href="{{ route('front.home') }}">Accueil</a></li>
-        <li><a href="{{ route('front.alertes.index') }}">Alertes Météo</a></li>
-        <li class="current">{{ Str::limit($alerte->titre, 35) }}</li>
+      <ol class="mb-0">
+        <li><a href="{{ route('front.home') }}" class="text-white-50">Accueil</a></li>
+        <li><a href="{{ route('front.alertes.index') }}" class="text-white-50">Alertes Météo</a></li>
+        <li class="current text-white fw-semibold">{{ Str::limit($alerte->titre, 35) }}</li>
       </ol>
     </div>
   </nav>
