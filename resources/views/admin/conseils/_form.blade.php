@@ -118,10 +118,20 @@
             </div>
           </div>
 
-          {{-- Champ de recherche instantané pour filtrer facilement --}}
-          <div class="input-group input-group-sm mb-2">
-            <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-            <input type="text" id="alerte-filter" class="form-control border-start-0" placeholder="Filtrer les alertes par titre, zone, niveau..." style="font-size:.84rem;">
+          {{-- Champ de recherche instantané bien aligné avec icône intégrée --}}
+          <div style="position: relative; margin-bottom: 10px;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 13px; pointer-events: none;"></i>
+            <input type="text"
+                   id="alerte-filter"
+                   class="form-control"
+                   placeholder="Rechercher par titre, ville, gouvernorat, niveau (ex: Sousse, Rouge, Orage)..."
+                   style="padding-left: 36px; padding-right: 32px; height: 38px; border-radius: 8px; font-size: 13px; border: 1px solid #cbd5e1; background: #fff;">
+            <button type="button"
+                    id="btn-clear-filter"
+                    style="display: none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px;"
+                    title="Effacer le filtre">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
 
           {{-- Liste déroulante à choix multiple avec simple clic --}}
@@ -286,39 +296,69 @@
       }
     });
 
-    // Bouton "Tout cocher"
+    // Bouton "Tout cocher" (uniquement sur les alertes visibles)
     document.getElementById('btn-select-all')?.addEventListener('click', function() {
-      const items = listContainer.querySelectorAll('.alerte-item-card');
+      const items = listContainer.querySelectorAll('.alerte-item-card:not(.d-none)');
       items.forEach(card => {
-        if (card.style.display !== 'none') {
-          const cb = card.querySelector('.alerte-cb');
-          if (cb) cb.checked = true;
-        }
+        const cb = card.querySelector('.alerte-cb');
+        if (cb) cb.checked = true;
       });
       updateCountAndStyle();
     });
 
     // Bouton "Tout décocher"
     document.getElementById('btn-deselect-all')?.addEventListener('click', function() {
-      const checkboxes = listContainer.querySelectorAll('.alerte-cb');
-      checkboxes.forEach(cb => cb.checked = false);
+      const items = listContainer.querySelectorAll('.alerte-item-card:not(.d-none)');
+      items.forEach(card => {
+        const cb = card.querySelector('.alerte-cb');
+        if (cb) cb.checked = false;
+      });
       updateCountAndStyle();
     });
 
     // Filtrage instantané
-    filterInput?.addEventListener('input', function() {
-      const query = this.value.toLowerCase().trim();
-      const items = listContainer.querySelectorAll('.alerte-item-card');
+    if (filterInput) {
+      const clearBtn = document.getElementById('btn-clear-filter');
 
-      items.forEach(card => {
-        const text = card.getAttribute('data-search') || '';
-        if (text.includes(query)) {
-          card.style.display = 'flex';
-        } else {
-          card.style.display = 'none';
+      function filterAlertes() {
+        const query = filterInput.value.toLowerCase().trim();
+        if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+
+        const items = listContainer.querySelectorAll('.alerte-item-card');
+        let visibleCount = 0;
+
+        items.forEach(card => {
+          const text = (card.getAttribute('data-search') || '').toLowerCase();
+          const matches = !query || text.includes(query);
+          card.classList.toggle('d-none', !matches);
+          if (matches) visibleCount++;
+        });
+
+        // Message si aucun résultat
+        let noMsg = document.getElementById('no-filter-results');
+        if (visibleCount === 0 && items.length > 0) {
+          if (!noMsg) {
+            noMsg = document.createElement('div');
+            noMsg.id = 'no-filter-results';
+            noMsg.className = 'text-center py-3 text-muted';
+            noMsg.innerHTML = '<i class="fa-solid fa-magnifying-glass me-1"></i> Aucune alerte ne correspond à votre recherche.';
+            listContainer.appendChild(noMsg);
+          }
+          noMsg.classList.remove('d-none');
+        } else if (noMsg) {
+          noMsg.classList.add('d-none');
         }
+      }
+
+      filterInput.addEventListener('input', filterAlertes);
+      filterInput.addEventListener('keyup', filterAlertes);
+
+      clearBtn?.addEventListener('click', function() {
+        filterInput.value = '';
+        filterAlertes();
+        filterInput.focus();
       });
-    });
+    }
 
     // Initialisation au chargement
     updateCountAndStyle();

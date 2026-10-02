@@ -56,7 +56,7 @@
   <div class="logo">
     <a class="logo-link" href="{{ route('admin.dashboard') }}" aria-label="HeatAlert home">
       <span class="logo-mark" aria-hidden="true">H</span>
-      <span class="logo-text">HeatAlert</span>
+      <span class="logo-text">HeatAlert Admin</span>
     </a>
     <button class="sidebar-close js-sidebar-toggle" type="button" aria-label="Fermer la navigation">
       <i class="fa-solid fa-xmark" aria-hidden="true"></i>
