@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AlerteMeteoController;
 use App\Http\Controllers\Admin\ConseilController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,12 +14,10 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Page publique d'accueil
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+// ─── Page d'accueil publique (splash screen + présentation)
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Route 'dashboard' pour compatibilité Breeze (redirige selon le rôle)
+// ─── Route 'dashboard' pour compatibilité Breeze (redirige selon le rôle)
 Route::get('/dashboard', function () {
     if (auth()->user()?->isAdmin()) {
         return redirect()->route('admin.dashboard');
@@ -26,19 +25,19 @@ Route::get('/dashboard', function () {
     return redirect()->route('front.home');
 })->middleware('auth')->name('dashboard');
 
-// Routes authentifiées — Front (utilisateurs ROLE_USER)
+// ─── Routes authentifiées — Front (utilisateurs ROLE_USER)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/home', [FrontController::class, 'index'])->name('front.home');
+    Route::get('/accueil', [FrontController::class, 'index'])->name('front.home');
 });
 
-// Routes Admin — accessible uniquement aux ROLE_ADMIN
+// ─── Routes Admin — accessible uniquement aux ROLE_ADMIN
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-        // Gestion des Zones
+        // Gestion des Zones (avec recherche/filtre via query string)
         Route::resource('zones', ZoneController::class)->except(['show']);
 
         // Gestion des Alertes Météo
@@ -48,5 +47,5 @@ Route::middleware(['auth', 'admin'])
         Route::resource('conseils', ConseilController::class)->except(['show']);
     });
 
-// Routes d'authentification (Breeze)
+// ─── Routes d'authentification (Breeze)
 require __DIR__.'/auth.php';
