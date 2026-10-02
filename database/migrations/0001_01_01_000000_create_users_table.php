@@ -20,7 +20,7 @@ return new class extends Migration {
             $table->string('telephone', 20)->nullable();
             $table->string('role')->default('ROLE_USER');
             $table->timestamp('date_inscription')->useCurrent();
-            $table->foreignId('zone_id')->nullable()->constrained('zones')->nullOnDelete();
+            $table->unsignedBigInteger('zone_id')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

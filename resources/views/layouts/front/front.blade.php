@@ -45,7 +45,8 @@
 
   <main class="main">
 
-    <!-- Hero Section -->
+    @yield('content')
+
     <section id="hero" class="hero section">
 
       <div class="container" data-aos="fade-up" data-aos-delay="100">
@@ -882,6 +883,8 @@
   <!-- Main JS File -->
   <script src={{ asset("assets/front/js/main.js") }}></script>
 
+  @stack('scripts')
+
 </body>
 
-</html>
+</html>

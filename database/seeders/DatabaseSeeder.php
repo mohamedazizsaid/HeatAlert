@@ -2,22 +2,24 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Ordre des seeders (respecter les dépendances FK).
+     * 1. Zones (pas de dépendance)
+     * 2. Admin (pas de dépendance zone)
+     * 3. AlerteMeteo (dépend de Zone)
+     * 4. Conseils (indépendant)
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            ZoneSeeder::class,
+            AdminSeeder::class,
+            AlerteMeteoSeeder::class,
+            ConseilSeeder::class,
         ]);
     }
 }

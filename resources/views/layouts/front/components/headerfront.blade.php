@@ -3,66 +3,71 @@
     <div class="topbar d-flex align-items-center dark-background">
       <div class="container d-flex justify-content-center justify-content-md-between">
         <div class="contact-info d-flex align-items-center">
-          <i class="bi bi-envelope d-flex align-items-center"><a
-              href="mailto:contact@example.com">contact@example.com</a></i>
-          <i class="bi bi-phone d-flex align-items-center ms-4"><span>+1 5589 55488 55</span></i>
+          <i class="bi bi-envelope d-flex align-items-center">
+            <a href="mailto:contact@heatalert.tn">contact@heatalert.tn</a>
+          </i>
+          <i class="bi bi-phone d-flex align-items-center ms-4">
+            <span>+216 71 000 000</span>
+          </i>
         </div>
         <div class="social-links d-none d-md-flex align-items-center">
-          <a href="#!" class="twitter"><i class="bi bi-twitter-x"></i></a>
-          <a href="#!" class="facebook"><i class="bi bi-facebook"></i></a>
-          <a href="#!" class="instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#!" class="linkedin"><i class="bi bi-linkedin"></i></a>
+          @auth
+            <span class="text-white me-3" style="font-size:.85rem;">
+              <i class="bi bi-person-circle me-1"></i>
+              {{ auth()->user()->prenom }} {{ auth()->user()->nom }}
+            </span>
+            <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+              @csrf
+              <a href="{{ route('logout') }}"
+                 onclick="event.preventDefault(); this.closest('form').submit();"
+                 class="text-white text-decoration-none"
+                 style="font-size:.85rem;">
+                <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+              </a>
+            </form>
+          @else
+            <a href="{{ route('login') }}" class="text-white text-decoration-none me-3" style="font-size:.85rem;">
+              <i class="bi bi-box-arrow-in-right me-1"></i>Connexion
+            </a>
+            <a href="{{ route('register') }}" class="text-white text-decoration-none" style="font-size:.85rem;">
+              <i class="bi bi-person-plus me-1"></i>Inscription
+            </a>
+          @endauth
         </div>
       </div>
     </div><!-- End Top Bar -->
 
-    <div class="branding d-flex align-items-cente">
+    <div class="branding d-flex align-items-center">
 
       <div class="container position-relative d-flex align-items-center justify-content-between">
-        <a href="index.html" class="logo d-flex align-items-center">
-          <!-- Uncomment the line below if you also wish to use an image logo -->
-          <!-- <img src="assets/img/logo.webp" alt=""> -->
+        <a href="{{ route('front.home') }}" class="logo d-flex align-items-center">
           <h1 class="sitename">HeatAlert</h1>
         </a>
 
         <nav id="navmenu" class="navmenu">
           <ul>
-            <li><a href="index.html" class="active">Home</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="departments.html">Departments</a></li>
-            <li><a href="services.html">Services</a></li>
-            <li><a href="doctors.html">Doctors</a></li>
-            <li class="dropdown"><a href="#"><span>More Pages</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-            <ul>
-              <li><a href="department-details.html">Department Details</a></li>
-              <li><a href="service-details.html">Service Details</a></li>
-              <li><a href="appointment.html">Appointment</a></li>
-              <li><a href="testimonials.html">Testimonials</a></li>
-              <li><a href="faq.html">Frequently Asked Questions</a></li>
-              <li><a href="gallery.html">Gallery</a></li>
-              <li><a href="terms.html">Terms</a></li>
-              <li><a href="privacy.html">Privacy</a></li>
-              <li><a href="404.html">404</a></li>
-            </ul>
-            </li>
-            <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+            <li><a href="{{ route('front.home') }}" class="{{ request()->routeIs('front.home') ? 'active' : '' }}">Accueil</a></li>
+            <li><a href="#about">À propos</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#contact">Contact</a></li>
+            @auth
+            <li class="dropdown">
+              <a href="#"><span>Mon compte</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
               <ul>
-                <li><a href="#">Dropdown 1</a></li>
-                <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                  <ul>
-                    <li><a href="#">Deep Dropdown 1</a></li>
-                    <li><a href="#">Deep Dropdown 2</a></li>
-                    <li><a href="#">Deep Dropdown 3</a></li>
-                    <li><a href="#">Deep Dropdown 4</a></li>
-                    <li><a href="#">Deep Dropdown 5</a></li>
-                  </ul>
+                <li>
+                  <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <a href="{{ route('logout') }}"
+                       onclick="event.preventDefault(); this.closest('form').submit();">
+                      <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                    </a>
+                  </form>
                 </li>
-                <li><a href="#">Dropdown 2</a></li>
-                <li><a href="#">Dropdown 3</a></li>
-                <li><a href="#">Dropdown 4</a></li>
               </ul>
             </li>
-            <li><a href="contact.html">Contact</a></li>
+            @else
+            <li><a href="{{ route('login') }}"><i class="bi bi-box-arrow-in-right me-1"></i>Connexion</a></li>
+            @endauth
           </ul>
           <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
         </nav>

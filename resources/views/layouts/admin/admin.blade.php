@@ -1,367 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
-    <meta name="generator" content="HeatAlert admin 3.4.0"/>
-    <meta name="description" content="Modern Bootstrap 5 admin dashboard with Chart.js widgets, responsive tables, and clean typography."/>
-    <title>Dashboard | HeatAlert</title>
-    <meta property="og:type" content="website"/>
-    <meta property="og:title" content="Dashboard | HeatAlert"/>
-    <meta property="og:description" content="Modern Bootstrap 5 admin dashboard with Chart.js widgets, responsive tables, and clean typography."/>
-    <meta property="og:image" content="screenshots/cooladmin-bootstrap-dashboard-2.png"/>
-    <meta name="twitter:card" content="summary_large_image"/>
-    <meta name="twitter:title" content="Dashboard | CoolAdmin Bootstrap 5 Admin Dashboard"/>
-    <meta name="twitter:description" content="Modern Bootstrap 5 admin dashboard with Chart.js widgets, responsive tables, and clean typography."/>
-    <meta name="theme-color" content="#4272d7"/>
-    <link href={{ asset("assets/admin/css/font-face.css") }} rel="stylesheet" media="all"/>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Dashboard') | HeatAlert Admin</title>
+    <meta name="description" content="HeatAlert - Panneau d'administration des alertes météo en Tunisie"/>
+    <link href="{{ asset('assets/admin/css/font-face.css') }}" rel="stylesheet" media="all"/>
     <link rel="preconnect" href="https://rsms.me/"/>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css"/>
-    <link href={{ asset("assets/admin/vendor/fontawesome-7.3.1/css/all.min.css") }} rel="stylesheet" media="all"/>
-    <link href={{ asset("assets/admin/vendor/bootstrap-5.3.8.min.css") }} rel="stylesheet" media="all"/>
-    <link href={{ asset("assets/admin/vendor/css-hamburgers/hamburgers.min.css") }} rel="stylesheet" media="all"/>
-    <link href={{ asset("assets/admin/css/theme.css") }} rel="stylesheet" media="all"/>
-    <link href={{ asset("assets/admin/css/app.css") }} rel="stylesheet" media="all"/>
+    <link href="{{ asset('assets/admin/vendor/fontawesome-7.3.1/css/all.min.css') }}" rel="stylesheet" media="all"/>
+    <link href="{{ asset('assets/admin/vendor/bootstrap-5.3.8.min.css') }}" rel="stylesheet" media="all"/>
+    <link href="{{ asset('assets/admin/vendor/css-hamburgers/hamburgers.min.css') }}" rel="stylesheet" media="all"/>
+    <link href="{{ asset('assets/admin/css/theme.css') }}" rel="stylesheet" media="all"/>
+    <link href="{{ asset('assets/admin/css/app.css') }}" rel="stylesheet" media="all"/>
+    @stack('styles')
   </head>
-  <body class="app"><a class="visually-hidden-focusable skip-link" href="#main-content">Skip to main content</a>
+  <body class="app">
+    <a class="visually-hidden-focusable skip-link" href="#main-content">Aller au contenu principal</a>
     <div class="page-wrapper">
 
-      @include("layouts.admin.components.headeradmin")
-
+      @include('layouts.admin.components.headeradmin')
 
       <div class="page-container">
 
-      @include("layouts.admin.components.asideadmin")
-
-
+        @include('layouts.admin.components.asideadmin')
 
         <main class="main-content" id="main-content">
           <div class="section__content section__content--p30">
             <div class="container-fluid">
-                        <!-- Page header -->
-                        <div class="page-header">
-                            <div>
-                                <h1>Dashboard</h1>
-                                <p class="subtitle">Welcome back — here&rsquo;s what&rsquo;s happening across your business today.</p>
-                            </div>
-                            <div class="page-header__actions">
-                                <button type="button" class="date-chip" aria-label="Date range: last 30 days">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    Last 30 days
-                                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-                                </button>
-                                <button type="button" class="m-btn m-btn--ghost" id="dash-refresh-btn" aria-label="Refresh dashboard data">
-                                    <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i>
-                                    Refresh
-                                </button>
-                                <button type="button" class="m-btn m-btn--ghost">
-                                    <i class="fa-solid fa-download" aria-hidden="true"></i>
-                                    Export
-                                </button>
-                                <button type="button" class="m-btn m-btn--primary">
-                                    <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                                    New project
-                                </button>
-                            </div>
-                        </div>
 
-                        <!-- KPI strip -->
-                        <div class="row row-tight">
-                            <div class="col-sm-6 col-lg-3">
-                                <article class="stat-card">
-                                    <div class="stat-card__head">
-                                        <p class="stat-card__label">Revenue</p>
-                                        <span class="stat-card__icon stat-card__icon--c1"><i class="fa-solid fa-dollar-sign" aria-hidden="true"></i></span>
-                                    </div>
-                                    <p class="stat-card__value">$48,217</p>
-                                    <p class="stat-card__delta stat-card__delta--up">
-                                        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
-                                        12.5%
-                                        <span class="stat-card__delta-period">vs last 30d</span>
-                                    </p>
-                                    <div class="stat-card__sparkline">
-                                        <canvas id="kpi-revenue"></canvas>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-sm-6 col-lg-3">
-                                <article class="stat-card">
-                                    <div class="stat-card__head">
-                                        <p class="stat-card__label">Orders</p>
-                                        <span class="stat-card__icon stat-card__icon--c2"><i class="fa-solid fa-cart-shopping" aria-hidden="true"></i></span>
-                                    </div>
-                                    <p class="stat-card__value">1,284</p>
-                                    <p class="stat-card__delta stat-card__delta--down">
-                                        <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
-                                        3.2%
-                                        <span class="stat-card__delta-period">vs last 30d</span>
-                                    </p>
-                                    <div class="stat-card__sparkline">
-                                        <canvas id="kpi-orders"></canvas>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-sm-6 col-lg-3">
-                                <article class="stat-card">
-                                    <div class="stat-card__head">
-                                        <p class="stat-card__label">Active users</p>
-                                        <span class="stat-card__icon stat-card__icon--c3"><i class="fa-solid fa-users" aria-hidden="true"></i></span>
-                                    </div>
-                                    <p class="stat-card__value">8,492</p>
-                                    <p class="stat-card__delta stat-card__delta--up">
-                                        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
-                                        5.8%
-                                        <span class="stat-card__delta-period">vs last 30d</span>
-                                    </p>
-                                    <div class="stat-card__sparkline">
-                                        <canvas id="kpi-users"></canvas>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-sm-6 col-lg-3">
-                                <article class="stat-card">
-                                    <div class="stat-card__head">
-                                        <p class="stat-card__label">Conversion</p>
-                                        <span class="stat-card__icon stat-card__icon--c4"><i class="fa-solid fa-bullseye" aria-hidden="true"></i></span>
-                                    </div>
-                                    <p class="stat-card__value">3.24%</p>
-                                    <p class="stat-card__delta stat-card__delta--up">
-                                        <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
-                                        0.6pp
-                                        <span class="stat-card__delta-period">vs last 30d</span>
-                                    </p>
-                                    <div class="stat-card__sparkline">
-                                        <canvas id="kpi-conversion"></canvas>
-                                    </div>
-                                </article>
-                            </div>
-                        </div>
+              {{-- Toast de succès --}}
+              @if(session('success'))
+              <div id="toast-success" class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+                <div class="toast align-items-center text-bg-success border-0 show" role="alert" aria-live="assertive">
+                  <div class="d-flex">
+                    <div class="toast-body">
+                      <i class="fa-solid fa-circle-check me-2"></i>
+                      {{ session('success') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fermer"></button>
+                  </div>
+                </div>
+              </div>
+              @endif
 
-                        <!-- Primary chart + activity feed -->
-                        <div class="row row-tight" style="margin-top: 16px;">
-                            <div class="col-lg-8">
-                                <section class="m-card" aria-labelledby="rev-trend-title" data-skeletonize>
-                                    <header class="m-card__header">
-                                        <div>
-                                            <h2 class="m-card__title" id="rev-trend-title">Revenue trend</h2>
-                                            <p class="m-card__subtitle">Daily revenue over the past 30 days, products vs. services.</p>
-                                        </div>
-                                        <button type="button" class="m-btn m-btn--ghost" aria-label="More options">
-                                            <i class="fa-solid fa-ellipsis" aria-hidden="true"></i>
-                                        </button>
-                                    </header>
-                                    <div style="height: 280px; position: relative;">
-                                        <canvas id="primary-chart"></canvas>
-                                    </div>
-                                </section>
-                            </div>
-                            <div class="col-lg-4">
-                                <section class="m-card" aria-labelledby="activity-title">
-                                    <header class="m-card__header">
-                                        <div>
-                                            <h2 class="m-card__title" id="activity-title">Recent activity</h2>
-                                            <p class="m-card__subtitle">Latest team updates.</p>
-                                        </div>
-                                        <a href="#" class="m-btn m-btn--ghost" style="height:30px; padding:0 10px; font-size:12.5px;">View all</a>
-                                    </header>
-                                    <ul class="activity-list">
-                                        <li class="activity-item">
-                                            <img class="activity-item__avatar" src="images/icon/avatar-06.jpg" alt="">
-                                            <div class="activity-item__body">
-                                                <p class="activity-item__text"><b>Cynthia Harvey</b> replied to your comment on <b>Q1 roadmap</b>.</p>
-                                                <span class="activity-item__time">2 hours ago</span>
-                                            </div>
-                                        </li>
-                                        <li class="activity-item">
-                                            <img class="activity-item__avatar" src="images/icon/avatar-04.jpg" alt="">
-                                            <div class="activity-item__body">
-                                                <p class="activity-item__text"><b>Diane Myers</b> placed a new order <b>#4287</b>.</p>
-                                                <span class="activity-item__time">5 hours ago</span>
-                                            </div>
-                                        </li>
-                                        <li class="activity-item">
-                                            <img class="activity-item__avatar" src="images/icon/avatar-01.jpg" alt="">
-                                            <div class="activity-item__body">
-                                                <p class="activity-item__text"><b>John Doe</b> completed task <b>&ldquo;Migration audit&rdquo;</b>.</p>
-                                                <span class="activity-item__time">Yesterday</span>
-                                            </div>
-                                        </li>
-                                        <li class="activity-item">
-                                            <img class="activity-item__avatar" src="images/icon/avatar-05.jpg" alt="">
-                                            <div class="activity-item__body">
-                                                <p class="activity-item__text"><b>Michelle Moreno</b> uploaded 3 files to <b>Brand assets</b>.</p>
-                                                <span class="activity-item__time">2 days ago</span>
-                                            </div>
-                                        </li>
-                                        <li class="activity-item">
-                                            <img class="activity-item__avatar" src="images/icon/avatar-02.jpg" alt="">
-                                            <div class="activity-item__body">
-                                                <p class="activity-item__text"><b>Emma Carter</b> added a new project <b>Acme dashboard</b>.</p>
-                                                <span class="activity-item__time">3 days ago</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </section>
-                            </div>
-                        </div>
+              {{-- Toast de suppression --}}
+              @if(session('deleted'))
+              <div id="toast-deleted" class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
+                <div class="toast align-items-center text-bg-danger border-0 show" role="alert" aria-live="assertive">
+                  <div class="d-flex">
+                    <div class="toast-body">
+                      <i class="fa-solid fa-trash me-2"></i>
+                      {{ session('deleted') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fermer"></button>
+                  </div>
+                </div>
+              </div>
+              @endif
 
-                        <!-- Tasks + top products -->
-                        <div class="row row-tight" style="margin-top: 16px;">
-                            <div class="col-lg-6">
-                                <section class="m-card" aria-labelledby="tasks-title">
-                                    <header class="m-card__header">
-                                        <div>
-                                            <h2 class="m-card__title" id="tasks-title">My tasks</h2>
-                                            <p class="m-card__subtitle">5 open · 12 completed this week.</p>
-                                        </div>
-                                        <button type="button" class="m-btn m-btn--ghost" style="height:30px; padding:0 10px; font-size:12.5px;">
-                                            <i class="fa-solid fa-plus" aria-hidden="true"></i> Add task
-                                        </button>
-                                    </header>
-                                    <ul class="task-list">
-                                        <li class="task-item">
-                                            <input type="checkbox" id="task-1" aria-labelledby="task-1-label">
-                                            <label class="task-item__title" id="task-1-label" for="task-1">Quarterly business review with leadership</label>
-                                            <div class="task-item__meta">
-                                                <span class="priority-chip priority-chip--high">High</span>
-                                                <span>Today</span>
-                                            </div>
-                                        </li>
-                                        <li class="task-item">
-                                            <input type="checkbox" id="task-2" aria-labelledby="task-2-label">
-                                            <label class="task-item__title" id="task-2-label" for="task-2">Launch May product campaign</label>
-                                            <div class="task-item__meta">
-                                                <span class="priority-chip priority-chip--medium">Medium</span>
-                                                <span>Tomorrow</span>
-                                            </div>
-                                        </li>
-                                        <li class="task-item">
-                                            <input type="checkbox" id="task-3" aria-labelledby="task-3-label" checked>
-                                            <label class="task-item__title" id="task-3-label" for="task-3">Update API documentation for v2 endpoints</label>
-                                            <div class="task-item__meta">
-                                                <span class="priority-chip priority-chip--low">Low</span>
-                                                <span>Done</span>
-                                            </div>
-                                        </li>
-                                        <li class="task-item">
-                                            <input type="checkbox" id="task-4" aria-labelledby="task-4-label">
-                                            <label class="task-item__title" id="task-4-label" for="task-4">Review onboarding flow with design team</label>
-                                            <div class="task-item__meta">
-                                                <span class="priority-chip priority-chip--medium">Medium</span>
-                                                <span>Thu</span>
-                                            </div>
-                                        </li>
-                                        <li class="task-item">
-                                            <input type="checkbox" id="task-5" aria-labelledby="task-5-label">
-                                            <label class="task-item__title" id="task-5-label" for="task-5">Audit third-party dependencies</label>
-                                            <div class="task-item__meta">
-                                                <span class="priority-chip priority-chip--low">Low</span>
-                                                <span>Next week</span>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </section>
-                            </div>
-                            <div class="col-lg-6">
-                                <section class="m-card" aria-labelledby="top-products-title">
-                                    <header class="m-card__header">
-                                        <div>
-                                            <h2 class="m-card__title" id="top-products-title">Top products</h2>
-                                            <p class="m-card__subtitle">Best sellers in the last 30 days.</p>
-                                        </div>
-                                        <a href="table.html" class="m-btn m-btn--ghost" style="height:30px; padding:0 10px; font-size:12.5px;">All products</a>
-                                    </header>
-                                    <table class="m-table">
-                                        <thead>
-                                            <tr>
-                                                <th scope="col">Product</th>
-                                                <th scope="col" class="num">Units</th>
-                                                <th scope="col" class="num">Revenue</th>
-                                                <th scope="col" class="num">Trend</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>
-                                                    <span class="row-product">
-                                                        <span class="row-product__icon"><i class="fa-solid fa-rocket" aria-hidden="true"></i></span>
-                                                        Acme Pro Plan
-                                                    </span>
-                                                </td>
-                                                <td class="num">432</td>
-                                                <td class="num">$18,420</td>
-                                                <td class="num"><span class="trend-mini trend-mini--up"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i>14%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span class="row-product">
-                                                        <span class="row-product__icon" style="background:#ecfdf5; color:#10b981;"><i class="fa-solid fa-cube" aria-hidden="true"></i></span>
-                                                        Starter Kit
-                                                    </span>
-                                                </td>
-                                                <td class="num">318</td>
-                                                <td class="num">$9,548</td>
-                                                <td class="num"><span class="trend-mini trend-mini--up"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i>9%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span class="row-product">
-                                                        <span class="row-product__icon" style="background:#fffbeb; color:#f59e0b;"><i class="fa-solid fa-gem" aria-hidden="true"></i></span>
-                                                        Enterprise Tier
-                                                    </span>
-                                                </td>
-                                                <td class="num">86</td>
-                                                <td class="num">$11,940</td>
-                                                <td class="num"><span class="trend-mini trend-mini--up"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i>22%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span class="row-product">
-                                                        <span class="row-product__icon" style="background:#fef2f2; color:#ef4444;"><i class="fa-solid fa-headphones" aria-hidden="true"></i></span>
-                                                        Support Add-on
-                                                    </span>
-                                                </td>
-                                                <td class="num">241</td>
-                                                <td class="num">$4,820</td>
-                                                <td class="num"><span class="trend-mini trend-mini--down"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i>4%</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td>
-                                                    <span class="row-product">
-                                                        <span class="row-product__icon" style="background:#eef2ff; color:#4f46e5;"><i class="fa-solid fa-puzzle-piece" aria-hidden="true"></i></span>
-                                                        API credits
-                                                    </span>
-                                                </td>
-                                                <td class="num">1,089</td>
-                                                <td class="num">$3,489</td>
-                                                <td class="num"><span class="trend-mini trend-mini--up"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i>6%</span></td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </section>
-                            </div>
-                        </div>
+              @yield('content')
 
-                        <!-- Footer -->
-                        <div class="row" style="margin-top: 28px;">
-                            <div class="col-md-12">
-                                <div class="copyright">
-                                    <p>Copyright © 2026 Colorlib. All rights reserved. Template by <a href="https://colorlib.com" rel="nofollow" target="_blank">Colorlib</a>.</p>
-                                </div>
-                            </div>
-                        </div>
-
+              {{-- Footer --}}
+              <div class="row" style="margin-top: 28px;">
+                <div class="col-md-12">
+                  <div class="copyright">
+                    <p>Copyright &copy; {{ date('Y') }} HeatAlert. Tous droits réservés.</p>
+                  </div>
+                </div>
+              </div>
 
             </div>
           </div>
         </main>
       </div>
     </div>
+
     <script src="{{ asset('assets/admin/js/vanilla-utils.js') }}"></script>
     <script src="{{ asset('assets/admin/vendor/bootstrap-5.3.8.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/admin/vendor/chartjs/chart.umd.js-4.5.1.min.js') }}"></script>
     <script src="{{ asset('assets/admin/js/bootstrap5-init.js') }}"></script>
     <script src="{{ asset('assets/admin/js/main-vanilla.js') }}"></script>
     <script src="{{ asset('assets/admin/js/modern-plugins.js') }}"></script>
+
+    {{-- Auto-dismiss toasts after 4 seconds --}}
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.toast').forEach(function (toastEl) {
+          var t = new bootstrap.Toast(toastEl, { delay: 4000 });
+          t.show();
+        });
+      });
+    </script>
+
+    @stack('scripts')
   </body>
 </html>
