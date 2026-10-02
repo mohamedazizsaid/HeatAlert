@@ -43,40 +43,38 @@
     <table class="m-table">
       <thead>
         <tr>
-          <th>#</th>
           <th>Titre</th>
-          <th>Zone</th>
-          <th>Type</th>
-          <th>Niveau</th>
-          <th>Statut</th>
-          <th>Temp. max</th>
-          <th>Début</th>
-          <th style="text-align:right;">Actions</th>
+          <th style="text-align:center;">Zone</th>
+          <th style="text-align:center;">Type</th>
+          <th style="text-align:center;">Niveau</th>
+          <th style="text-align:center;">Statut</th>
+          <th style="text-align:center;">Temp. max</th>
+          <th style="text-align:center;">Début</th>
+          <th style="text-align:center;">Actions</th>
         </tr>
       </thead>
       <tbody>
         @forelse($alertes as $alerte)
         <tr>
-          <td>{{ $alerte->id }}</td>
           <td>
             <strong>{{ Str::limit($alerte->titre, 40) }}</strong>
             @if($alerte->risque_coupure)
               <span class="badge bg-warning text-dark ms-1" title="Risque coupure électrique"><i class="fa-solid fa-bolt"></i></span>
             @endif
           </td>
-          <td>{{ $alerte->zone?->ville ?? '—' }}</td>
-          <td><span class="badge bg-secondary">{{ ucfirst(str_replace('_',' ',$alerte->type)) }}</span></td>
-          <td>
+          <td style="text-align:center;">{{ $alerte->zone?->ville ?? '—' }}</td>
+          <td style="text-align:center;"><span class="badge bg-secondary">{{ ucfirst(str_replace('_',' ',$alerte->type)) }}</span></td>
+          <td style="text-align:center;">
             @php $niveauClass = match($alerte->niveau) { 'rouge' => 'bg-danger', 'orange' => 'bg-warning text-dark', 'jaune' => 'bg-info text-dark', default => 'bg-success' }; @endphp
             <span class="badge {{ $niveauClass }}">{{ ucfirst($alerte->niveau) }}</span>
           </td>
-          <td>
+          <td style="text-align:center;">
             @php $statutClass = match($alerte->statut) { 'active' => 'bg-success', 'brouillon' => 'bg-secondary', 'terminee' => 'bg-dark', default => 'bg-danger' }; @endphp
             <span class="badge {{ $statutClass }}">{{ ucfirst($alerte->statut) }}</span>
           </td>
-          <td>{{ $alerte->temperature_max !== null ? $alerte->temperature_max . '°C' : '—' }}</td>
-          <td>{{ $alerte->date_debut?->format('d/m/Y') }}</td>
-          <td style="text-align:right;">
+          <td style="text-align:center;">{{ $alerte->temperature_max !== null ? $alerte->temperature_max . '°C' : '—' }}</td>
+          <td style="text-align:center;">{{ $alerte->date_debut?->format('d/m/Y') }}</td>
+          <td style="text-align:center;">
             <a href="{{ route('admin.alertes.show', $alerte) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#2563eb;" title="Détails">
               <i class="fa-solid fa-eye"></i>
             </a>

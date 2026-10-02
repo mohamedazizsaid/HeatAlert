@@ -33,37 +33,35 @@
     <table class="m-table">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Nom</th>
-          <th>Ville</th>
-          <th>Gouvernorat</th>
-          <th>Code postal</th>
-          <th>Coordonnées</th>
-          <th>Statut</th>
-          <th style="text-align:right;">Actions</th>
+          <th >Nom</th>
+          <th style="text-align: center;">Ville</th>
+          <th style="text-align: center;">Gouvernorat</th>
+          <th style="text-align: center;">Code postal</th>
+          <th style="text-align: center;">Coordonnées</th>
+          <th style="text-align: center;">Statut</th>
+          <th style="text-align:center;">Actions</th>
         </tr>
       </thead>
       <tbody>
         @forelse($zones as $zone)
         <tr>
-          <td>{{ $zone->id }}</td>
           <td><strong>{{ $zone->nom }}</strong></td>
-          <td>{{ $zone->ville }}</td>
-          <td>{{ $zone->gouvernorat ?? '—' }}</td>
-          <td>{{ $zone->code_postal ?? '—' }}</td>
-          <td>
+          <td style="text-align: center;">{{ $zone->ville }}</td>
+          <td style="text-align: center;">{{ $zone->gouvernorat ?? '—' }}</td>
+          <td style="text-align: center;">{{ $zone->code_postal ?? '—' }}</td>
+          <td style="text-align: center;">
             @if($zone->latitude && $zone->longitude)
               <small class="text-muted">{{ number_format($zone->latitude, 4) }}, {{ number_format($zone->longitude, 4) }}</small>
             @else <span class="text-muted">—</span> @endif
           </td>
-          <td>
+          <td style="text-align: center;">
             @if($zone->actif)
               <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Active</span>
             @else
               <span class="badge bg-secondary"><i class="fa-solid fa-circle-xmark me-1"></i>Inactive</span>
             @endif
           </td>
-          <td style="text-align:right;">
+          <td style="text-align:center;">
             <a href="{{ route('admin.zones.show', $zone) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#2563eb;" title="Détails">
               <i class="fa-solid fa-eye"></i>
             </a>

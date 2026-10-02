@@ -55,30 +55,28 @@
     <table class="m-table">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Titre</th>
-          <th>Catégorie</th>
-          <th>Niveau cible</th>
-          <th>Icône</th>
-          <th>Statut</th>
-          <th style="text-align:right;">Actions</th>
+          <th >Titre</th>
+          <th style="text-align: center;">Catégorie</th>
+          <th style="text-align: center;">Niveau cible</th>
+          <th style="text-align: center;">Icône</th>
+          <th style="text-align: center;">Statut</th>
+          <th style="text-align:center;">Actions</th>
         </tr>
       </thead>
       <tbody>
         @forelse($conseils as $conseil)
         <tr>
-          <td>{{ $conseil->id }}</td>
           <td>
             <strong>{{ Str::limit($conseil->titre, 50) }}</strong>
             <br>
             <small class="text-muted">{{ Str::limit($conseil->contenu, 60) }}</small>
           </td>
-          <td>
+          <td style="text-align: center;">
             <span class="badge bg-secondary">
               {{ ucfirst(str_replace('_', ' ', $conseil->categorie)) }}
             </span>
           </td>
-          <td>
+          <td style="text-align: center;">
             @if($conseil->niveau_alerte_cible)
               @php
                 $niveauClass = match($conseil->niveau_alerte_cible) {
@@ -93,7 +91,7 @@
               <span class="text-muted">—</span>
             @endif
           </td>
-          <td>
+          <td style="text-align: center;">
             @if($conseil->icone)
               <i class="{{ $conseil->icone }}"></i>
               <small class="text-muted ms-1">{{ $conseil->icone }}</small>
@@ -101,14 +99,14 @@
               <span class="text-muted">—</span>
             @endif
           </td>
-          <td>
+          <td style="text-align: center;">
             @if($conseil->actif)
               <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Actif</span>
             @else
               <span class="badge bg-secondary"><i class="fa-solid fa-circle-xmark me-1"></i>Inactif</span>
             @endif
           </td>
-          <td style="text-align:right;">
+          <td style="text-align:center;">
             <a href="{{ route('admin.conseils.show', $conseil) }}"
                class="m-btn m-btn--ghost"
                style="height:28px;padding:0 10px;font-size:12px;color:#2563eb;"

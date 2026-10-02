@@ -1,7 +1,7 @@
 {{-- Partial: Formulaire Zone (create & edit) --}}
-<div class="row">
-  <div class="col-lg-8">
-    <section class="m-card">
+<div class="row g-4 align-items-stretch">
+  <div class="col-lg-8 d-flex flex-column">
+    <section class="m-card flex-grow-1 h-100 mb-0">
       <header class="m-card__header">
         <div>
           <h2 class="m-card__title">Informations de la zone</h2>
@@ -138,9 +138,9 @@
     </section>
   </div>
 
-  {{-- Sidebar actions --}}
-  <div class="col-lg-4">
-    <section class="m-card">
+  {{-- Sidebar actions & Carte (même niveau et hauteur que la colonne gauche) --}}
+  <div class="col-lg-4 d-flex flex-column">
+    <section class="m-card mb-3 flex-shrink-0">
       <header class="m-card__header">
         <h2 class="m-card__title">Actions</h2>
       </header>
@@ -153,5 +153,201 @@
         </a>
       </div>
     </section>
+
+    {{-- Carte interactive OpenStreetMap / Leaflet étirée à la même hauteur --}}
+    <section class="m-card flex-grow-1 d-flex flex-column mb-0">
+      <header class="m-card__header d-flex justify-content-between align-items-center flex-shrink-0">
+        <div>
+          <h2 class="m-card__title" style="font-size:1rem;">
+            <i class="fa-solid fa-map-location-dot text-danger me-2"></i>Localisation sur la carte
+          </h2>
+          <p class="m-card__subtitle mb-0" style="font-size:.76rem;">Ping automatique selon latitude et longitude</p>
+        </div>
+      </header>
+      <div class="p-2 flex-grow-1 d-flex flex-column">
+        <div id="zone-map" style="flex: 1; min-height: 280px; width: 100%; border-radius: 8px; border: 1px solid #cbd5e1; box-shadow: inset 0 1px 3px rgba(0,0,0,.08); position: relative; z-index: 1;"></div>
+        <div class="d-flex justify-content-between align-items-center mt-2 px-1 flex-shrink-0" style="font-size: .78rem; color: #64748b;">
+          <span id="map-status">
+            <i class="fa-solid fa-crosshairs me-1 text-primary"></i>Cliquez sur la carte ou saisissez les coordonnées
+          </span>
+          <button type="button" id="btn-recenter" class="btn btn-sm btn-link p-0 text-decoration-none" style="font-size:.75rem; color:#dc2626;">
+            <i class="fa-solid fa-rotate-right me-1"></i>Tunisie
+          </button>
+        </div>
+      </div>
+    </section>
   </div>
 </div>
+
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  .leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .zone-custom-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dc2626;
+    filter: drop-shadow(0 2px 5px rgba(220, 38, 38, 0.5));
+    animation: pinBounce 0.4s ease;
+  }
+  @keyframes pinBounce {
+    0% { transform: translateY(-12px) scale(0.8); opacity: 0; }
+    50% { transform: translateY(2px) scale(1.1); }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+</style>
+@endpush
+
+@push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const latInput = document.getElementById('latitude');
+  const lngInput = document.getElementById('longitude');
+  const nomInput = document.getElementById('nom');
+  const villeInput = document.getElementById('ville');
+  const mapStatus = document.getElementById('map-status');
+  const recenterBtn = document.getElementById('btn-recenter');
+  const mapContainer = document.getElementById('zone-map');
+
+  if (!mapContainer || !latInput || !lngInput) return;
+
+  // Centre par défaut : Tunisie (34.0, 9.5)
+  const TUNISIA_CENTER = [34.0, 9.5];
+  const DEFAULT_ZOOM = 6.5;
+
+  // Initialisation de la carte Leaflet
+  const map = L.map('zone-map', {
+    scrollWheelZoom: true
+  }).setView(TUNISIA_CENTER, DEFAULT_ZOOM);
+
+  // Couche OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+  }).addTo(map);
+
+  // Icône personnalisée rouge HeatAlert
+  const redPinIcon = L.divIcon({
+    className: 'zone-custom-pin',
+    html: '<i class="fa-solid fa-location-dot" style="font-size: 32px;"></i>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -30]
+  });
+
+  let marker = null;
+
+  // Fonction pour mettre à jour ou créer le ping sur la carte
+  function pingZone(lat, lng, flyTo = true) {
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
+      mapStatus.innerHTML = '<span class="text-danger"><i class="fa-solid fa-circle-exclamation me-1"></i>Coordonnées invalides</span>';
+      return;
+    }
+
+    const title = (nomInput?.value || villeInput?.value || 'Zone').trim();
+    const popupContent = `<strong><i class="fa-solid fa-map-pin text-danger me-1"></i>${title}</strong><br><small class="text-muted">${lat.toFixed(5)}, ${lng.toFixed(5)}</small>`;
+
+    if (!marker) {
+      marker = L.marker([lat, lng], {
+        icon: redPinIcon,
+        draggable: true
+      }).addTo(map);
+
+      // Si l'utilisateur déplace le marqueur à la main
+      marker.on('dragend', function(e) {
+        const pos = e.target.getLatLng();
+        latInput.value = pos.lat.toFixed(6);
+        lngInput.value = pos.lng.toFixed(6);
+        pingZone(pos.lat, pos.lng, false);
+      });
+    } else {
+      marker.setLatLng([lat, lng]);
+    }
+
+    marker.bindPopup(popupContent).openPopup();
+
+    if (flyTo) {
+      const targetZoom = Math.max(map.getZoom(), 12);
+      map.flyTo([lat, lng], targetZoom, { duration: 0.8 });
+    }
+
+    mapStatus.innerHTML = `<span class="text-success"><i class="fa-solid fa-circle-check me-1"></i>Zone localisée (${lat.toFixed(4)}, ${lng.toFixed(4)})</span>`;
+  }
+
+  // Écoute des champs de saisie Latitude et Longitude
+  function handleCoordInput() {
+    const lat = parseFloat(latInput.value);
+    const lng = parseFloat(lngInput.value);
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+      pingZone(lat, lng, true);
+    } else if (!latInput.value && !lngInput.value) {
+      if (marker) {
+        map.removeLayer(marker);
+        marker = null;
+      }
+      mapStatus.innerHTML = '<i class="fa-solid fa-crosshairs me-1 text-primary"></i>Cliquez sur la carte ou saisissez les coordonnées';
+    }
+  }
+
+  latInput.addEventListener('input', handleCoordInput);
+  lngInput.addEventListener('input', handleCoordInput);
+  latInput.addEventListener('change', handleCoordInput);
+  lngInput.addEventListener('change', handleCoordInput);
+
+  // Clic direct sur la carte pour pointer automatiquement
+  map.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    latInput.value = lat.toFixed(6);
+    lngInput.value = lng.toFixed(6);
+
+    pingZone(lat, lng, false);
+  });
+
+  // Mise à jour du nom dans le popup si modifié
+  nomInput?.addEventListener('input', function() {
+    const lat = parseFloat(latInput.value);
+    const lng = parseFloat(lngInput.value);
+    if (!isNaN(lat) && !isNaN(lng) && marker) {
+      const title = (nomInput.value || villeInput?.value || 'Zone').trim();
+      marker.bindPopup(`<strong><i class="fa-solid fa-map-pin text-danger me-1"></i>${title}</strong><br><small class="text-muted">${lat.toFixed(5)}, ${lng.toFixed(5)}</small>`);
+    }
+  });
+
+  // Bouton recentrer sur la Tunisie
+  recenterBtn?.addEventListener('click', function() {
+    map.flyTo(TUNISIA_CENTER, DEFAULT_ZOOM, { duration: 0.6 });
+  });
+
+  // Initialisation au chargement si des coordonnées existent déjà (ex: édition ou après erreur de validation)
+  const initialLat = parseFloat(latInput.value);
+  const initialLng = parseFloat(lngInput.value);
+  if (!isNaN(initialLat) && !isNaN(initialLng)) {
+    setTimeout(function() {
+      map.invalidateSize();
+      pingZone(initialLat, initialLng, true);
+    }, 250);
+  } else {
+    setTimeout(function() {
+      map.invalidateSize();
+    }, 250);
+  }
+
+  window.addEventListener('resize', function() {
+    map.invalidateSize();
+  });
+});
+</script>
+@endpush
