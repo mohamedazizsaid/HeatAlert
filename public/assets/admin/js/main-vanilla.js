@@ -1008,38 +1008,94 @@ function initToastSystem() {
 // activates; Escape or backdrop click dismisses.
 // ---------------------------------------------------------------------------
 function initCommandPalette() {
-  const COMMANDS = [
-    { section: 'Pages', title: 'Dashboard',         sub: 'Main overview',           href: 'index.html',     icon: 'fa-tachometer-alt' },
-    { section: 'Pages', title: 'Sales pipeline',    sub: 'Index 2',                 href: 'index2.html',    icon: 'fa-handshake' },
-    { section: 'Pages', title: 'Marketing analytics', sub: 'Index 3',               href: 'index3.html',    icon: 'fa-chart-line' },
-    { section: 'Pages', title: 'Projects',          sub: 'Index 4',                 href: 'index4.html',    icon: 'fa-folder-open' },
-    { section: 'Pages', title: 'Charts',            sub: 'Visualisation showcase',  href: 'chart.html',     icon: 'fa-chart-bar' },
-    { section: 'Pages', title: 'Tables',            sub: 'Data tables',             href: 'table.html',     icon: 'fa-table' },
-    { section: 'Pages', title: 'Forms',             sub: 'Inputs and validation',   href: 'form.html',      icon: 'fa-square-check' },
-    { section: 'Pages', title: 'Calendar',          sub: 'FullCalendar demo',       href: 'calendar.html',  icon: 'fa-calendar' },
-    { section: 'Pages', title: 'Maps',              sub: 'Leaflet maps',            href: 'map.html',       icon: 'fa-map-location-dot' },
-    { section: 'Pages', title: 'Inbox',             sub: 'Email + tasks',           href: 'inbox.html',     icon: 'fa-inbox' },
-    { section: 'Pages', title: 'Kanban board',      sub: 'Drag-and-drop tasks',     href: 'kanban.html',    icon: 'fa-columns' },
-    { section: 'Pages', title: 'Profile & settings', sub: 'Account preferences',    href: 'profile.html',   icon: 'fa-user-gear' },
-    { section: 'Pages', title: 'Pricing',           sub: 'Marketing pricing page',  href: 'pricing.html',   icon: 'fa-tag' },
-    { section: 'Pages', title: 'Invoice',           sub: 'Sample invoice',          href: 'invoice.html',   icon: 'fa-file-invoice' },
-    { section: 'Pages', title: 'Notifications',     sub: 'Activity log',            href: 'notifications.html', icon: 'fa-bell' },
-    { section: 'Pages', title: 'Documentation',     sub: 'Quick-start guide',       href: 'docs.html',      icon: 'fa-book' },
-    { section: 'Pages', title: 'Setup wizard',      sub: 'Multi-step form',         href: 'wizard.html',    icon: 'fa-list-ol' },
-    { section: 'Pages', title: 'Data table',        sub: 'Sortable, filterable',    href: 'data-table.html', icon: 'fa-table-list' },
-    { section: 'Components', title: 'Buttons',      sub: 'Showcase',                href: 'button.html',    icon: 'fa-square' },
-    { section: 'Components', title: 'Cards',        sub: 'Card patterns',           href: 'card.html',      icon: 'fa-id-card' },
-    { section: 'Components', title: 'Modals',       sub: 'Dialog showcase',         href: 'modal.html',     icon: 'fa-window-restore' },
-    { section: 'Components', title: 'Alerts',       sub: 'Inline alert variants',   href: 'alert.html',     icon: 'fa-bell' },
-    { section: 'Components', title: 'Badges',       sub: 'Pill labels',             href: 'badge.html',     icon: 'fa-tag' },
-    { section: 'Components', title: 'Tabs',         sub: 'Tab navigation',          href: 'tab.html',       icon: 'fa-window-maximize' },
-    { section: 'Components', title: 'Switches',     sub: 'Toggles',                 href: 'switch.html',    icon: 'fa-toggle-on' },
-    { section: 'Components', title: 'Progress bars', sub: 'Progress indicators',    href: 'progress-bar.html', icon: 'fa-tasks' },
-    { section: 'Components', title: 'Typography',   sub: 'Type scale',              href: 'typo.html',      icon: 'fa-font' },
-    { section: 'Components', title: 'Font Awesome', sub: 'Icon set',                href: 'fontawesome.html', icon: 'fa-icons' },
-    { section: 'Actions', title: 'Show success toast', sub: 'Demo a notification',  action: () => window.toast.success('Saved successfully'), icon: 'fa-circle-check' },
-    { section: 'Actions', title: 'Show error toast',   sub: 'Demo an error',        action: () => window.toast.error('Something went wrong'),  icon: 'fa-circle-xmark' },
-  ];
+  function getCommands() {
+    if (window.HEATALERT_COMMANDS && window.HEATALERT_COMMANDS.length) {
+      return window.HEATALERT_COMMANDS;
+    }
+
+    const items = [];
+    const sidebar = document.querySelector('#main-sidebar .navbar-sidebar');
+    if (sidebar) {
+      const topItems = sidebar.querySelectorAll(':scope > ul > li');
+      topItems.forEach(li => {
+        const topLink = li.querySelector(':scope > a');
+        if (!topLink) return;
+
+        const topIconEl = topLink.querySelector('i');
+        let iconClass = 'fa-arrow-right';
+        if (topIconEl) {
+          const match = topIconEl.className.match(/fa-[\w-]+/g);
+          if (match) {
+            const specific = match.find(c => c !== 'fa-solid' && c !== 'fa-regular');
+            if (specific) iconClass = specific;
+          }
+        }
+
+        const topText = topLink.textContent.trim();
+        const subList = li.querySelectorAll('.navbar__sub-list li a');
+
+        if (subList.length > 0) {
+          subList.forEach(subLink => {
+            const subText = subLink.textContent.trim();
+            const subHref = subLink.getAttribute('href');
+            const isAdd = subText.toLowerCase().includes('ajouter') || subText.toLowerCase().includes('créer');
+            items.push({
+              section: topText,
+              title: subText,
+              sub: `${topText} — ${subText}`,
+              href: subHref,
+              icon: isAdd ? 'fa-plus' : iconClass
+            });
+          });
+        } else {
+          const href = topLink.getAttribute('href');
+          if (href && href !== '#') {
+            items.push({
+              section: 'Navigation',
+              title: topText,
+              sub: 'Tableau de bord HeatAlert',
+              href: href,
+              icon: iconClass
+            });
+          }
+        }
+      });
+    }
+
+    // Extra HeatAlert administrative actions
+    items.push({
+      section: 'Accès Public',
+      title: 'Accueil HeatAlert',
+      sub: 'Voir le portail citoyen public',
+      href: '/',
+      icon: 'fa-globe'
+    });
+
+    const logoutForm = document.querySelector('form[action*="logout"]');
+    if (logoutForm) {
+      items.push({
+        section: 'Compte',
+        title: 'Déconnexion',
+        sub: 'Quitter la session HeatAlert Admin',
+        action: () => logoutForm.submit(),
+        icon: 'fa-power-off'
+      });
+    }
+
+    if (items.length > 1) return items;
+
+    // Fallback if sidebar DOM is not yet ready
+    return [
+      { section: 'Navigation', title: 'Dashboard', sub: 'Tableau de bord HeatAlert', href: '/admin/dashboard', icon: 'fa-gauge-high' },
+      { section: 'Zones', title: 'Liste des zones', sub: 'Consulter toutes les zones', href: '/admin/zones', icon: 'fa-map-location-dot' },
+      { section: 'Zones', title: 'Ajouter une zone', sub: 'Créer une zone géographique', href: '/admin/zones/create', icon: 'fa-plus' },
+      { section: 'Alertes Météo', title: 'Liste des alertes', sub: 'Consulter les alertes météo', href: '/admin/alertes', icon: 'fa-triangle-exclamation' },
+      { section: 'Alertes Météo', title: 'Ajouter une alerte', sub: 'Publier une nouvelle alerte', href: '/admin/alertes/create', icon: 'fa-plus' },
+      { section: 'Conseils', title: 'Liste des conseils', sub: 'Consulter les recommandations santé', href: '/admin/conseils', icon: 'fa-lightbulb' },
+      { section: 'Conseils', title: 'Ajouter un conseil', sub: 'Publier un nouveau conseil', href: '/admin/conseils/create', icon: 'fa-plus' },
+      { section: 'Accès Public', title: 'Accueil HeatAlert', sub: 'Portail public', href: '/', icon: 'fa-globe' }
+    ];
+  }
 
   let overlay, input, results, activeIndex = 0, currentList = [];
   function build() {
@@ -1052,13 +1108,13 @@ function initCommandPalette() {
       <div class="cmdk-panel">
         <div class="cmdk-input-wrap">
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-          <input class="cmdk-input" type="text" placeholder="Search pages, actions…" aria-label="Search">
+          <input class="cmdk-input" type="text" placeholder="Rechercher dans le menu (Zones, Alertes, Conseils, Dashboard)…" aria-label="Rechercher">
           <kbd class="cmdk-hint">esc</kbd>
         </div>
         <ul class="cmdk-results" role="listbox"></ul>
         <div class="cmdk-footer">
-          <span><kbd>↑</kbd><kbd>↓</kbd> navigate · <kbd>↵</kbd> select</span>
-          <span><kbd>⌘</kbd><kbd>K</kbd> open</span>
+          <span><kbd>↑</kbd><kbd>↓</kbd> naviguer · <kbd>↵</kbd> ouvrir</span>
+          <span><kbd>esc</kbd> fermer</span>
         </div>
       </div>
     `;
@@ -1072,13 +1128,14 @@ function initCommandPalette() {
 
   function render(query) {
     const q = (query || '').trim().toLowerCase();
+    const allCommands = getCommands();
     const filtered = q
-      ? COMMANDS.filter(c => (c.title + ' ' + (c.sub || '')).toLowerCase().includes(q))
-      : COMMANDS;
+      ? allCommands.filter(c => (c.title + ' ' + (c.sub || '') + ' ' + (c.section || '')).toLowerCase().includes(q))
+      : allCommands;
     currentList = filtered;
     activeIndex = 0;
     if (!filtered.length) {
-      results.innerHTML = '<li class="cmdk-empty">No results.</li>';
+      results.innerHTML = '<li class="cmdk-empty">Aucun résultat trouvé pour votre recherche.</li>';
       return;
     }
     const groups = new Map();

@@ -1,5 +1,5 @@
 {{-- Partial: Formulaire AlerteMeteo --}}
-<div class="row">
+<div class="row align-items-stretch">
   <div class="col-lg-8">
 
     {{-- Infos principales --}}
@@ -220,9 +220,9 @@
 
   </div>
 
-  {{-- Sidebar actions --}}
-  <div class="col-lg-4">
-    <section class="m-card">
+  {{-- Sidebar actions & Simulateur HeatAlert --}}
+  <div class="col-lg-4 d-flex flex-column">
+    <section class="m-card mb-3 flex-shrink-0">
       <header class="m-card__header">
         <h2 class="m-card__title">Actions</h2>
       </header>
@@ -235,5 +235,407 @@
         </a>
       </div>
     </section>
+
+    {{-- Widget HeatAlert: Simulateur & Aperçu de Vigilance en Temps Réel --}}
+    <section class="m-card flex-grow-1 d-flex flex-column mb-3 shadow-sm border-0" id="heat-preview-card" style="border-radius: 12px; overflow: hidden;">
+      <header class="m-card__header d-flex justify-content-between align-items-center flex-shrink-0 py-2 px-3 bg-light border-bottom">
+        <h2 class="m-card__title fs-6 mb-0 d-flex align-items-center">
+          <i class="fa-solid fa-tower-broadcast text-danger me-2"></i>Aperçu & Impact Plateforme
+        </h2>
+        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1" style="font-size: 0.7rem;">
+          <i class="fa-solid fa-circle-dot fa-fade me-1"></i>Live HeatAlert
+        </span>
+      </header>
+
+      <div class="p-3 d-flex flex-column gap-3 flex-grow-1 bg-white">
+
+        {{-- Carte Vigilance Dynamique --}}
+        <div id="preview-vigilance-card" class="rounded-3 p-3 text-white transition-all shadow-sm position-relative overflow-hidden" style="background: linear-gradient(135deg, #d97706, #f59e0b); transition: all 0.35s ease;">
+          <div class="position-absolute end-0 bottom-0 opacity-10 pe-2 pb-1" style="font-size: 4.5rem; pointer-events: none; line-height: 1;">
+            <i class="fa-solid fa-triangle-exclamation" id="preview-bg-watermark"></i>
+          </div>
+          <div class="d-flex justify-content-between align-items-start mb-2 position-relative">
+            <span class="badge bg-black bg-opacity-30 text-uppercase fw-bold text-white px-2 py-1" id="preview-level-badge" style="letter-spacing: 0.5px; font-size: 0.72rem;">
+              <i class="fa-solid fa-bell me-1"></i>Vigilance Jaune
+            </span>
+            <span class="badge bg-white text-dark fw-bold px-2 py-1 text-uppercase" id="preview-status-badge" style="font-size: 0.68rem; letter-spacing: 0.4px;">
+              Brouillon
+            </span>
+          </div>
+          <h5 class="fw-bold mb-1 text-white text-truncate position-relative" id="preview-titre" title="Vague de chaleur">
+            Vague de chaleur
+          </h5>
+          <div class="small text-white-50 d-flex align-items-center gap-1 mb-2 position-relative">
+            <i class="fa-solid fa-location-dot text-white"></i>
+            <span id="preview-zone" class="text-white fw-medium">Toutes les zones (National)</span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between pt-2 border-top border-white border-opacity-25 small position-relative">
+            <span><i class="fa-solid fa-shield-halved me-1 text-white-50"></i>Type: <strong id="preview-type">Canicule</strong></span>
+            <span><i class="fa-solid fa-clock me-1 text-white-50"></i><span id="preview-dates">Dates à définir</span></span>
+          </div>
+        </div>
+
+        {{-- Calculateur de Risque Thermique & Heat Index --}}
+        <div class="p-3 rounded-3 border bg-light bg-opacity-75">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-dark small">
+              <i class="fa-solid fa-calculator text-primary me-1"></i>Stress Thermique (Heat Index)
+            </span>
+            <span class="badge bg-dark rounded-pill px-2 py-1" id="preview-heat-index-val">-- °C</span>
+          </div>
+
+          <div class="progress my-2" style="height: 8px; border-radius: 4px; background-color: #e2e8f0;">
+            <div id="preview-heat-progress" class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar" style="width: 40%; transition: width 0.4s ease;"></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
+            <span class="text-muted fw-medium" id="preview-heat-diag">Niveau de confort standard</span>
+            <span class="fw-bold text-warning" id="preview-heat-category">Modéré</span>
+          </div>
+        </div>
+
+        {{-- Métriques Clés en direct --}}
+        <div class="row g-2">
+          <div class="col-4">
+            <div class="border rounded-2 p-2 text-center bg-white shadow-xs">
+              <div class="text-muted small" style="font-size: 0.68rem;"><i class="fa-solid fa-temperature-high text-danger me-1"></i>Max</div>
+              <div class="fw-bold text-dark fs-6" id="preview-stat-temp-max">-- °C</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="border rounded-2 p-2 text-center bg-white shadow-xs">
+              <div class="text-muted small" style="font-size: 0.68rem;"><i class="fa-solid fa-droplet text-info me-1"></i>Humidité</div>
+              <div class="fw-bold text-dark fs-6" id="preview-stat-humidite">-- %</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="border rounded-2 p-2 text-center bg-white shadow-xs">
+              <div class="text-muted small" style="font-size: 0.68rem;"><i class="fa-solid fa-sun text-warning me-1"></i>UV Max</div>
+              <div class="fw-bold text-dark fs-6" id="preview-stat-uv">--</div>
+            </div>
+          </div>
+        </div>
+
+        {{-- Protocoles d'Urgence Automatisés HeatAlert --}}
+        <div class="p-3 rounded-3 border bg-white shadow-xs">
+          <div class="fw-bold text-dark small mb-2 d-flex align-items-center justify-content-between border-bottom pb-2">
+            <span><i class="fa-solid fa-bolt-lightning text-warning me-1"></i>Protocoles Déclenchés</span>
+            <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.68rem;" id="preview-protocol-count">3 protocoles</span>
+          </div>
+          <ul class="list-unstyled mb-0 d-flex flex-column gap-2" style="font-size: 0.78rem;">
+            <li class="d-flex align-items-center gap-2" id="protocol-diffusion">
+              <i class="fa-solid fa-circle-check text-success flex-shrink-0" style="font-size: 0.9rem;"></i>
+              <span class="text-dark" id="protocol-diffusion-text">Diffusion immédiate portail & app mobile</span>
+            </li>
+            <li class="d-flex align-items-center gap-2" id="protocol-vulnerable">
+              <i class="fa-solid fa-person-shelter text-warning flex-shrink-0" id="protocol-vulnerable-icon" style="font-size: 0.9rem;"></i>
+              <span class="text-dark" id="protocol-vulnerable-text">Pré-alerte structures d'accueil & hôpitaux</span>
+            </li>
+            <li class="d-flex align-items-center gap-2" id="protocol-power">
+              <i class="fa-solid fa-plug-circle-check text-secondary flex-shrink-0" id="protocol-power-icon" style="font-size: 0.9rem;"></i>
+              <span class="text-secondary" id="protocol-power-text">Réseau électrique : Surveillance standard</span>
+            </li>
+            <li class="d-flex align-items-center gap-2 text-danger d-none" id="protocol-fire">
+              <i class="fa-solid fa-fire-flame-curved text-danger flex-shrink-0" style="font-size: 0.9rem;"></i>
+              <span class="fw-medium">Vents forts (> 30 km/h) : Risque de feux de forêt élevé !</span>
+            </li>
+          </ul>
+        </div>
+
+        {{-- Badge d'engagement HeatAlert --}}
+        <div class="p-2 rounded-2 bg-primary-subtle text-primary border border-primary-subtle small d-flex align-items-start gap-2 mt-auto" style="font-size: 0.74rem;">
+          <i class="fa-solid fa-circle-info text-primary mt-1"></i>
+          <div>
+            <strong>Système d'Alerte Précoce :</strong> Les alertes de niveau <strong>Orange</strong> et <strong>Rouge</strong> génèrent automatiquement des notifications push urgentes aux populations exposées.
+          </div>
+        </div>
+
+      </div>
+    </section>
   </div>
 </div>
+
+@push('styles')
+<style>
+  #preview-vigilance-card {
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  }
+  .shadow-xs {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+</style>
+@endpush
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const titreInput = document.getElementById('titre');
+  const typeSelect = document.getElementById('type');
+  const niveauSelect = document.getElementById('niveau');
+  const statutSelect = document.getElementById('statut');
+  const zoneSelect = document.getElementById('zone_id');
+  const tempMaxInput = document.getElementById('temperature_max');
+  const tempRessentieInput = document.getElementById('temperature_ressentie');
+  const humiditeInput = document.getElementById('humidite');
+  const uvInput = document.getElementById('indice_uv');
+  const ventInput = document.getElementById('vitesse_vent');
+  const dateDebutInput = document.getElementById('date_debut');
+  const dateFinInput = document.getElementById('date_fin');
+  const risqueCoupureInput = document.getElementById('risque_coupure');
+
+  // Preview elements
+  const prevCard = document.getElementById('preview-vigilance-card');
+  const prevTitre = document.getElementById('preview-titre');
+  const prevZone = document.getElementById('preview-zone');
+  const prevType = document.getElementById('preview-type');
+  const prevLevelBadge = document.getElementById('preview-level-badge');
+  const prevStatusBadge = document.getElementById('preview-status-badge');
+  const prevDates = document.getElementById('preview-dates');
+  const prevBgWatermark = document.getElementById('preview-bg-watermark');
+
+  const prevHeatIndexVal = document.getElementById('preview-heat-index-val');
+  const prevHeatProgress = document.getElementById('preview-heat-progress');
+  const prevHeatDiag = document.getElementById('preview-heat-diag');
+  const prevHeatCategory = document.getElementById('preview-heat-category');
+
+  const prevStatTempMax = document.getElementById('preview-stat-temp-max');
+  const prevStatHumidite = document.getElementById('preview-stat-humidite');
+  const prevStatUv = document.getElementById('preview-stat-uv');
+
+  const protocolDiffusionText = document.getElementById('protocol-diffusion-text');
+  const protocolVulnerableIcon = document.getElementById('protocol-vulnerable-icon');
+  const protocolVulnerableText = document.getElementById('protocol-vulnerable-text');
+  const protocolPower = document.getElementById('protocol-power');
+  const protocolPowerIcon = document.getElementById('protocol-power-icon');
+  const protocolPowerText = document.getElementById('protocol-power-text');
+  const protocolFire = document.getElementById('protocol-fire');
+  const protocolCount = document.getElementById('preview-protocol-count');
+
+  // Level configuration
+  const levelThemes = {
+    vert: {
+      gradient: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
+      badgeClass: 'Vigilance Verte (Normale)',
+      icon: 'fa-solid fa-circle-check',
+      watermark: 'fa-shield-heart'
+    },
+    jaune: {
+      gradient: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+      badgeClass: 'Vigilance Jaune (attentif)',
+      icon: 'fa-solid fa-triangle-exclamation',
+      watermark: 'fa-triangle-exclamation'
+    },
+    orange: {
+      gradient: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)',
+      badgeClass: 'Vigilance Orange (vigilant)',
+      icon: 'fa-solid fa-fire',
+      watermark: 'fa-fire'
+    },
+    rouge: {
+      gradient: 'linear-gradient(135deg, #991b1b 0%, #ef4444 100%)',
+      badgeClass: 'Vigilance Rouge (Danger)',
+      icon: 'fa-solid fa-skull-crossbones',
+      watermark: 'fa-skull-crossbones'
+    }
+  };
+
+  function calculateHeatIndex(tempC, humidity) {
+    if (isNaN(tempC) || tempC === null || tempC === '') return null;
+    if (tempC < 25 || isNaN(humidity) || humidity === null || humidity === '') {
+      return tempC;
+    }
+
+    // Convert C to F
+    const T = (tempC * 9 / 5) + 32;
+    const R = parseFloat(humidity);
+
+    // Rothfusz regression
+    let HI = -42.379 + 2.04901523 * T + 10.14333127 * R - 0.22475541 * T * R
+      - 0.00683783 * (T * T) - 0.05481717 * (R * R) + 0.00122874 * (T * T) * R
+      + 0.00085282 * T * (R * R) - 0.00000199 * (T * T) * (R * R);
+
+    // Convert back to C
+    const HI_C = (HI - 32) * 5 / 9;
+    return Math.max(tempC, Math.round(HI_C * 10) / 10);
+  }
+
+  function formatDateRange(debutStr, finStr) {
+    if (!debutStr) return 'Dates à définir';
+    try {
+      const d1 = new Date(debutStr);
+      const opt = { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' };
+      const d1Formatted = d1.toLocaleDateString('fr-FR', opt);
+      if (!finStr) return `À partir du ${d1Formatted}`;
+      const d2 = new Date(finStr);
+      const d2Formatted = d2.toLocaleDateString('fr-FR', opt);
+      return `${d1Formatted} au ${d2Formatted}`;
+    } catch (e) {
+      return 'Dates renseignées';
+    }
+  }
+
+  function updatePreview() {
+    // 1. Titre & Type
+    const titre = titreInput ? titreInput.value.trim() : '';
+    prevTitre.textContent = titre || 'Nouvelle alerte météo';
+
+    if (typeSelect && typeSelect.value) {
+      prevType.textContent = typeSelect.options[typeSelect.selectedIndex].text;
+    }
+
+    // 2. Zone
+    if (zoneSelect) {
+      if (zoneSelect.value && zoneSelect.selectedIndex > 0) {
+        prevZone.textContent = zoneSelect.options[zoneSelect.selectedIndex].text;
+      } else {
+        prevZone.textContent = 'Toutes les zones (National)';
+      }
+    }
+
+    // 3. Statut
+    if (statutSelect && statutSelect.value) {
+      prevStatusBadge.textContent = statutSelect.value;
+      if (statutSelect.value === 'actif') {
+        prevStatusBadge.className = 'badge bg-success text-white fw-bold px-2 py-1 text-uppercase';
+      } else if (statutSelect.value === 'termine' || statutSelect.value === 'archive') {
+        prevStatusBadge.className = 'badge bg-secondary text-white fw-bold px-2 py-1 text-uppercase';
+      } else {
+        prevStatusBadge.className = 'badge bg-white text-dark fw-bold px-2 py-1 text-uppercase';
+      }
+    }
+
+    // 4. Niveau & Visual Theme
+    const niveau = (niveauSelect ? niveauSelect.value : 'jaune').toLowerCase();
+    const theme = levelThemes[niveau] || levelThemes['jaune'];
+
+    if (prevCard) {
+      prevCard.style.background = theme.gradient;
+    }
+    if (prevLevelBadge) {
+      prevLevelBadge.innerHTML = `<i class="${theme.icon} me-1"></i>${theme.badgeClass}`;
+    }
+    if (prevBgWatermark) {
+      prevBgWatermark.className = `fa-solid ${theme.watermark}`;
+    }
+
+    // 5. Dates
+    const dDebut = dateDebutInput ? dateDebutInput.value : '';
+    const dFin = dateFinInput ? dateFinInput.value : '';
+    if (prevDates) {
+      prevDates.textContent = formatDateRange(dDebut, dFin);
+    }
+
+    // 6. Metrics & Heat Index
+    const tMax = tempMaxInput && tempMaxInput.value ? parseFloat(tempMaxInput.value) : null;
+    const hum = humiditeInput && humiditeInput.value ? parseFloat(humiditeInput.value) : null;
+    const uv = uvInput && uvInput.value ? parseFloat(uvInput.value) : null;
+    const vent = ventInput && ventInput.value ? parseFloat(ventInput.value) : null;
+
+    prevStatTempMax.textContent = tMax !== null ? `${tMax} °C` : '-- °C';
+    prevStatHumidite.textContent = hum !== null ? `${hum} %` : '-- %';
+    prevStatUv.textContent = uv !== null ? uv : '--';
+
+    // Heat Index Calculation
+    const heatIdx = calculateHeatIndex(tMax, hum);
+
+    if (heatIdx !== null && !isNaN(heatIdx)) {
+      prevHeatIndexVal.textContent = `${heatIdx} °C`;
+
+      let progressWidth = Math.min(100, Math.max(10, ((heatIdx - 20) / 35) * 100));
+      prevHeatProgress.style.width = `${progressWidth}%`;
+
+      if (heatIdx < 27) {
+        prevHeatProgress.className = 'progress-bar bg-success';
+        prevHeatCategory.textContent = 'Normal';
+        prevHeatCategory.className = 'fw-bold text-success';
+        prevHeatDiag.textContent = 'Stress thermique faible ou nul';
+      } else if (heatIdx < 32) {
+        prevHeatProgress.className = 'progress-bar bg-info';
+        prevHeatCategory.textContent = 'Vigilance';
+        prevHeatCategory.className = 'fw-bold text-info';
+        prevHeatDiag.textContent = 'Fatigue possible en cas d\'effort';
+      } else if (heatIdx < 41) {
+        prevHeatProgress.className = 'progress-bar bg-warning';
+        prevHeatCategory.textContent = 'Élevé';
+        prevHeatCategory.className = 'fw-bold text-warning';
+        prevHeatDiag.textContent = 'Risque de crampes & insolation';
+      } else if (heatIdx < 54) {
+        prevHeatProgress.className = 'progress-bar bg-orange text-white';
+        prevHeatProgress.style.backgroundColor = '#ea580c';
+        prevHeatCategory.textContent = 'Danger';
+        prevHeatCategory.className = 'fw-bold text-danger';
+        prevHeatDiag.textContent = 'Coup de chaleur très probable';
+      } else {
+        prevHeatProgress.className = 'progress-bar bg-danger';
+        prevHeatCategory.textContent = 'Danger Extrême';
+        prevHeatCategory.className = 'fw-bold text-danger text-uppercase';
+        prevHeatDiag.textContent = 'Risque vital immédiat en plein air';
+      }
+    } else {
+      prevHeatIndexVal.textContent = '-- °C';
+      prevHeatProgress.style.width = '20%';
+      prevHeatProgress.className = 'progress-bar bg-secondary';
+      prevHeatCategory.textContent = 'En attente';
+      prevHeatCategory.className = 'fw-bold text-secondary';
+      prevHeatDiag.textContent = 'Saisir température & humidité';
+    }
+
+    // 7. Automated Protocols
+    let activeProtocols = 2; // default: portal + health preview
+
+    if (niveau === 'orange' || niveau === 'rouge') {
+      protocolDiffusionText.textContent = 'Diffusion Prioritaire Push & Flash SMS';
+      protocolDiffusionText.className = 'text-dark fw-bold';
+      protocolVulnerableText.textContent = 'Mobilisation plan d\'urgence & SAMU / Protection Civile';
+      protocolVulnerableIcon.className = 'fa-solid fa-truck-medical text-danger flex-shrink-0';
+    } else {
+      protocolDiffusionText.textContent = 'Diffusion standard portail & app mobile';
+      protocolDiffusionText.className = 'text-dark';
+      protocolVulnerableText.textContent = 'Pré-alerte structures d\'accueil & hôpitaux';
+      protocolVulnerableIcon.className = 'fa-solid fa-person-shelter text-warning flex-shrink-0';
+    }
+
+    // Power cut protocol
+    if (risqueCoupureInput && risqueCoupureInput.checked) {
+      activeProtocols++;
+      protocolPower.classList.remove('text-muted');
+      protocolPowerIcon.className = 'fa-solid fa-bolt text-warning flex-shrink-0';
+      protocolPowerText.className = 'text-dark fw-medium';
+      protocolPowerText.textContent = 'Réseau STEG : Alerte pic de charge & risque de délestage';
+    } else {
+      protocolPowerIcon.className = 'fa-solid fa-plug-circle-check text-secondary flex-shrink-0';
+      protocolPowerText.className = 'text-secondary';
+      protocolPowerText.textContent = 'Réseau électrique : Surveillance standard';
+    }
+
+    // Forest fire risk protocol
+    if (vent !== null && vent >= 28 && tMax !== null && tMax >= 34) {
+      activeProtocols++;
+      protocolFire.classList.remove('d-none');
+    } else {
+      protocolFire.classList.add('d-none');
+    }
+
+    protocolCount.textContent = `${activeProtocols} protocoles`;
+  }
+
+  // Bind change/input listeners
+  const monitoredInputs = [
+    titreInput, typeSelect, niveauSelect, statutSelect, zoneSelect,
+    tempMaxInput, tempRessentieInput, humiditeInput, uvInput, ventInput,
+    dateDebutInput, dateFinInput, risqueCoupureInput
+  ];
+
+  monitoredInputs.forEach(input => {
+    if (input) {
+      input.addEventListener('input', updatePreview);
+      input.addEventListener('change', updatePreview);
+    }
+  });
+
+  // Initial trigger
+  updatePreview();
+});
+</script>
+@endpush
+

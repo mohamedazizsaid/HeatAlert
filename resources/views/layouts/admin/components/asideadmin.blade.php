@@ -5,7 +5,7 @@
               <div class="header-wrap">
                 <button class="sidebar-toggle js-sidebar-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="main-sidebar"><i class="fa-solid fa-bars" aria-hidden="true"></i></button>
                 <form class="form-header" role="search" onsubmit="return false"><i class="fa-solid fa-magnifying-glass form-header__icon" aria-hidden="true"></i>
-                  <input class="au-input au-input--xl" type="search" name="search" placeholder="Search anything…" aria-label="Search"><kbd class="form-header__hint" aria-hidden="true">⌘K</kbd>
+                  <input class="au-input au-input--xl" type="search" name="search" placeholder="Rechercher (Zones, Alertes, Conseils, Dashboard)…" aria-label="Rechercher dans le menu"><kbd class="form-header__hint" aria-hidden="true">⌘K</kbd>
                 </form>
                 <div class="header-button">
                 
