@@ -15,6 +15,41 @@
   </div>
 </div>
 
+@include('admin.partials._search_filter', [
+  'searchRoute' => 'admin.conseils.index',
+  'placeholder' => 'Rechercher par titre ou contenu…',
+  'resultCount' => $conseils->total(),
+  'filters'     => [
+    [
+      'name'    => 'categorie',
+      'label'   => '— Catégorie —',
+      'options' => [
+        'hydratation' => '💧 Hydratation',
+        'energie'     => '⚡ Énergie',
+        'equipements' => '🛡️ Équipements',
+        'sante'       => '🩺 Santé',
+        'habitat'     => '🏠 Habitat',
+        'deplacement' => '🚗 Déplacement',
+      ],
+    ],
+    [
+      'name'    => 'niveau_alerte_cible',
+      'label'   => '— Niveau cible —',
+      'options' => [
+        'vert'   => '🟢 Vert',
+        'jaune'  => '🟡 Jaune',
+        'orange' => '🟠 Orange',
+        'rouge'  => '🔴 Rouge',
+      ],
+    ],
+    [
+      'name'    => 'actif',
+      'label'   => '— Statut —',
+      'options' => ['1' => 'Actif', '0' => 'Inactif'],
+    ],
+  ],
+])
+
 <section class="m-card">
   <div class="table-responsive">
     <table class="m-table">
@@ -99,7 +134,7 @@
         <tr>
           <td colspan="7" class="text-center py-4 text-muted">
             <i class="fa-solid fa-lightbulb fa-2x mb-2 d-block"></i>
-            Aucun conseil. <a href="{{ route('admin.conseils.create') }}">Créez le premier</a>.
+            Aucun conseil trouvé. <a href="{{ route('admin.conseils.create') }}">Créez le premier</a>.
           </td>
         </tr>
         @endforelse
@@ -108,8 +143,24 @@
   </div>
 
   @if($conseils->hasPages())
-  <div class="d-flex justify-content-center mt-3">
-    {{ $conseils->links() }}
+  <div class="d-flex justify-content-center align-items-center mt-3 pb-2" style="gap:6px;">
+    @if(!$conseils->onFirstPage())
+      <a href="{{ $conseils->previousPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
+        <i class="fa-solid fa-chevron-left"></i>
+      </a>
+    @endif
+
+    @foreach($conseils->getUrlRange(max(1, $conseils->currentPage()-2), min($conseils->lastPage(), $conseils->currentPage()+2)) as $page => $url)
+      <a href="{{ $url }}" class="m-btn {{ $page == $conseils->currentPage() ? 'm-btn--primary' : 'm-btn--ghost' }}" style="height:32px;padding:0 11px;font-size:13px;min-width:32px;text-align:center;">
+        {{ $page }}
+      </a>
+    @endforeach
+
+    @if($conseils->hasMorePages())
+      <a href="{{ $conseils->nextPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
+        <i class="fa-solid fa-chevron-right"></i>
+      </a>
+    @endif
   </div>
   @endif
 </section>
