@@ -117,10 +117,13 @@
     .auth-switch a { color: #dc2626; font-weight: 700; text-decoration: none; }
     .auth-switch a:hover { text-decoration: underline; }
 
-    .remember-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-    .form-check-label { font-size: .85rem; color: #6b7280; margin-left: 6px; }
-    .forgot-link { font-size: .84rem; color: #dc2626; text-decoration: none; font-weight: 600; }
-    .forgot-link:hover { text-decoration: underline; }
+    .remember-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
+    .remember-label { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; }
+    .remember-checkbox { width: 17px; height: 17px; accent-color: #dc2626; cursor: pointer; border-radius: 4px; }
+    .form-check-label { font-size: .88rem; color: #4b5563; font-weight: 500; cursor: pointer; transition: color .2s; }
+    .remember-label:hover .form-check-label { color: #111827; }
+    .forgot-link { font-size: .85rem; color: #dc2626; text-decoration: none; font-weight: 600; transition: color .2s; }
+    .forgot-link:hover { color: #b91c1c; text-decoration: underline; }
 
     @keyframes subtleZoom { from { transform: scale(1.05); } to { transform: scale(1.12); } }
 
@@ -217,8 +220,13 @@
 
         {{-- Remember / Forgot --}}
         <div class="remember-row">
-          <label style="display:flex;align-items:center;cursor:pointer;">
-            <input type="checkbox" name="remember" id="remember_me" style="accent-color:#dc2626;width:15px;height:15px;">
+          <label class="remember-label" for="remember_me">
+            <input type="checkbox"
+                   name="remember"
+                   id="remember_me"
+                   value="1"
+                   {{ old('remember') ? 'checked' : '' }}
+                   class="remember-checkbox">
             <span class="form-check-label">Se souvenir de moi</span>
           </label>
           @if(Route::has('password.request'))

@@ -31,24 +31,92 @@
 
     /* ── STEP PROGRESS ── */
     .step-progress {
-      display: flex; align-items: center; gap: 0; margin-bottom: 34px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 12px 18px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
     }
     .step-item {
-      display: flex; align-items: center; gap: 10px; flex: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      flex: 0 0 auto;
     }
     .step-dot {
-      width: 34px; height: 34px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .82rem; font-weight: 700; flex-shrink: 0;
-      border: 2px solid #e5e7eb; color: #9ca3af; background: #fff;
-      transition: .3s;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .84rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      border: 2px solid #cbd5e1;
+      color: #64748b;
+      background: #fff;
+      transition: all .3s ease;
     }
-    .step-dot.active { border-color: #dc2626; background: #dc2626; color: #fff; box-shadow: 0 4px 12px rgba(220,38,38,.3); }
-    .step-dot.done   { border-color: #dc2626; background: #fff; color: #dc2626; }
-    .step-label { font-size: .8rem; font-weight: 600; color: #9ca3af; white-space: nowrap; }
-    .step-label.active { color: #dc2626; }
-    .step-line { flex: 1; height: 2px; background: #e5e7eb; margin: 0 8px; }
-    .step-line.done { background: #dc2626; }
+    .step-dot.active {
+      border-color: #dc2626;
+      background: #dc2626;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(220,38,38,.35);
+    }
+    .step-dot.done {
+      border-color: #16a34a;
+      background: #16a34a;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(22,163,74,.25);
+    }
+    .step-info {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+    }
+    .step-sublabel {
+      font-size: .68rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      font-weight: 700;
+    }
+    .step-label {
+      font-size: .88rem;
+      font-weight: 700;
+      color: #64748b;
+      white-space: nowrap;
+      transition: color .3s;
+    }
+    .step-label.active {
+      color: #dc2626;
+    }
+    .step-line {
+      flex: 1;
+      height: 3px;
+      background: #e2e8f0;
+      margin: 0 16px;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    .step-line::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: linear-gradient(90deg, #16a34a, #dc2626);
+      border-radius: 4px;
+      transition: width .35s ease;
+    }
+    .step-line.done::after {
+      width: 100%;
+    }
 
     /* ── STEPS ── */
     .step-pane { display: none; animation: fadeSlide .3s ease; }
@@ -174,14 +242,20 @@
 
     {{-- Barre de progression --}}
     <div class="step-progress">
-      <div class="step-item">
+      <div class="step-item" id="step-nav-1">
         <div class="step-dot active" id="dot-1">1</div>
-        <div class="step-label active" id="lbl-1">Identité</div>
+        <div class="step-info">
+          <span class="step-sublabel">Étape 1</span>
+          <span class="step-label active" id="lbl-1">Identité</span>
+        </div>
       </div>
       <div class="step-line" id="line-12"></div>
-      <div class="step-item">
+      <div class="step-item" id="step-nav-2">
         <div class="step-dot" id="dot-2">2</div>
-        <div class="step-label" id="lbl-2">Sécurité</div>
+        <div class="step-info">
+          <span class="step-sublabel">Étape 2</span>
+          <span class="step-label" id="lbl-2">Sécurité</span>
+        </div>
       </div>
     </div>
 
@@ -447,7 +521,8 @@
 
     // Transition vers étape 2
     step1.classList.remove('active'); step2.classList.add('active');
-    dot1.classList.remove('active'); dot1.classList.add('done'); dot1.innerHTML = '<i class="fa-solid fa-check" style="font-size:.7rem;"></i>';
+    dot1.classList.remove('active'); dot1.classList.add('done'); dot1.innerHTML = '<i class="fa-solid fa-check" style="font-size:.75rem;"></i>';
+    lbl1.classList.remove('active');
     dot2.classList.add('active'); lbl2.classList.add('active');
     line12.classList.add('done');
     photoStep1.style.display = 'none'; photoStep2.style.display = 'block';
@@ -458,6 +533,7 @@
   document.getElementById('btn-back').addEventListener('click', function () {
     step2.classList.remove('active'); step1.classList.add('active');
     dot1.classList.remove('done'); dot1.classList.add('active'); dot1.innerHTML = '1';
+    lbl1.classList.add('active');
     dot2.classList.remove('active'); lbl2.classList.remove('active');
     line12.classList.remove('done');
     photoStep2.style.display = 'none'; photoStep1.style.display = 'block';
