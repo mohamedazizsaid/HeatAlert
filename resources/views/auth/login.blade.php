@@ -220,15 +220,15 @@
 
         {{-- Remember / Forgot --}}
         <div class="remember-row">
-          <label class="remember-label" for="remember_me">
+          <div class="remember-label">
             <input type="checkbox"
                    name="remember"
                    id="remember_me"
                    value="1"
                    {{ old('remember') ? 'checked' : '' }}
                    class="remember-checkbox">
-            <span class="form-check-label">Se souvenir de moi</span>
-          </label>
+            <label for="remember_me" class="form-check-label">Se souvenir de moi</label>
+          </div>
           @if(Route::has('password.request'))
             <a href="{{ route('password.request') }}" class="forgot-link">Mot de passe oublié ?</a>
           @endif
@@ -246,5 +246,31 @@
 
   </div>
   <script src="{{ asset('assets/front/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const emailInput = document.getElementById('email');
+      const rememberCheckbox = document.getElementById('remember_me');
+      const form = document.querySelector('form');
+
+      // Pre-fill email and checkbox if previously remembered
+      const savedEmail = localStorage.getItem('heatalert_remember_email');
+      if (savedEmail && emailInput && !emailInput.value) {
+        emailInput.value = savedEmail;
+        if (rememberCheckbox) {
+          rememberCheckbox.checked = true;
+        }
+      }
+
+      if (form && rememberCheckbox && emailInput) {
+        form.addEventListener('submit', function() {
+          if (rememberCheckbox.checked) {
+            localStorage.setItem('heatalert_remember_email', emailInput.value.trim());
+          } else {
+            localStorage.removeItem('heatalert_remember_email');
+          }
+        });
+      }
+    });
+  </script>
 </body>
 </html>
