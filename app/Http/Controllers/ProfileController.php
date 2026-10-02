@@ -9,16 +9,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+use App\Models\Zone;
+use App\Models\AlerteMeteo;
+
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display the user's profile view and edit forms.
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = $request->user()->load('zone');
+        $zones = Zone::where('actif', true)->orderBy('gouvernorat')->orderBy('ville')->get();
+
+        $alertesZone = collect();
+        if ($user->zone_id) {
+            $alertesZone = AlerteMeteo::where('zone_id', $user->zone_id)
+                ->where('statut', 'active')
+                ->orderByDesc('date_debut')
+                ->take(3)
+                ->get();
+        }
+
+        return view('profile.edit', compact('user', 'zones', 'alertesZone'));
     }
 
     /**

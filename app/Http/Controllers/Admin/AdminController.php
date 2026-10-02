@@ -82,12 +82,22 @@ class AdminController extends Controller
             ->get();
 
         // ── Alertes par mois (12 derniers mois) ──
-        $alertesParMois = AlerteMeteo::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as mois, count(*) as total')
-            ->where('created_at', '>=', now()->subMonths(12))
+        $debut12Mois = now()->subMonths(11)->startOfMonth();
+        $rawAlertes = AlerteMeteo::selectRaw('DATE_FORMAT(COALESCE(date_debut, created_at), "%Y-%m") as mois, count(*) as total')
+            ->where(function ($q) use ($debut12Mois) {
+                $q->where('date_debut', '>=', $debut12Mois)
+                  ->orWhere(function ($sub) use ($debut12Mois) {
+                      $sub->whereNull('date_debut')->where('created_at', '>=', $debut12Mois);
+                  });
+            })
             ->groupBy('mois')
-            ->orderBy('mois')
-            ->get()
-            ->mapWithKeys(fn($r) => [$r->mois => $r->total]);
+            ->pluck('total', 'mois');
+
+        $alertesParMois = collect();
+        for ($i = 11; $i >= 0; $i--) {
+            $moisCle = now()->subMonths($i)->format('Y-m');
+            $alertesParMois->put($moisCle, (int) ($rawAlertes[$moisCle] ?? 0));
+        }
 
         // ── Températures moyennes des alertes ──
         $tempStats = AlerteMeteo::whereNotNull('temperature_max')->selectRaw('

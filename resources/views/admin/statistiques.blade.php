@@ -319,25 +319,34 @@
 
     {{-- Alertes Critiques --}}
     <div class="col-xl-3">
-      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white overflow-hidden">
         <div class="card-header bg-white border-0 px-4 pt-4 pb-2 border-bottom d-flex align-items-center justify-content-between">
-          <h5 class="fw-bold mb-0 text-dark fs-6"><i class="fa-solid fa-fire text-danger me-2"></i>Alertes Critiques</h5>
-          <span class="badge bg-danger rounded-pill">{{ $alertesCritiques->count() }}</span>
+          <h5 class="fw-bold mb-0 text-dark fs-6 text-truncate pe-2">
+            <i class="fa-solid fa-fire text-danger me-2"></i>Alertes Critiques
+          </h5>
+          <span class="badge bg-danger rounded-pill flex-shrink-0">{{ $alertesCritiques->count() }}</span>
         </div>
-        <div class="card-body p-3 d-flex flex-column gap-2">
+        <div class="card-body p-3 d-flex flex-column gap-2" style="max-height: 310px; overflow-y: hidden; overflow-x: hidden;">
           @forelse($alertesCritiques as $a)
           @php
             $nBg = $a->niveau === 'rouge' ? '#dc2626' : '#ea580c';
           @endphp
-          <div class="p-3 rounded-3 border position-relative overflow-hidden" style="background: {{ $nBg }}08; border-color: {{ $nBg }}40 !important;">
-            <div class="d-flex align-items-start justify-content-between gap-2">
-              <div class="flex-grow-1 min-w-0">
-                <div class="fw-bold text-dark small text-truncate" title="{{ $a->titre }}">{{ $a->titre }}</div>
-                <div class="text-muted" style="font-size: 11px;">{{ $a->zone->nom ?? 'National' }}</div>
+          <a href="{{ route('admin.alertes.show', $a) }}" class="text-decoration-none p-2 px-3 rounded-3 border d-block position-relative transition-all" style="background: {{ $nBg }}08; border-color: {{ $nBg }}35 !important; transition: all 0.2s ease;">
+            <div class="d-flex align-items-center justify-content-between gap-2" style="min-width: 0;">
+              <div style="min-width: 0; flex: 1 1 0; overflow: hidden;">
+                <div class="fw-bold text-dark small text-truncate" title="{{ $a->titre }}" style="font-size: 12.5px; line-height: 1.3;">
+                  {{ \Illuminate\Support\Str::limit($a->titre, 24) }}
+                </div>
+                <div class="text-muted text-truncate d-flex align-items-center gap-1 mt-0.5" style="font-size: 11px;">
+                  <i class="fa-solid fa-location-dot text-danger flex-shrink-0" style="font-size: 10px;"></i>
+                  <span class="text-truncate">{{ \Illuminate\Support\Str::limit($a->zone->nom ?? 'National', 18) }}</span>
+                </div>
               </div>
-              <span class="badge fw-bold flex-shrink-0 text-white" style="background: {{ $nBg }}; font-size: 10px;">{{ strtoupper($a->niveau) }}</span>
+              <span class="badge fw-bold flex-shrink-0 text-white" style="background: {{ $nBg }}; font-size: 9px; padding: 4px 7px; letter-spacing: 0.3px;">
+                {{ strtoupper($a->niveau) }}
+              </span>
             </div>
-          </div>
+          </a>
           @empty
           <div class="text-center text-muted py-4">
             <i class="fa-solid fa-circle-check fs-2 text-success mb-2"></i>
@@ -451,46 +460,74 @@
     callbacks: {}
   };
 
-  // ── 1. Évolution Mensuelle des Alertes ──
-  const moisData = @json($alertesParMois->toArray());
+  // ── 1. Évolution Mensuelle des Alertes (12 Derniers Mois) ──
+  const moisData = @json($alertesParMois);
   const moisLabels = Object.keys(moisData).map(m => {
-    const [y, mo] = m.split('-');
-    const d = new Date(y, parseInt(mo) - 1);
-    return d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+    const parts = m.split('-');
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const d = new Date(year, month, 1);
+    const str = d.toLocaleDateString('fr-FR', { month: 'short' });
+    return (str.charAt(0).toUpperCase() + str.slice(1)).replace('.', '') + ' ' + year.toString().slice(-2);
   });
-  const moisValues = Object.values(moisData);
+  const moisValues = Object.values(moisData).map(v => Number(v) || 0);
 
-  new Chart(document.getElementById('alertesParMoisChart'), {
-    type: 'line',
-    data: {
-      labels: moisLabels,
-      datasets: [{
-        label: 'Alertes créées',
-        data: moisValues,
-        borderColor: '#dc2626',
-        backgroundColor: 'rgba(220, 38, 38, 0.08)',
-        borderWidth: 3,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 5,
-        pointHoverRadius: 8,
-        pointBackgroundColor: '#dc2626',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { ...tooltipStyle, callbacks: { label: (c) => ` ${c.parsed.y} alertes` } }
+  const canvasMois = document.getElementById('alertesParMoisChart');
+  if (canvasMois) {
+    const ctx = canvasMois.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 240);
+    grad.addColorStop(0, 'rgba(220, 38, 38, 0.28)');
+    grad.addColorStop(1, 'rgba(220, 38, 38, 0.01)');
+
+    new Chart(canvasMois, {
+      type: 'line',
+      data: {
+        labels: moisLabels,
+        datasets: [{
+          label: 'Alertes créées',
+          data: moisValues,
+          borderColor: '#dc2626',
+          backgroundColor: grad,
+          borderWidth: 3,
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          pointBackgroundColor: '#dc2626',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+        }]
       },
-      scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1, callback: v => v + ' alertes' }, grid: { color: 'rgba(0,0,0,0.04)' } },
-        x: { grid: { display: false } }
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            ...tooltipStyle,
+            callbacks: {
+              label: (c) => ` ${c.parsed.y} alerte${c.parsed.y > 1 ? 's' : ''}`
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              precision: 0,
+              callback: v => Number.isInteger(v) ? v : ''
+            },
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 } }
+          }
+        }
       }
-    }
-  });
+    });
+  }
 
   // ── 2. Donut Niveaux ──
   new Chart(document.getElementById('niveauDonutChart'), {

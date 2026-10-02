@@ -110,6 +110,7 @@
                 @if(auth()->user()->isAdmin())
                   <li><a href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Administration</a></li>
                 @endif
+                <li><a href="{{ route('profile.edit') }}" class="{{ request()->routeIs('profile.*') ? 'active' : '' }}"><i class="bi bi-person-circle me-2 text-black"></i>Mon Profil</a></li>
                 <li><a href="{{ route('front.zones.index') }}"><i class="bi bi-geo-alt me-2"></i>Mes Zones</a></li>
                 <li><a href="{{ route('front.alertes.index') }}"><i class="bi bi-bell me-2"></i>Alertes Actives</a></li>
                 <li>

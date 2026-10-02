@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ConseilController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,6 +36,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/alertes/{alerte}', [FrontController::class, 'alerteShow'])->name('front.alertes.show');
     Route::get('/conseils', [FrontController::class, 'conseils'])->name('front.conseils.index');
     Route::get('/conseils/{conseil}', [FrontController::class, 'conseilShow'])->name('front.conseils.show');
+
+    // ─── Profil Utilisateur (Détails & Modification)
+    Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // ─── Routes Admin — accessible uniquement aux ROLE_ADMIN
