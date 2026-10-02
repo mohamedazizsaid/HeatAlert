@@ -3910,39 +3910,47 @@ body.app .has-danger .help-block {
 /* Input group (icon prefix / button suffix) */
 body.app .input-group {
   position: relative;
-  display: flex;
-  align-items: stretch;
-  width: 100%;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  width: 100% !important;
   border-radius: 8px;
 }
 
-body.app .input-group > .form-control {
-  flex: 1 1 auto;
+body.app .input-group > .form-control,
+body.app .input-group > input.form-control,
+body.app .input-group > select.form-control,
+body.app .input-group > .form-select {
+  flex: 1 1 auto !important;
+  width: 1% !important;
+  min-width: 0 !important;
   border-radius: 0;
 }
 
 body.app .input-group > :first-child {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+  border-top-left-radius: 8px !important;
+  border-bottom-left-radius: 8px !important;
 }
 
 body.app .input-group > :last-child {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+  border-top-right-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
 }
 
 body.app .input-group-text,
 body.app .input-group-prepend > .input-group-text,
 body.app .input-group-append > .input-group-text {
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 14px;
   background: var(--m-surface-2);
   border: 1px solid var(--m-border);
   color: var(--m-text-muted);
   font-family: var(--m-font);
   font-size: 13px;
   line-height: 1;
+  white-space: nowrap;
 }
 
 body.app .input-group:focus-within {

@@ -141,14 +141,6 @@
             @endif
           </a>
         </li>
-
-        {{-- Profil & Sécurité --}}
-        <li class="{{ request()->routeIs('admin.profile.*') ? 'active' : '' }}">
-          <a href="{{ route('admin.profile.edit') }}">
-            <i class="fa-solid fa-user-shield"></i>Profil & Sécurité
-          </a>
-        </li>
-
       </ul>
     </nav>
   </div>

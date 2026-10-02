@@ -669,6 +669,74 @@
   .transition-all {
     transition: all 0.3s ease;
   }
+
+  /* ── Organisation parfaite des Input Groups & Icônes ── */
+  body.app .input-group {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    border-radius: 8px !important;
+    background-color: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    overflow: hidden !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease !important;
+  }
+  body.app .input-group:focus-within {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+    background-color: #ffffff !important;
+  }
+  body.app .input-group > .input-group-text {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 44px !important;
+    height: 42px !important;
+    padding: 0 14px !important;
+    background: transparent !important;
+    border: none !important;
+    color: #64748b !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+  }
+  body.app .input-group > input.form-control,
+  body.app .input-group > select.form-control,
+  body.app .input-group > select.form-select,
+  body.app .input-group > .form-control {
+    flex: 1 1 auto !important;
+    width: 1% !important;
+    min-width: 0 !important;
+    height: 42px !important;
+    padding: 0 14px 0 4px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    color: #1e293b !important;
+    font-size: 14px !important;
+    line-height: 42px !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+  body.app .input-group > .btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 42px !important;
+    min-width: 44px !important;
+    padding: 0 14px !important;
+    background: transparent !important;
+    border: none !important;
+    color: #64748b !important;
+    flex-shrink: 0 !important;
+    transition: color 0.15s ease, background-color 0.15s ease !important;
+  }
+  body.app .input-group > .btn:hover {
+    color: #0f172a !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
+  }
 </style>
 @endpush
 
