@@ -28,6 +28,7 @@ Route::get('/dashboard', function () {
 // ─── Routes authentifiées — Front (utilisateurs ROLE_USER)
 Route::middleware(['auth'])->group(function () {
     Route::get('/accueil', [FrontController::class, 'index'])->name('front.home');
+    Route::get('/meteo-mondiale', [FrontController::class, 'globalWeather'])->name('front.weather.global');
     Route::get('/zones', [FrontController::class, 'zones'])->name('front.zones.index');
     Route::get('/zones/{zone}', [FrontController::class, 'zoneShow'])->name('front.zones.show');
     Route::get('/alertes', [FrontController::class, 'alertes'])->name('front.alertes.index');

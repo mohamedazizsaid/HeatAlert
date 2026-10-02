@@ -66,24 +66,40 @@
               </a>
             </li>
             <li>
-              <a href="{{ route('front.alertes.index') }}" class="{{ request()->routeIs('front.alertes.*') ? 'active' : '' }}">
-                Alertes
-                @php $nbAlertes = \App\Models\AlerteMeteo::where('statut','active')->whereIn('niveau', ['rouge', 'orange'])->count(); @endphp
+              <a href="{{ route('front.weather.global') }}" class="{{ request()->routeIs('front.weather.global') ? 'active' : '' }}">
+                <i class="bi bi-globe2 me-1 text-danger"></i>Météo Mondiale
+                <span class="badge bg-warning text-dark rounded-pill ms-1" style="font-size: 10px; padding: 2px 6px;">Live</span>
+              </a>
+            </li>
+            @php $nbAlertes = \App\Models\AlerteMeteo::where('statut','active')->whereIn('niveau', ['rouge', 'orange'])->count(); @endphp
+            <li class="dropdown">
+              <a href="#" class="{{ request()->routeIs('front.alertes.*') || request()->routeIs('front.conseils.*') ? 'active' : '' }}">
+                <span>Vigilance & Santé</span>
                 @if($nbAlertes > 0)
                   <span class="badge bg-danger rounded-pill ms-1" style="font-size: 11px; padding: 2px 7px;">{{ $nbAlertes }}</span>
                 @endif
+                <i class="bi bi-chevron-down toggle-dropdown"></i>
               </a>
+              <ul>
+                <li>
+                  <a href="{{ route('front.alertes.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.alertes.*') ? 'active' : '' }}">
+                    <i class="bi bi-bell-fill text-danger"></i>
+                     @if($nbAlertes > 0)
+                      <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 10px;">{{ $nbAlertes }}</span>
+                    @endif
+                    <span>Alertes Météo</span>
+                   
+                  </a>
+                </li>
+                <li>
+                  <a href="{{ route('front.conseils.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.conseils.*') ? 'active' : '' }}">
+                    <i class="bi bi-heart-pulse-fill text-success"></i>
+                    <span>Conseils Santé</span>
+                  </a>
+                </li>
+              </ul>
             </li>
-            <li>
-              <a href="{{ route('front.conseils.index') }}" class="{{ request()->routeIs('front.conseils.*') ? 'active' : '' }}">
-                Conseils Santé
-              </a>
-            </li>
-            <li>
-              <a href="{{ route('front.home') }}#call-to-action">
-                Urgences
-              </a>
-            </li>
+
             @auth
             <li class="dropdown">
               <a href="#"><span>Mon Compte</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>

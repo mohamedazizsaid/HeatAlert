@@ -21,6 +21,8 @@
           <p class="mb-0" style="font-size: 16px; color: #f1f5f9; max-width: 680px; margin: 0 auto; line-height: 1.6;">
             Consultez en direct les indicateurs météo, l'état de vigilance canicule et les alertes thermiques par zone géographique en Tunisie.
           </p>
+
+
         </div>
       </div>
     </div>
@@ -88,6 +90,32 @@
 <!-- Grille des Zones (Clinic Departments Section Style) -->
 <section id="departments" class="departments section py-5" style="background-color: #f8fafc;">
   <div class="container" data-aos="fade-up">
+
+    {{-- Bannière spéciale Météo Mondiale Open-Meteo --}}
+    <div class="mb-4 p-4 rounded-4 shadow-sm position-relative overflow-hidden" style="background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+      <div class="row align-items-center g-3 position-relative" style="z-index: 2;">
+        <div class="col-lg-8">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-danger rounded-pill px-3 py-1 fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 0.5px;">Nouveau Service Global</span>
+            <span class="badge bg-warning text-dark rounded-pill px-2 py-1 fw-bold" style="font-size: 11px;">API Open-Meteo</span>
+          </div>
+          <h4 class="fw-bold mb-1 text-white">Surveillance Météo Mondiale en Temps Réel</h4>
+          <p class="mb-0 text-white-50 small" style="line-height: 1.5;">
+            Explorez les températures, indices UV solaires, alertes de canicule et graphiques prévisionnels détaillés pour n'importe quelle ville ou pays dans le monde via la carte interactive.
+          </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <a href="{{ route('front.weather.global') }}" class="btn btn-warning text-dark fw-bold rounded-pill px-4 py-2 shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 14px;">
+            <i class="bi bi-globe2 fs-5"></i>
+            <span>Accéder au Dashboard Mondial</span>
+            <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      <div class="position-absolute end-0 top-0 bottom-0 opacity-10 d-none d-md-flex align-items-center pe-4 pointer-events-none" style="font-size: 9rem; color: #fff;">
+        <i class="bi bi-globe-americas"></i>
+      </div>
+    </div>
 
     @php
       $zoneImages = [
@@ -202,7 +230,7 @@
       </div>
     @endif
 
-  </div>
+  </div>{{-- End container --}}
 </section>
 
 @push('scripts')

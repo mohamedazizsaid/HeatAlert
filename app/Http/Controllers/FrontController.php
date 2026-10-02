@@ -40,6 +40,14 @@ class FrontController extends Controller
     }
 
     /**
+     * Dashboard Météo Mondiale en direct avec l'API Open-Meteo.
+     */
+    public function globalWeather()
+    {
+        return view('front.weather.global');
+    }
+
+    /**
      * Liste des zones (front) avec recherche et filtres.
      */
     public function zones(Request $request)
