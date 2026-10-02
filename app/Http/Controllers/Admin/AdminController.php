@@ -138,4 +138,38 @@ class AdminController extends Controller
             'dernieresAlertes', 'alertesCritiques'
         ));
     }
+
+    /**
+     * Profil & Sécurité de l'administrateur
+     */
+    public function profile()
+    {
+        $user = auth()->user()->load('zone');
+        $zones = Zone::where('actif', true)->orderBy('gouvernorat')->orderBy('ville')->get();
+
+        $adminStats = [
+            'total_alertes'  => AlerteMeteo::count(),
+            'total_zones'    => Zone::count(),
+            'total_conseils' => Conseil::count(),
+        ];
+
+        return view('admin.profile', compact('user', 'zones', 'adminStats'));
+    }
+
+    /**
+     * Mise à jour des informations de profil de l'administrateur
+     */
+    public function updateProfile(\App\Http\Requests\ProfileUpdateRequest $request)
+    {
+        $user = $request->user();
+        $user->fill($request->validated());
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.profile.edit')->with('status', 'profile-updated');
+    }
 }

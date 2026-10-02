@@ -51,6 +51,10 @@ Route::middleware(['auth', 'admin'])
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
         Route::get('/statistiques', [AdminController::class, 'statistiques'])->name('statistiques');
 
+        // Profil & Sécurité Administrateur
+        Route::get('/profil', [AdminController::class, 'profile'])->name('profile.edit');
+        Route::patch('/profil', [AdminController::class, 'updateProfile'])->name('profile.update');
+
         // Gestion des Zones (avec recherche/filtre et page détails)
         Route::resource('zones', ZoneController::class);
 

@@ -52,6 +52,11 @@
             <i class="fa-solid fa-chart-line"></i>Statistiques
           </a>
         </li>
+        <li class="{{ request()->routeIs('admin.profile.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.profile.edit') }}">
+            <i class="fa-solid fa-user-shield"></i>Profil & Sécurité
+          </a>
+        </li>
       </ul>
     </div>
   </nav>
@@ -134,6 +139,13 @@
             @if($nbCritiques > 0)
               <span class="badge bg-danger rounded-pill ms-1" style="font-size: 10px;">{{ $nbCritiques }}</span>
             @endif
+          </a>
+        </li>
+
+        {{-- Profil & Sécurité --}}
+        <li class="{{ request()->routeIs('admin.profile.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.profile.edit') }}">
+            <i class="fa-solid fa-user-shield"></i>Profil & Sécurité
           </a>
         </li>
 
