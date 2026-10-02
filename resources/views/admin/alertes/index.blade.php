@@ -77,6 +77,9 @@
           <td>{{ $alerte->temperature_max !== null ? $alerte->temperature_max . '°C' : '—' }}</td>
           <td>{{ $alerte->date_debut?->format('d/m/Y') }}</td>
           <td style="text-align:right;">
+            <a href="{{ route('admin.alertes.show', $alerte) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#2563eb;" title="Détails">
+              <i class="fa-solid fa-eye"></i>
+            </a>
             <a href="{{ route('admin.alertes.edit', $alerte) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;" title="Modifier">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>

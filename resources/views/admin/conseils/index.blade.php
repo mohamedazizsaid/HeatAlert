@@ -109,6 +109,12 @@
             @endif
           </td>
           <td style="text-align:right;">
+            <a href="{{ route('admin.conseils.show', $conseil) }}"
+               class="m-btn m-btn--ghost"
+               style="height:28px;padding:0 10px;font-size:12px;color:#2563eb;"
+               title="Détails">
+              <i class="fa-solid fa-eye"></i>
+            </a>
             <a href="{{ route('admin.conseils.edit', $conseil) }}"
                class="m-btn m-btn--ghost"
                style="height:28px;padding:0 10px;font-size:12px;"

@@ -73,6 +73,15 @@ class ConseilController extends Controller
     }
 
     /**
+     * Fiche détaillée d'un conseil.
+     */
+    public function show(Conseil $conseil): View
+    {
+        $conseil->load('alertes.zone');
+        return view('admin.conseils.show', compact('conseil'));
+    }
+
+    /**
      * Formulaire d'édition.
      */
     public function edit(Conseil $conseil): View

@@ -37,14 +37,14 @@ Route::middleware(['auth', 'admin'])
     ->group(function () {
         Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 
-        // Gestion des Zones (avec recherche/filtre via query string)
-        Route::resource('zones', ZoneController::class)->except(['show']);
+        // Gestion des Zones (avec recherche/filtre et page détails)
+        Route::resource('zones', ZoneController::class);
 
         // Gestion des Alertes Météo
-        Route::resource('alertes', AlerteMeteoController::class)->except(['show']);
+        Route::resource('alertes', AlerteMeteoController::class);
 
         // Gestion des Conseils
-        Route::resource('conseils', ConseilController::class)->except(['show']);
+        Route::resource('conseils', ConseilController::class);
     });
 
 // ─── Routes d'authentification (Breeze)

@@ -70,6 +70,18 @@ class ZoneController extends Controller
     }
 
     /**
+     * Fiche détaillée d'une zone.
+     */
+    public function show(Zone $zone): View
+    {
+        $zone->loadCount(['users', 'alertes']);
+        $alertes = $zone->alertes()->orderByDesc('date_debut')->paginate(6);
+        $activeAlertesCount = $zone->alertes()->where('statut', 'active')->count();
+
+        return view('admin.zones.show', compact('zone', 'alertes', 'activeAlertesCount'));
+    }
+
+    /**
      * Formulaire d'édition.
      */
     public function edit(Zone $zone): View

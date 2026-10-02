@@ -74,6 +74,15 @@ class AlerteMeteoController extends Controller
     }
 
     /**
+     * Fiche détaillée d'une alerte météo.
+     */
+    public function show(AlerteMeteo $alerte): View
+    {
+        $alerte->load(['zone', 'conseils']);
+        return view('admin.alertes.show', compact('alerte'));
+    }
+
+    /**
      * Formulaire d'édition.
      */
     public function edit(AlerteMeteo $alerte): View

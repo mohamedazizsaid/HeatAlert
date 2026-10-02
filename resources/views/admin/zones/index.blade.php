@@ -64,6 +64,9 @@
             @endif
           </td>
           <td style="text-align:right;">
+            <a href="{{ route('admin.zones.show', $zone) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#2563eb;" title="Détails">
+              <i class="fa-solid fa-eye"></i>
+            </a>
             <a href="{{ route('admin.zones.edit', $zone) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;" title="Modifier">
               <i class="fa-solid fa-pen-to-square"></i>
             </a>
