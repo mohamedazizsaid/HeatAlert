@@ -16,6 +16,8 @@ class AdminController extends Controller
      */
     public function index()
     {
+        Coupure::actualiserStatuts();
+
         $coupuresParStatut = Coupure::query()
             ->select('statut')
             ->selectRaw('COUNT(*) as total')

@@ -229,6 +229,8 @@ class FrontController extends Controller
      */
     public function coupures(Request $request): View
     {
+        Coupure::actualiserStatuts();
+
         $query = Coupure::with(['zone', 'interventions'])->orderByDesc('date_debut');
 
         if (auth()->check()) {
@@ -259,6 +261,8 @@ class FrontController extends Controller
      */
     public function coupureShow(Coupure $coupure): View
     {
+        Coupure::actualiserStatuts();
+
         $query = Coupure::query()
             ->whereKey($coupure->id)
             ->with(['zone', 'interventions'])
@@ -282,6 +286,8 @@ class FrontController extends Controller
      */
     public function createSignalement(): View
     {
+        Coupure::actualiserStatuts();
+
         $coupures = Coupure::where('zone_id', auth()->user()->zone_id)
             ->where('statut', 'en_cours')
             ->orderByDesc('date_debut')
@@ -295,6 +301,8 @@ class FrontController extends Controller
      */
     public function storeSignalement(StoreSignalementCoupureRequest $request): RedirectResponse
     {
+        Coupure::actualiserStatuts();
+
         $data = $request->validated();
         $user = $request->user();
 

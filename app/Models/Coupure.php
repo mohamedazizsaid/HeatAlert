@@ -44,6 +44,26 @@ class Coupure extends Model
         return $this->hasMany(Intervention::class);
     }
 
+    public static function actualiserStatuts(): void
+    {
+        $maintenant = now();
+
+        self::query()
+            ->whereIn('statut', ['prevue', 'en_cours'])
+            ->whereNotNull('date_fin')
+            ->where('date_fin', '<=', $maintenant)
+            ->update(['statut' => 'terminee']);
+
+        self::query()
+            ->where('statut', 'prevue')
+            ->where('date_debut', '<=', $maintenant)
+            ->where(function ($query) use ($maintenant) {
+                $query->whereNull('date_fin')
+                    ->orWhere('date_fin', '>', $maintenant);
+            })
+            ->update(['statut' => 'en_cours']);
+    }
+
     protected function retablissementEstime(): Attribute
     {
         return Attribute::get(function (): ?\Carbon\Carbon {

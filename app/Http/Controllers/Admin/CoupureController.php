@@ -22,6 +22,8 @@ class CoupureController extends Controller
      */
     public function index(Request $request): View
     {
+        Coupure::actualiserStatuts();
+
         $query = Coupure::with('zone')->withCount('signalements');
 
         if ($search = $request->input('search')) {
@@ -109,6 +111,8 @@ class CoupureController extends Controller
      */
     public function show(Coupure $coupure): View
     {
+        Coupure::actualiserStatuts();
+        $coupure->refresh();
         $coupure->load(['zone', 'signalements.user', 'interventions']);
 
         return view('admin.coupures.show', compact('coupure'));
