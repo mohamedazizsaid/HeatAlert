@@ -10,6 +10,7 @@ use App\Models\Zone;
 use App\Http\Requests\StoreSignalementCoupureRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class FrontController extends Controller
@@ -302,6 +303,24 @@ class FrontController extends Controller
 
             abort_if($coupure->zone_id !== $user->zone_id, 403, 'Cette coupure ne concerne pas votre zone.');
             abort_if($coupure->statut !== 'en_cours', 422, 'Seule une coupure en cours peut être signalée.');
+
+            $signalementsRecents = SignalementCoupure::query()
+                ->where('coupure_id', $coupure->id)
+                ->where('created_at', '>=', now()->subMinutes(30));
+
+            if ((clone $signalementsRecents)->where('user_id', $user->id)->exists()) {
+                throw ValidationException::withMessages([
+                    'description' => 'Vous avez déjà signalé cette coupure au cours des 30 dernières minutes.',
+                ]);
+            }
+
+            if ($user->zone_id && (clone $signalementsRecents)->whereHas('user', function ($userQuery) use ($user) {
+                $userQuery->where('zone_id', $user->zone_id);
+            })->exists()) {
+                throw ValidationException::withMessages([
+                    'description' => 'Un habitant de votre zone a déjà signalé cette coupure au cours des 30 dernières minutes.',
+                ]);
+            }
         }
 
         if ($request->hasFile('photo')) {
