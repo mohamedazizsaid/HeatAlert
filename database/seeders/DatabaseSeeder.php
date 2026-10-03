@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
      * 2. Admin (pas de dépendance zone)
      * 3. AlerteMeteo (dépend de Zone)
      * 4. Conseils (indépendant)
+    * 5. Coupures et signalements (dépendent des zones et utilisateurs)
      */
     public function run(): void
     {
@@ -20,6 +21,7 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             AlerteMeteoSeeder::class,
             ConseilSeeder::class,
+            CoupureSeeder::class,
         ]);
     }
 }

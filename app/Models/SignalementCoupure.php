@@ -10,6 +10,8 @@ class SignalementCoupure extends Model
 {
     use HasFactory;
 
+    protected $table = 'signalements_coupures';
+
     public const STATUTS_VALIDATION = ['en_attente', 'valide', 'rejete'];
 
     protected $fillable = [
