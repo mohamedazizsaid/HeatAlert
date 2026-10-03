@@ -47,6 +47,11 @@
             <li><a href="{{ route('admin.coupures.create') }}"><i class="fa-solid fa-plus"></i>Ajouter une coupure</a></li>
           </ul>
         </li>
+        <li class="{{ request()->routeIs('admin.signalements.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.signalements.index') }}">
+            <i class="fa-solid fa-flag"></i>Signalements
+          </a>
+        </li>
         <li class="{{ request()->routeIs('admin.conseils.*') ? 'active has-sub' : 'has-sub' }}">
           <a class="js-arrow" href="#">
             <i class="fa-solid fa-lightbulb"></i>Conseils
@@ -136,6 +141,13 @@
               <a href="{{ route('admin.coupures.create') }}">Ajouter une coupure</a>
             </li>
           </ul>
+        </li>
+
+        {{-- Signalements de coupures --}}
+        <li class="{{ request()->routeIs('admin.signalements.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.signalements.index') }}">
+            <i class="fa-solid fa-flag"></i>Signalements
+          </a>
         </li>
 
         {{-- Conseils --}}

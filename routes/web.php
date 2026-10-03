@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AlerteMeteoController;
 use App\Http\Controllers\Admin\ConseilController;
 use App\Http\Controllers\Admin\CoupureController;
+use App\Http\Controllers\Admin\SignalementCoupureController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\HomeController;
@@ -64,6 +65,14 @@ Route::middleware(['auth', 'admin'])
 
         // Gestion des Coupures électriques
         Route::resource('coupures', CoupureController::class);
+
+        // Modération des signalements de coupures
+        Route::resource('signalements', SignalementCoupureController::class)
+            ->only(['index', 'show', 'destroy']);
+        Route::patch('signalements/{signalement}/valider', [SignalementCoupureController::class, 'valider'])
+            ->name('signalements.valider');
+        Route::patch('signalements/{signalement}/rejeter', [SignalementCoupureController::class, 'rejeter'])
+            ->name('signalements.rejeter');
 
         // Gestion des Conseils
         Route::resource('conseils', ConseilController::class);

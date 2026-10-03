@@ -128,6 +128,8 @@
         { section: 'Alertes Météo', title: 'Liste des alertes', sub: 'Gérer les alertes de vigilance canicule', href: "{{ route('admin.alertes.index') }}", icon: 'fa-triangle-exclamation' },
         { section: 'Alertes Météo', title: 'Créer une alerte', sub: 'Publier une nouvelle alerte météo', href: "{{ route('admin.alertes.create') }}", icon: 'fa-plus' },
 
+        { section: 'Coupures électriques', title: 'Signalements', sub: 'Modérer les signalements de coupures', href: "{{ route('admin.signalements.index') }}", icon: 'fa-flag' },
+
         { section: 'Conseils Prévention', title: 'Liste des conseils', sub: 'Consulter les recommandations santé', href: "{{ route('admin.conseils.index') }}", icon: 'fa-lightbulb' },
         { section: 'Conseils Prévention', title: 'Ajouter un conseil', sub: 'Publier un geste de prévention canicule', href: "{{ route('admin.conseils.create') }}", icon: 'fa-plus' },
 
