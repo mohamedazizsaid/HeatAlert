@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AlerteMeteo;
 use App\Models\Conseil;
+use App\Models\Coupure;
+use App\Models\SignalementCoupure;
 use App\Models\Zone;
 
 class AdminController extends Controller
@@ -14,6 +16,12 @@ class AdminController extends Controller
      */
     public function index()
     {
+        $coupuresParStatut = Coupure::query()
+            ->select('statut')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('statut')
+            ->pluck('total', 'statut');
+
         $stats = [
             'zones'          => Zone::count(),
             'zones_actives'  => Zone::where('actif', true)->count(),
@@ -22,6 +30,10 @@ class AdminController extends Controller
             'alertes_rouge'  => AlerteMeteo::where('niveau', 'rouge')->where('statut', 'active')->count(),
             'conseils'       => Conseil::count(),
             'conseils_actifs' => Conseil::where('actif', true)->count(),
+            'coupures_en_cours' => (int) ($coupuresParStatut['en_cours'] ?? 0),
+            'coupures_prevues' => (int) ($coupuresParStatut['prevue'] ?? 0),
+            'coupures_terminees' => (int) ($coupuresParStatut['terminee'] ?? 0),
+            'signalements_en_attente' => SignalementCoupure::where('statut_validation', 'en_attente')->count(),
         ];
 
         $dernieresAlertes = AlerteMeteo::with('zone')
@@ -30,7 +42,13 @@ class AdminController extends Controller
             ->limit(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'dernieresAlertes'));
+        $derniersSignalements = SignalementCoupure::with(['user', 'coupure.zone'])
+            ->where('statut_validation', 'en_attente')
+            ->orderByDesc('date_signalement')
+            ->limit(5)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'dernieresAlertes', 'derniersSignalements'));
     }
 
     /**
