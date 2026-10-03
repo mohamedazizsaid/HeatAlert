@@ -24,6 +24,13 @@
         'rejete' => 'Rejetés',
       ],
     ],
+    [
+      'name' => 'zone_id',
+      'label' => '— Zone —',
+      'options' => $zones->mapWithKeys(fn ($zone) => [
+        $zone->id => $zone->nom . ' (' . $zone->ville . ')',
+      ])->all(),
+    ],
   ],
 ])
 
@@ -83,22 +90,32 @@
                 <i class="fa-solid fa-eye"></i>
               </a>
               @if($signalement->statut_validation !== 'valide')
-                <form action="{{ route('admin.signalements.valider', $signalement) }}" method="POST" class="d-inline">
-                  @csrf
-                  @method('PATCH')
-                  <button type="submit" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#16a34a;" title="Valider">
-                    <i class="fa-solid fa-check"></i>
-                  </button>
-                </form>
+                <button type="button" class="m-btn m-btn--ghost js-trigger-moderation"
+                        style="height:28px;padding:0 10px;font-size:12px;color:#16a34a;"
+                        data-action="{{ route('admin.signalements.valider', $signalement) }}"
+                        data-title="Valider le signalement"
+                        data-message="Voulez-vous valider ce signalement ? Il sera considéré comme confirmé."
+                        data-submit="Valider"
+                        data-icon="fa-check"
+                        data-variant="btn-success"
+                        data-color="success"
+                        title="Valider">
+                  <i class="fa-solid fa-check"></i>
+                </button>
               @endif
               @if($signalement->statut_validation !== 'rejete')
-                <form action="{{ route('admin.signalements.rejeter', $signalement) }}" method="POST" class="d-inline">
-                  @csrf
-                  @method('PATCH')
-                  <button type="submit" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;color:#dc2626;" title="Rejeter">
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </form>
+                <button type="button" class="m-btn m-btn--ghost js-trigger-moderation"
+                        style="height:28px;padding:0 10px;font-size:12px;color:#dc2626;"
+                        data-action="{{ route('admin.signalements.rejeter', $signalement) }}"
+                        data-title="Rejeter le signalement"
+                        data-message="Voulez-vous rejeter ce signalement ? Cette décision pourra être modifiée depuis la modération."
+                        data-submit="Rejeter"
+                        data-icon="fa-xmark"
+                        data-variant="btn-danger"
+                        data-color="danger"
+                        title="Rejeter">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
               @endif
               <button type="button" class="m-btn m-btn--ghost js-trigger-delete"
                       style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;"
@@ -142,4 +159,5 @@
     </div>
   @endif
 </section>
+
 @endsection

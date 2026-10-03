@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SignalementCoupure;
+use App\Models\Zone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -23,9 +24,16 @@ class SignalementCoupureController extends Controller
             $query->where('statut_validation', $request->input('statut_validation'));
         }
 
-        $signalements = $query->paginate(10)->withQueryString();
+        if ($request->filled('zone_id')) {
+            $query->whereHas('coupure', function ($coupureQuery) use ($request) {
+                $coupureQuery->where('zone_id', $request->input('zone_id'));
+            });
+        }
 
-        return view('admin.signalements.index', compact('signalements'));
+        $signalements = $query->paginate(10)->withQueryString();
+        $zones = Zone::query()->orderBy('gouvernorat')->orderBy('nom')->get();
+
+        return view('admin.signalements.index', compact('signalements', 'zones'));
     }
 
     /**

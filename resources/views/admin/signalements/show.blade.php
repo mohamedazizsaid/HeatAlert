@@ -15,22 +15,29 @@
   </div>
   <div class="page-header__actions">
     @if($signalement->statut_validation !== 'valide')
-      <form action="{{ route('admin.signalements.valider', $signalement) }}" method="POST" class="d-inline">
-        @csrf
-        @method('PATCH')
-        <button type="submit" class="m-btn m-btn--primary">
-          <i class="fa-solid fa-check"></i> Valider
-        </button>
-      </form>
+      <button type="button" class="m-btn m-btn--primary js-trigger-moderation"
+              data-action="{{ route('admin.signalements.valider', $signalement) }}"
+              data-title="Valider le signalement"
+              data-message="Voulez-vous valider ce signalement ? Il sera considéré comme confirmé."
+              data-submit="Valider"
+              data-icon="fa-check"
+              data-variant="btn-success"
+              data-color="success">
+        <i class="fa-solid fa-check"></i> Valider
+      </button>
     @endif
     @if($signalement->statut_validation !== 'rejete')
-      <form action="{{ route('admin.signalements.rejeter', $signalement) }}" method="POST" class="d-inline">
-        @csrf
-        @method('PATCH')
-        <button type="submit" class="m-btn m-btn--ghost" style="border:1px solid #dc2626;color:#dc2626;">
-          <i class="fa-solid fa-xmark"></i> Rejeter
-        </button>
-      </form>
+      <button type="button" class="m-btn m-btn--ghost js-trigger-moderation"
+              style="border:1px solid #dc2626;color:#dc2626;"
+              data-action="{{ route('admin.signalements.rejeter', $signalement) }}"
+              data-title="Rejeter le signalement"
+              data-message="Voulez-vous rejeter ce signalement ? Cette décision pourra être modifiée depuis la modération."
+              data-submit="Rejeter"
+              data-icon="fa-xmark"
+              data-variant="btn-danger"
+              data-color="danger">
+        <i class="fa-solid fa-xmark"></i> Rejeter
+      </button>
     @endif
     <button type="button" class="m-btn m-btn--ghost js-trigger-delete"
             style="border:1px solid #dc2626;color:#dc2626;"
@@ -113,4 +120,5 @@
     </section>
   </div>
 </div>
+
 @endsection
