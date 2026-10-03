@@ -23,6 +23,7 @@ class CoupureController extends Controller
     public function index(Request $request): View
     {
         Coupure::actualiserStatuts();
+        \App\Models\Intervention::actualiserStatuts();
 
         $query = Coupure::with('zone')->withCount('signalements');
 
@@ -90,7 +91,7 @@ class CoupureController extends Controller
     {
         $zones = $this->zoneService->getActiveForSelect();
         $types = Coupure::TYPES;
-        $statuts = Coupure::STATUTS;
+        $statuts = ['prevue', 'en_cours'];
 
         return view('admin.coupures.create', compact('zones', 'types', 'statuts'));
     }
@@ -112,6 +113,7 @@ class CoupureController extends Controller
     public function show(Coupure $coupure): View
     {
         Coupure::actualiserStatuts();
+        \App\Models\Intervention::actualiserStatuts();
         $coupure->refresh();
         $coupure->load(['zone', 'signalements.user', 'interventions']);
 
@@ -123,7 +125,7 @@ class CoupureController extends Controller
      */
     public function createIntervention(Coupure $coupure): View
     {
-        abort_if($coupure->type === 'delestage', 422, 'Une coupure de délestage ne nécessite pas d’intervention.');
+        $this->verifierCoupurePourIntervention($coupure);
 
         $statuts = \App\Models\Intervention::STATUTS;
 
@@ -135,15 +137,61 @@ class CoupureController extends Controller
      */
     public function storeIntervention(StoreInterventionRequest $request, Coupure $coupure): RedirectResponse
     {
-        abort_if($coupure->type === 'delestage', 422, 'Une coupure de délestage ne nécessite pas d’intervention.');
+        $this->verifierCoupurePourIntervention($coupure);
 
         $data = $request->validated();
         abort_if((int) $data['coupure_id'] !== $coupure->id, 422, 'La coupure indiquée ne correspond pas à la page courante.');
+        $data['statut'] = 'planifiee';
 
         $coupure->interventions()->create($data);
 
         return redirect()->route('admin.coupures.show', $coupure)
             ->with('success', 'Intervention planifiée avec succès.');
+    }
+
+    public function editIntervention(Coupure $coupure, \App\Models\Intervention $intervention): View
+    {
+        $this->verifierIntervention($coupure, $intervention);
+        $this->verifierCoupurePourIntervention($coupure);
+
+        $statuts = \App\Models\Intervention::STATUTS;
+
+        return view('admin.interventions.edit', compact('coupure', 'intervention', 'statuts'));
+    }
+
+    public function updateIntervention(StoreInterventionRequest $request, Coupure $coupure, \App\Models\Intervention $intervention): RedirectResponse
+    {
+        $this->verifierIntervention($coupure, $intervention);
+        $this->verifierCoupurePourIntervention($coupure);
+
+        $data = $request->validated();
+        abort_if((int) $data['coupure_id'] !== $coupure->id, 422, 'La coupure indiquée ne correspond pas à la page courante.');
+        $data['statut'] = $intervention->statut;
+
+        $intervention->update($data);
+
+        return redirect()->route('admin.coupures.show', $coupure)
+            ->with('success', 'Intervention mise à jour avec succès.');
+    }
+
+    public function destroyIntervention(Coupure $coupure, \App\Models\Intervention $intervention): RedirectResponse
+    {
+        $this->verifierIntervention($coupure, $intervention);
+        $intervention->delete();
+
+        return redirect()->route('admin.coupures.show', $coupure)
+            ->with('deleted', 'Intervention supprimée avec succès.');
+    }
+
+    private function verifierCoupurePourIntervention(Coupure $coupure): void
+    {
+        abort_if($coupure->type === 'delestage', 422, 'Une coupure de délestage ne nécessite pas d’intervention.');
+        abort_if($coupure->statut === 'terminee', 422, 'Une coupure terminée ne peut plus recevoir d’intervention.');
+    }
+
+    private function verifierIntervention(Coupure $coupure, \App\Models\Intervention $intervention): void
+    {
+        abort_if($intervention->coupure_id !== $coupure->id, 404);
     }
 
     /**
@@ -153,7 +201,7 @@ class CoupureController extends Controller
     {
         $zones = $this->zoneService->getActiveForSelect();
         $types = Coupure::TYPES;
-        $statuts = Coupure::STATUTS;
+        $statuts = ['prevue', 'en_cours'];
 
         return view('admin.coupures.edit', compact('coupure', 'zones', 'types', 'statuts'));
     }
@@ -164,6 +212,7 @@ class CoupureController extends Controller
     public function update(UpdateCoupureRequest $request, Coupure $coupure): RedirectResponse
     {
         $coupure->update($request->validated());
+        Coupure::actualiserStatuts();
 
         return redirect()->route('admin.coupures.index')
             ->with('success', 'Coupure mise à jour avec succès.');

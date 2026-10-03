@@ -30,8 +30,8 @@ class UpdateCoupureRequest extends FormRequest
         return [
             'type.required' => 'Le type de coupure est obligatoire.',
             'type.in' => 'Le type de coupure sélectionné est invalide.',
-            'statut.required' => 'Le statut de la coupure est obligatoire.',
             'statut.in' => 'Le statut de coupure sélectionné est invalide.',
+            'statut.required' => 'Le statut de la coupure est obligatoire.',
             'date_debut.required' => 'La date de début est obligatoire.',
             'date_debut.date' => 'La date de début doit être une date valide.',
             'date_fin.date' => 'La date de fin doit être une date valide.',

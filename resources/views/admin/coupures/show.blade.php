@@ -17,10 +17,14 @@
     <a href="{{ route('admin.coupures.edit', $coupure) }}" class="m-btn m-btn--primary">
       <i class="fa-solid fa-pen-to-square"></i> Modifier
     </a>
-    @if(in_array($coupure->type, ['panne', 'surcharge'], true))
+    @if(in_array($coupure->type, ['panne', 'surcharge'], true) && $coupure->statut !== 'terminee')
       <a href="{{ route('admin.coupures.interventions.create', $coupure) }}" class="m-btn m-btn--ghost" style="border:1px solid #d97706;color:#b45309;">
         <i class="fa-solid fa-screwdriver-wrench"></i> Planifier une intervention
       </a>
+    @elseif($coupure->statut === 'terminee')
+      <span class="m-btn m-btn--ghost text-muted" title="Cette coupure est terminée.">
+        <i class="fa-solid fa-circle-check"></i> Coupure terminée
+      </span>
     @else
       <span class="m-btn m-btn--ghost text-muted" title="Le délestage est déjà une coupure planifiée.">
         <i class="fa-solid fa-calendar-check"></i> Coupure planifiée
@@ -52,7 +56,7 @@
       <div class="table-responsive">
         <table class="m-table">
           <thead>
-            <tr><th>Équipe</th><th>Date prévue</th><th>Durée</th><th>Rétablissement estimé</th><th>Statut</th></tr>
+            <tr><th>Équipe</th><th>Date prévue</th><th>Durée</th><th>Rétablissement estimé</th><th>Statut</th><th>Actions</th></tr>
           </thead>
           <tbody>
             @foreach($coupure->interventions->sortByDesc('date_prevue') as $intervention)
@@ -69,6 +73,18 @@
                 <td>{{ $intervention->duree_estimee_min }} min</td>
                 <td>{{ $intervention->date_prevue?->copy()->addMinutes($intervention->duree_estimee_min)->format('d/m/Y H:i') }}</td>
                 <td><span class="badge {{ $interventionClass }}">{{ ucfirst(str_replace('_', ' ', $intervention->statut)) }}</span></td>
+                <td style="white-space:nowrap;">
+                  <a href="{{ route('admin.coupures.interventions.edit', [$coupure, $intervention]) }}" class="m-btn m-btn--ghost" style="height:28px;padding:0 10px;font-size:12px;" title="Modifier">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </a>
+                  <button type="button" class="m-btn m-btn--ghost js-trigger-delete" style="height:28px;padding:0 10px;font-size:12px;color:#dc3545;"
+                          data-action="{{ route('admin.coupures.interventions.destroy', [$coupure, $intervention]) }}"
+                          data-name="l’intervention de {{ $intervention->equipe }}"
+                          data-type="l’intervention"
+                          title="Supprimer">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </td>
               </tr>
             @endforeach
           </tbody>

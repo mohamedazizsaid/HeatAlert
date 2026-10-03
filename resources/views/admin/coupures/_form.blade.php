@@ -22,13 +22,18 @@
         <div class="col-md-6">
           <label for="statut" class="form-label fw-semibold">Statut <span class="text-danger">*</span></label>
           <select id="statut" name="statut" class="form-select @error('statut') is-invalid @enderror" required>
-            @foreach($statuts as $statut)
-              <option value="{{ $statut }}" {{ old('statut', $coupure->statut ?? 'prevue') === $statut ? 'selected' : '' }}>
-                {{ ucfirst(str_replace('_', ' ', $statut)) }}
-              </option>
-            @endforeach
+            @if(isset($coupure) && $coupure->statut === 'terminee')
+              <option value="terminee" selected>Terminée (automatique)</option>
+            @else
+              @foreach($statuts as $statut)
+                <option value="{{ $statut }}" {{ old('statut', $coupure->statut ?? 'prevue') === $statut ? 'selected' : '' }}>
+                  {{ ucfirst(str_replace('_', ' ', $statut)) }}
+                </option>
+              @endforeach
+            @endif
           </select>
           @error('statut')<div class="invalid-feedback">{{ $message }}</div>@enderror
+          <small class="form-text text-muted">Le statut « Terminée » est calculé automatiquement selon la date de fin.</small>
         </div>
 
         <div class="col-12">

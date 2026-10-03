@@ -55,13 +55,18 @@ class Coupure extends Model
             ->update(['statut' => 'terminee']);
 
         self::query()
-            ->where('statut', 'prevue')
+            ->whereIn('statut', ['prevue', 'en_cours'])
             ->where('date_debut', '<=', $maintenant)
             ->where(function ($query) use ($maintenant) {
                 $query->whereNull('date_fin')
                     ->orWhere('date_fin', '>', $maintenant);
             })
             ->update(['statut' => 'en_cours']);
+
+        self::query()
+            ->whereIn('statut', ['en_cours', 'terminee'])
+            ->where('date_debut', '>', $maintenant)
+            ->update(['statut' => 'prevue']);
     }
 
     protected function retablissementEstime(): Attribute

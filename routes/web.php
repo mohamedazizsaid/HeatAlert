@@ -75,6 +75,12 @@ Route::middleware(['auth', 'admin'])
             ->name('coupures.interventions.create');
         Route::post('coupures/{coupure}/interventions', [CoupureController::class, 'storeIntervention'])
             ->name('coupures.interventions.store');
+        Route::get('coupures/{coupure}/interventions/{intervention}/edit', [CoupureController::class, 'editIntervention'])
+            ->name('coupures.interventions.edit');
+        Route::put('coupures/{coupure}/interventions/{intervention}', [CoupureController::class, 'updateIntervention'])
+            ->name('coupures.interventions.update');
+        Route::delete('coupures/{coupure}/interventions/{intervention}', [CoupureController::class, 'destroyIntervention'])
+            ->name('coupures.interventions.destroy');
         Route::resource('coupures', CoupureController::class);
 
         // Modération des signalements de coupures

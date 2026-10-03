@@ -17,7 +17,7 @@ class StoreCoupureRequest extends FormRequest
     {
         return [
             'type' => ['required', 'string', Rule::in(Coupure::TYPES)],
-            'statut' => ['required', 'string', Rule::in(Coupure::STATUTS)],
+            'statut' => ['required', 'string', Rule::in(['prevue', 'en_cours'])],
             'date_debut' => ['required', 'date'],
             'date_fin' => ['nullable', 'date', 'after:date_debut'],
             'cause' => ['required', 'string', 'max:500'],
@@ -30,8 +30,8 @@ class StoreCoupureRequest extends FormRequest
         return [
             'type.required' => 'Le type de coupure est obligatoire.',
             'type.in' => 'Le type de coupure sélectionné est invalide.',
-            'statut.required' => 'Le statut de la coupure est obligatoire.',
             'statut.in' => 'Le statut de coupure sélectionné est invalide.',
+            'statut.required' => 'Le statut de la coupure est obligatoire.',
             'date_debut.required' => 'La date de début est obligatoire.',
             'date_debut.date' => 'La date de début doit être une date valide.',
             'date_fin.date' => 'La date de fin doit être une date valide.',

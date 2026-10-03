@@ -23,7 +23,17 @@ class StoreInterventionRequest extends FormRequest
                 }),
             ],
             'equipe' => ['required', 'string', 'max:150'],
-            'date_prevue' => ['required', 'date'],
+            'date_prevue' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    $coupure = $this->route('coupure');
+
+                    if ($coupure && \Carbon\Carbon::parse($value)->lt($coupure->date_debut)) {
+                        $fail('La date de l’intervention doit être égale ou postérieure au début de la coupure.');
+                    }
+                },
+            ],
             'duree_estimee_min' => ['required', 'integer', 'min:1', 'max:10080'],
             'statut' => ['required', 'string', Rule::in(Intervention::STATUTS)],
             'notes' => ['nullable', 'string', 'max:2000'],
