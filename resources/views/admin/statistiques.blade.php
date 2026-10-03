@@ -244,7 +244,56 @@
 
   </div>
 
-  {{-- ── LIGNE 4 : MÉTRIQUES MÉTÉO & CONSEILS ── --}}
+  {{-- ── LIGNE 4 : ANALYSE DES COUPURES ── --}}
+  <div class="row g-4 mb-4">
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-bolt text-warning me-2"></i>Coupures par type</h5>
+          <small class="text-muted">Répartition des pannes, surcharges et délestages</small>
+        </div>
+        <div class="card-body px-4 pt-3 pb-4"><div style="position:relative;height:270px;"><canvas id="coupuresParTypeChart"></canvas></div></div>
+      </div>
+    </div>
+    <div class="col-xl-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-chart-line text-danger me-2"></i>Coupures par mois</h5>
+          <small class="text-muted">Évolution sur les 12 derniers mois</small>
+        </div>
+        <div class="card-body px-4 pt-3 pb-4"><div style="position:relative;height:270px;"><canvas id="coupuresParMoisChart"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-xl-7">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-map-location-dot text-primary me-2"></i>Coupures par zone</h5>
+          <small class="text-muted">Top 10 des zones les plus concernées</small>
+        </div>
+        <div class="card-body px-4 pt-3 pb-4"><div style="position:relative;height:320px;"><canvas id="coupuresParZoneChart"></canvas></div></div>
+      </div>
+    </div>
+    <div class="col-xl-5">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-clock text-info me-2"></i>Suivi des interventions</h5>
+          <small class="text-muted">Durée moyenne et signalements validés</small>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3 mb-3">
+            <div class="col-6"><div class="p-3 rounded-3 bg-light text-center"><div class="small text-muted">Durée moyenne</div><strong class="fs-3 text-primary">{{ round($dureeMoyenneCoupures) }}</strong><div class="small text-muted">minutes</div></div></div>
+            <div class="col-6"><div class="p-3 rounded-3 bg-light text-center"><div class="small text-muted">Taux validé</div><strong class="fs-3 text-success">{{ $tauxSignalementsValides }}%</strong><div class="small text-muted">{{ $signalementsValides }}/{{ $totalSignalements }} signalements</div></div></div>
+          </div>
+          <div style="position:relative;height:190px;"><canvas id="signalementsValidationChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- ── LIGNE 5 : MÉTRIQUES MÉTÉO & CONSEILS ── --}}
   <div class="row g-4 mb-4">
 
     {{-- Statistiques Températures --}}
@@ -623,7 +672,91 @@
     }
   });
 
-  // ── 6. Conseils par catégorie ──
+  // ── 6. Coupures par type ──
+  const coupuresTypes = @json($coupuresParType->toArray());
+  new Chart(document.getElementById('coupuresParTypeChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(coupuresTypes).map(type => type.replace('_', ' ').replace(/\b\w/g, letter => letter.toUpperCase())),
+      datasets: [{
+        data: Object.values(coupuresTypes),
+        backgroundColor: ['#dc2626', '#f97316', '#eab308'],
+        borderWidth: 4,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' }, tooltip: { ...tooltipStyle } }
+    }
+  });
+
+  // ── 7. Coupures par mois ──
+  const coupuresMois = @json($coupuresParMois->toArray());
+  const coupuresMoisLabels = Object.keys(coupuresMois).map(mois => {
+    const [annee, numeroMois] = mois.split('-').map(Number);
+    return new Date(annee, numeroMois - 1, 1).toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+  });
+  new Chart(document.getElementById('coupuresParMoisChart'), {
+    type: 'line',
+    data: {
+      labels: coupuresMoisLabels,
+      datasets: [{
+        label: 'Coupures',
+        data: Object.values(coupuresMois),
+        borderColor: '#f97316',
+        backgroundColor: 'rgba(249,115,22,.14)',
+        fill: true,
+        tension: .35,
+        borderWidth: 3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { ...tooltipStyle } },
+      scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+    }
+  });
+
+  // ── 8. Coupures par zone ──
+  const coupuresZones = @json($coupuresParZone->map(fn ($zone) => ['nom' => $zone->nom, 'total' => $zone->coupures_count])->values());
+  new Chart(document.getElementById('coupuresParZoneChart'), {
+    type: 'bar',
+    data: {
+      labels: coupuresZones.map(zone => zone.nom),
+      datasets: [{
+        label: 'Coupures',
+        data: coupuresZones.map(zone => zone.total),
+        backgroundColor: '#2563eb',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { ...tooltipStyle } },
+      scales: { x: { beginAtZero: true, ticks: { precision: 0 } }, y: { grid: { display: false } } }
+    }
+  });
+
+  // ── 9. Taux de signalements validés ──
+  new Chart(document.getElementById('signalementsValidationChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Validés', 'Non validés'],
+      datasets: [{
+        data: [{{ $signalementsValides }}, {{ max(0, $totalSignalements - $signalementsValides) }}],
+        backgroundColor: ['#16a34a', '#e2e8f0'],
+        borderWidth: 3,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '68%',
+      plugins: { legend: { position: 'bottom' }, tooltip: { ...tooltipStyle } }
+    }
+  });
+
+  // ── 10. Conseils par catégorie ──
   const conseilsData = @json($conseilsParCategorie->toArray());
   const conseilLabels = Object.keys(conseilsData);
   new Chart(document.getElementById('conseilsChart'), {

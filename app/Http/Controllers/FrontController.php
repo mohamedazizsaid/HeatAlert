@@ -231,7 +231,7 @@ class FrontController extends Controller
     {
         Coupure::actualiserStatuts();
 
-        $query = Coupure::with(['zone', 'interventions'])->orderByDesc('date_debut');
+        $query = Coupure::with(['zone', 'interventions']);
 
         if (auth()->check()) {
             $query->where('zone_id', auth()->user()->zone_id);
@@ -247,12 +247,45 @@ class FrontController extends Controller
             $query->where('type', $request->input('type'));
         }
 
-        $coupures = $query->paginate(6)->withQueryString();
+        if ($request->input('tri', 'plus_proche') === 'plus_lointaine') {
+            $query->orderByDesc('date_debut');
+        } else {
+            $query->orderBy('date_debut');
+        }
+
+        $coupures = $query->paginate(8)->withQueryString();
+
+        $calendrierQuery = Coupure::with(['zone', 'interventions'])
+            ->where('statut', 'prevue')
+            ->whereBetween('date_debut', [now()->startOfDay(), now()->addDays(7)->endOfDay()])
+            ->orderBy('date_debut');
+
+        $calendrierEvents = $calendrierQuery->get()->map(function (Coupure $coupure): array {
+            $couleur = match ($coupure->type) {
+                'panne' => '#dc2626',
+                'surcharge' => '#ea580c',
+                default => '#d97706',
+            };
+
+            return [
+                'id' => $coupure->id,
+                'title' => 'Coupure ' . ucfirst($coupure->type) . ' — ' . ($coupure->zone?->nom ?? 'Zone inconnue'),
+                'start' => $coupure->date_debut?->toIso8601String(),
+                'end' => $coupure->retablissement_estime?->toIso8601String(),
+                'extendedProps' => [
+                    'zone' => $coupure->zone?->nom . ' (' . ($coupure->zone?->ville ?? '—') . ')',
+                ],
+                'url' => route('front.coupures.show', $coupure),
+                'backgroundColor' => $couleur,
+                'borderColor' => $couleur,
+            ];
+        })->values();
 
         return view('front.coupures.index', [
             'coupures' => $coupures,
             'types' => Coupure::TYPES,
             'statuts' => Coupure::STATUTS,
+            'calendrierEvents' => $calendrierEvents,
         ]);
     }
 
@@ -270,10 +303,10 @@ class FrontController extends Controller
                 $query->where('statut_validation', 'valide');
             }]);
 
-        if (auth()->check()) {
-            $query->where('zone_id', auth()->user()->zone_id);
-        } else {
+        if (! auth()->check()) {
             $query->where('statut', 'en_cours');
+        } else {
+            $query->whereIn('statut', ['prevue', 'en_cours']);
         }
 
         $coupure = $query->firstOrFail();

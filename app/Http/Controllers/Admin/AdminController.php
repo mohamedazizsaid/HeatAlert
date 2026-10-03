@@ -58,6 +58,9 @@ class AdminController extends Controller
      */
     public function statistiques()
     {
+        Coupure::actualiserStatuts();
+        \App\Models\Intervention::actualiserStatuts();
+
         // ── Totaux Globaux ──
         $totaux = [
             'zones'           => Zone::count(),
@@ -152,10 +155,49 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
+        $coupuresParType = Coupure::query()
+            ->select('type')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('type')
+            ->orderByDesc('total')
+            ->pluck('total', 'type');
+
+        $debut12MoisCoupures = now()->subMonths(11)->startOfMonth();
+        $coupuresBrutesParMois = Coupure::query()
+            ->selectRaw('DATE_FORMAT(date_debut, "%Y-%m") as mois, COUNT(*) as total')
+            ->where('date_debut', '>=', $debut12MoisCoupures)
+            ->groupBy('mois')
+            ->pluck('total', 'mois');
+
+        $coupuresParMois = collect();
+        for ($i = 11; $i >= 0; $i--) {
+            $mois = now()->subMonths($i)->format('Y-m');
+            $coupuresParMois->put($mois, (int) ($coupuresBrutesParMois[$mois] ?? 0));
+        }
+
+        $coupuresParZone = Zone::withCount('coupures')
+            ->orderByDesc('coupures_count')
+            ->take(10)
+            ->get();
+
+        $dureeMoyenneCoupures = (float) (Coupure::query()
+            ->whereNotNull('date_debut')
+            ->whereNotNull('date_fin')
+            ->selectRaw('AVG(TIMESTAMPDIFF(MINUTE, date_debut, date_fin)) as moyenne')
+            ->value('moyenne') ?? 0);
+
+        $totalSignalements = SignalementCoupure::count();
+        $signalementsValides = SignalementCoupure::where('statut_validation', 'valide')->count();
+        $tauxSignalementsValides = $totalSignalements > 0
+            ? round(($signalementsValides / $totalSignalements) * 100, 1)
+            : 0;
+
         return view('admin.statistiques', compact(
             'totaux', 'alertesParNiveau', 'alertesParStatut', 'alertesParType',
             'topZones', 'alertesParMois', 'tempStats', 'conseilsParCategorie',
-            'dernieresAlertes', 'alertesCritiques'
+            'dernieresAlertes', 'alertesCritiques', 'coupuresParType',
+            'coupuresParMois', 'coupuresParZone', 'dureeMoyenneCoupures',
+            'totalSignalements', 'signalementsValides', 'tauxSignalementsValides'
         ));
     }
 
