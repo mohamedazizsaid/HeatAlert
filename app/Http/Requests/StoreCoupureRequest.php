@@ -20,7 +20,7 @@ class StoreCoupureRequest extends FormRequest
             'statut' => ['required', 'string', Rule::in(Coupure::STATUTS)],
             'date_debut' => ['required', 'date'],
             'date_fin' => ['nullable', 'date', 'after:date_debut'],
-            'cause' => ['required_if:type,delestage', 'string', 'max:500'],
+            'cause' => ['required', 'string', 'max:500'],
             'zone_id' => ['required', 'exists:zones,id'],
         ];
     }
@@ -36,7 +36,7 @@ class StoreCoupureRequest extends FormRequest
             'date_debut.date' => 'La date de début doit être une date valide.',
             'date_fin.date' => 'La date de fin doit être une date valide.',
             'date_fin.after' => 'La date de fin doit être après la date de début.',
-            'cause.required_if' => 'La cause est obligatoire pour une coupure de délestage.',
+            'cause.required' => 'La cause de la coupure est obligatoire.',
             'cause.string' => 'La cause doit être une chaîne de caractères.',
             'cause.max' => 'La cause ne peut pas dépasser 500 caractères.',
             'zone_id.required' => 'La zone est obligatoire.',

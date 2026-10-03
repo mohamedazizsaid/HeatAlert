@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AlerteMeteoController;
 use App\Http\Controllers\Admin\ConseilController;
+use App\Http\Controllers\Admin\CoupureController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\HomeController;
@@ -60,6 +61,9 @@ Route::middleware(['auth', 'admin'])
 
         // Gestion des Alertes Météo
         Route::resource('alertes', AlerteMeteoController::class);
+
+        // Gestion des Coupures électriques
+        Route::resource('coupures', CoupureController::class);
 
         // Gestion des Conseils
         Route::resource('conseils', ConseilController::class);
