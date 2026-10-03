@@ -29,4 +29,9 @@ class Zone extends Model
     {
         return $this->hasMany(AlerteMeteo::class);
     }
+
+    public function coupures(): HasMany
+    {
+        return $this->hasMany(Coupure::class);
+    }
 }
