@@ -66,6 +66,11 @@
               </a>
             </li>
             <li>
+              <a href="{{ route('front.coupures.index') }}" class="{{ request()->routeIs('front.coupures.*') ? 'active' : '' }}">
+                <i class="bi bi-lightning-charge-fill me-1 text-warning"></i>Coupures
+              </a>
+            </li>
+            <li>
               <a href="{{ route('front.weather.global') }}" class="{{ request()->routeIs('front.weather.global') ? 'active' : '' }}">
                 <i class="bi bi-globe2 me-1 text-danger"></i>Météo Mondiale
                 <span class="badge bg-warning text-dark rounded-pill ms-1" style="font-size: 10px; padding: 2px 6px;">Live</span>

@@ -181,6 +181,8 @@
       </div>
     </div>
 
+    @include('admin.partials._moderation_confirm_modal')
+
     {{-- Auto-dismiss toasts avec slide-out et écouteur global du modal de suppression --}}
     <script>
       // Fonction globale pour afficher le modal de suppression

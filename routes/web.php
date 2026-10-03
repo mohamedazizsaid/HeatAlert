@@ -28,6 +28,9 @@ Route::get('/dashboard', function () {
     return redirect()->route('front.home');
 })->middleware('auth')->name('dashboard');
 
+// ─── Consultation publique des coupures
+Route::get('/coupures', [FrontController::class, 'coupures'])->name('front.coupures.index');
+
 // ─── Routes authentifiées — Front (utilisateurs ROLE_USER)
 Route::middleware(['auth'])->group(function () {
     Route::get('/accueil', [FrontController::class, 'index'])->name('front.home');
@@ -38,12 +41,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/alertes/{alerte}', [FrontController::class, 'alerteShow'])->name('front.alertes.show');
     Route::get('/conseils', [FrontController::class, 'conseils'])->name('front.conseils.index');
     Route::get('/conseils/{conseil}', [FrontController::class, 'conseilShow'])->name('front.conseils.show');
+    Route::get('/coupures/signaler', [FrontController::class, 'createSignalement'])->name('front.coupures.signaler');
+    Route::post('/coupures/signaler', [FrontController::class, 'storeSignalement'])->name('front.coupures.signaler.store');
 
     // ─── Profil Utilisateur (Détails & Modification)
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+Route::get('/coupures/{coupure}', [FrontController::class, 'coupureShow'])->name('front.coupures.show');
 
 // ─── Routes Admin — accessible uniquement aux ROLE_ADMIN
 Route::middleware(['auth', 'admin'])

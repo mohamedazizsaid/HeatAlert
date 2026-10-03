@@ -4,8 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\AlerteMeteo;
 use App\Models\Conseil;
+use App\Models\Coupure;
+use App\Models\SignalementCoupure;
 use App\Models\Zone;
+use App\Http\Requests\StoreSignalementCoupureRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class FrontController extends Controller
 {
@@ -216,5 +221,99 @@ class FrontController extends Controller
             ->get();
 
         return view('front.conseils.show', compact('conseil', 'relatedConseils'));
+    }
+
+    /**
+     * Liste les coupures visibles par l'utilisateur ou les coupures en cours pour un visiteur.
+     */
+    public function coupures(Request $request): View
+    {
+        $query = Coupure::with('zone')->orderByDesc('date_debut');
+
+        if (auth()->check()) {
+            $query->where('zone_id', auth()->user()->zone_id);
+
+            if ($request->filled('statut')) {
+                $query->where('statut', $request->input('statut'));
+            }
+        } else {
+            $query->where('statut', 'en_cours');
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->input('type'));
+        }
+
+        $coupures = $query->paginate(6)->withQueryString();
+
+        return view('front.coupures.index', [
+            'coupures' => $coupures,
+            'types' => Coupure::TYPES,
+            'statuts' => Coupure::STATUTS,
+        ]);
+    }
+
+    /**
+     * Affiche une coupure accessible par l'utilisateur courant.
+     */
+    public function coupureShow(Coupure $coupure): View
+    {
+        $query = Coupure::query()
+            ->whereKey($coupure->id)
+            ->with('zone')
+            ->withCount(['signalements as signalements_valides_count' => function ($query) {
+                $query->where('statut_validation', 'valide');
+            }]);
+
+        if (auth()->check()) {
+            $query->where('zone_id', auth()->user()->zone_id);
+        } else {
+            $query->where('statut', 'en_cours');
+        }
+
+        $coupure = $query->firstOrFail();
+
+        return view('front.coupures.show', compact('coupure'));
+    }
+
+    /**
+     * Affiche le formulaire de signalement pour la zone de l'utilisateur.
+     */
+    public function createSignalement(): View
+    {
+        $coupures = Coupure::where('zone_id', auth()->user()->zone_id)
+            ->where('statut', 'en_cours')
+            ->orderByDesc('date_debut')
+            ->get();
+
+        return view('front.coupures.signaler', compact('coupures'));
+    }
+
+    /**
+     * Enregistre un signalement créé par un habitant.
+     */
+    public function storeSignalement(StoreSignalementCoupureRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+        $user = $request->user();
+
+        if (isset($data['coupure_id'])) {
+            $coupure = Coupure::findOrFail($data['coupure_id']);
+
+            abort_if($coupure->zone_id !== $user->zone_id, 403, 'Cette coupure ne concerne pas votre zone.');
+            abort_if($coupure->statut !== 'en_cours', 422, 'Seule une coupure en cours peut être signalée.');
+        }
+
+        if ($request->hasFile('photo')) {
+            $data['photo'] = $request->file('photo')->store('signalements', 'public');
+        }
+
+        $data['user_id'] = $user->id;
+        $data['statut_validation'] = 'en_attente';
+
+        SignalementCoupure::create($data);
+
+        return redirect()->route('front.coupures.index')
+            ->with('success', 'Votre signalement a été envoyé et sera vérifié par un administrateur.');
     }
 }
