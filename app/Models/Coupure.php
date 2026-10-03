@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Coupure extends Model
 {
@@ -36,5 +37,25 @@ class Coupure extends Model
     public function signalements(): HasMany
     {
         return $this->hasMany(SignalementCoupure::class);
+    }
+
+    public function interventions(): HasMany
+    {
+        return $this->hasMany(Intervention::class);
+    }
+
+    protected function retablissementEstime(): Attribute
+    {
+        return Attribute::get(function (): ?\Carbon\Carbon {
+            $intervention = $this->relationLoaded('interventions')
+                ? $this->interventions->sortByDesc('date_prevue')->first()
+                : $this->interventions()->latest('date_prevue')->first();
+
+            if ($intervention?->date_prevue) {
+                return $intervention->date_prevue->copy()->addMinutes($intervention->duree_estimee_min);
+            }
+
+            return $this->date_fin;
+        });
     }
 }

@@ -27,8 +27,8 @@
   <dl class="row small mb-3">
     <dt class="col-5 text-muted">Début</dt>
     <dd class="col-7 mb-2">{{ $coupure->date_debut?->format('d/m/Y à H:i') }}</dd>
-    <dt class="col-5 text-muted">Fin</dt>
-    <dd class="col-7 mb-0">{{ $coupure->date_fin?->format('d/m/Y à H:i') ?? 'Non définie' }}</dd>
+    <dt class="col-5 text-muted">Rétablissement</dt>
+    <dd class="col-7 mb-0">{{ $coupure->retablissement_estime?->format('d/m/Y à H:i') ?? 'Non communiqué' }}</dd>
   </dl>
 
   @if($coupure->cause)

@@ -28,7 +28,7 @@
             <dd class="col-sm-7 mb-3"><span class="badge {{ $coupure->statut === 'en_cours' ? 'bg-danger' : ($coupure->statut === 'prevue' ? 'bg-warning text-dark' : 'bg-success') }}">{{ ucfirst(str_replace('_', ' ', $coupure->statut)) }}</span></dd>
             <dt class="col-sm-5 text-muted mb-3">Zone</dt><dd class="col-sm-7 mb-3">{{ $coupure->zone?->nom }} ({{ $coupure->zone?->ville }})</dd>
             <dt class="col-sm-5 text-muted mb-3">Début</dt><dd class="col-sm-7 mb-3">{{ $coupure->date_debut?->format('d/m/Y à H:i') }}</dd>
-            <dt class="col-sm-5 text-muted mb-3">Fin</dt><dd class="col-sm-7 mb-3">{{ $coupure->date_fin?->format('d/m/Y à H:i') ?? 'Non définie' }}</dd>
+            <dt class="col-sm-5 text-muted mb-3">Rétablissement estimé</dt><dd class="col-sm-7 mb-3">{{ $coupure->retablissement_estime?->format('d/m/Y à H:i') ?? 'Non communiqué' }}</dd>
             <dt class="col-sm-5 text-muted">Cause</dt><dd class="col-sm-7">{{ $coupure->cause }}</dd>
           </dl>
         </article>

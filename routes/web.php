@@ -71,6 +71,10 @@ Route::middleware(['auth', 'admin'])
         Route::resource('alertes', AlerteMeteoController::class);
 
         // Gestion des Coupures électriques
+        Route::get('coupures/{coupure}/interventions/create', [CoupureController::class, 'createIntervention'])
+            ->name('coupures.interventions.create');
+        Route::post('coupures/{coupure}/interventions', [CoupureController::class, 'storeIntervention'])
+            ->name('coupures.interventions.store');
         Route::resource('coupures', CoupureController::class);
 
         // Modération des signalements de coupures

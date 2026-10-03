@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCoupureRequest;
+use App\Http\Requests\StoreInterventionRequest;
 use App\Http\Requests\UpdateCoupureRequest;
 use App\Models\Coupure;
 use App\Models\Zone;
@@ -108,9 +109,37 @@ class CoupureController extends Controller
      */
     public function show(Coupure $coupure): View
     {
-        $coupure->load(['zone', 'signalements.user']);
+        $coupure->load(['zone', 'signalements.user', 'interventions']);
 
         return view('admin.coupures.show', compact('coupure'));
+    }
+
+    /**
+     * Affiche le formulaire de planification d'une intervention.
+     */
+    public function createIntervention(Coupure $coupure): View
+    {
+        abort_if($coupure->type === 'delestage', 422, 'Une coupure de délestage ne nécessite pas d’intervention.');
+
+        $statuts = \App\Models\Intervention::STATUTS;
+
+        return view('admin.interventions.create', compact('coupure', 'statuts'));
+    }
+
+    /**
+     * Enregistre une intervention planifiée.
+     */
+    public function storeIntervention(StoreInterventionRequest $request, Coupure $coupure): RedirectResponse
+    {
+        abort_if($coupure->type === 'delestage', 422, 'Une coupure de délestage ne nécessite pas d’intervention.');
+
+        $data = $request->validated();
+        abort_if((int) $data['coupure_id'] !== $coupure->id, 422, 'La coupure indiquée ne correspond pas à la page courante.');
+
+        $coupure->interventions()->create($data);
+
+        return redirect()->route('admin.coupures.show', $coupure)
+            ->with('success', 'Intervention planifiée avec succès.');
     }
 
     /**

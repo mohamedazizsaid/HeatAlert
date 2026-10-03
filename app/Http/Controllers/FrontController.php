@@ -229,7 +229,7 @@ class FrontController extends Controller
      */
     public function coupures(Request $request): View
     {
-        $query = Coupure::with('zone')->orderByDesc('date_debut');
+        $query = Coupure::with(['zone', 'interventions'])->orderByDesc('date_debut');
 
         if (auth()->check()) {
             $query->where('zone_id', auth()->user()->zone_id);
@@ -261,7 +261,7 @@ class FrontController extends Controller
     {
         $query = Coupure::query()
             ->whereKey($coupure->id)
-            ->with('zone')
+            ->with(['zone', 'interventions'])
             ->withCount(['signalements as signalements_valides_count' => function ($query) {
                 $query->where('statut_validation', 'valide');
             }]);
