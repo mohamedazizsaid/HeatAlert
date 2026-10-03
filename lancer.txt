@@ -1,0 +1,13 @@
+dans le terminal :composer install ; npm install ; npm run dev ; 
+
+mettre le .env
+
+creer la base de donnees dans mysql a l'aide de fichier  scriptdatabase.sql dans la racine de projet 
+
+ouvre un autre terminal : 
+
+php artisan migrate
+
+php artisan migrate --seed
+
+php artisan serve
