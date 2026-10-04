@@ -128,6 +128,21 @@
           </ul>
         </li>
 
+                {{-- Conseils --}}
+        <li class="{{ request()->routeIs('admin.conseils.*') ? 'active has-sub' : 'has-sub' }}">
+          <a class="js-arrow {{ request()->routeIs('admin.conseils.*') ? 'open' : '' }}" href="#">
+            <i class="fa-solid fa-lightbulb"></i>Conseils
+          </a>
+          <ul class="list-unstyled navbar__sub-list js-sub-list" {{ request()->routeIs('admin.conseils.*') ? 'style=display:block' : '' }}>
+            <li class="{{ request()->routeIs('admin.conseils.index') ? 'active' : '' }}">
+              <a href="{{ route('admin.conseils.index') }}">Liste des conseils</a>
+            </li>
+            <li class="{{ request()->routeIs('admin.conseils.create') ? 'active' : '' }}">
+              <a href="{{ route('admin.conseils.create') }}">Ajouter un conseil</a>
+            </li>
+          </ul>
+        </li>
+
         {{-- Coupures électriques --}}
         <li class="{{ request()->routeIs('admin.coupures.*') ? 'active has-sub' : 'has-sub' }}">
           <a class="js-arrow {{ request()->routeIs('admin.coupures.*') ? 'open' : '' }}" href="#">
@@ -150,20 +165,7 @@
           </a>
         </li>
 
-        {{-- Conseils --}}
-        <li class="{{ request()->routeIs('admin.conseils.*') ? 'active has-sub' : 'has-sub' }}">
-          <a class="js-arrow {{ request()->routeIs('admin.conseils.*') ? 'open' : '' }}" href="#">
-            <i class="fa-solid fa-lightbulb"></i>Conseils
-          </a>
-          <ul class="list-unstyled navbar__sub-list js-sub-list" {{ request()->routeIs('admin.conseils.*') ? 'style=display:block' : '' }}>
-            <li class="{{ request()->routeIs('admin.conseils.index') ? 'active' : '' }}">
-              <a href="{{ route('admin.conseils.index') }}">Liste des conseils</a>
-            </li>
-            <li class="{{ request()->routeIs('admin.conseils.create') ? 'active' : '' }}">
-              <a href="{{ route('admin.conseils.create') }}">Ajouter un conseil</a>
-            </li>
-          </ul>
-        </li>
+
 
         {{-- Statistiques --}}
         <li class="{{ request()->routeIs('admin.statistiques') ? 'active' : '' }}">
