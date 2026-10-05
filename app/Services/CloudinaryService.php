@@ -34,17 +34,14 @@ class CloudinaryService
      */
     public function upload(UploadedFile $file, string $folder = 'uploads'): array
     {
-        $result = Cloudinary::upload($file->getRealPath(), [
-            'folder'         => self::ROOT_FOLDER . '/' . $folder,
-            'resource_type'  => 'image',
-            'transformation' => [
-                ['quality' => 'auto', 'fetch_format' => 'auto'],
-            ],
+        $result = Cloudinary::uploadApi()->upload($file->getRealPath(), [
+            'folder'        => self::ROOT_FOLDER . '/' . $folder,
+            'resource_type' => 'image',
         ]);
 
         return [
-            'public_id'  => $result->getPublicId(),
-            'secure_url' => $result->getSecurePath(),
+            'public_id'  => $result['public_id'],
+            'secure_url' => $result['secure_url'],
         ];
     }
 
@@ -61,7 +58,7 @@ class CloudinaryService
     public function delete(string $publicId): bool
     {
         try {
-            Cloudinary::destroy($publicId);
+            Cloudinary::uploadApi()->destroy($publicId);
             return true;
         } catch (\Throwable $e) {
             Log::warning('CloudinaryService::delete failed', [

@@ -364,9 +364,24 @@ class FrontController extends Controller
             }
         }
 
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('signalements', 'public');
+        // ── Gestion photo : priorité au widget Cloudinary, fallback upload serveur ──
+        if ($request->filled('photo_cloudinary_url') && $request->filled('photo_cloudinary_id')) {
+            // Photo déjà uploadée via le Cloudinary Widget côté client
+            // On stocke le public_id pour pouvoir la supprimer/transformer plus tard
+            $data['photo'] = $request->input('photo_cloudinary_id');
+        } elseif ($request->hasFile('photo')) {
+            // Fallback : upload serveur via CloudinaryService
+            try {
+                $cloudinary = app(\App\Services\CloudinaryService::class);
+                $result     = $cloudinary->upload($request->file('photo'), 'signalements');
+                $data['photo'] = $result['public_id'];
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Cloudinary upload failed', ['error' => $e->getMessage()]);
+                return back()->withInput()->withErrors(['photo' => "L'upload de la photo a échoué. Veuillez réessayer."]);
+            }
         }
+        // Ne pas passer ces champs au modèle
+        unset($data['photo_cloudinary_url'], $data['photo_cloudinary_id']);
 
         $data['user_id'] = $user->id;
         $data['statut_validation'] = 'en_attente';
