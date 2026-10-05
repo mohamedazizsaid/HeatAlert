@@ -8,6 +8,8 @@ use App\Models\Coupure;
 use App\Models\SignalementCoupure;
 use App\Models\Zone;
 use App\Http\Requests\StoreSignalementCoupureRequest;
+use App\Services\NasaFirmsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -394,5 +396,81 @@ class FrontController extends Controller
 
         return redirect()->route('front.coupures.index')
             ->with('success', 'Votre signalement a été envoyé et sera vérifié par un administrateur.');
+    }
+
+    /**
+     * Page de surveillance et détection des départs de feux via l'API NASA FIRMS.
+     */
+    public function firesIndex(Request $request, NasaFirmsService $firmsService): View
+    {
+        $zones = Zone::where('actif', true)
+            ->orderBy('gouvernorat')
+            ->orderBy('nom')
+            ->get();
+
+        $selectedZoneId = $request->query('zone_id');
+        $selectedZone   = $selectedZoneId ? Zone::find($selectedZoneId) : null;
+
+        // Si l'utilisateur est authentifié et a une zone rattachée
+        if (!$selectedZone && auth()->check() && auth()->user()->zone_id) {
+            $selectedZone = Zone::find(auth()->user()->zone_id);
+        }
+
+        // Zone par défaut : Jendouba (zone forestière à haut risque d'incendie) ou première zone
+        if (!$selectedZone) {
+            $selectedZone = $zones->firstWhere('gouvernorat', 'Jendouba') ?? $zones->first();
+        }
+
+        $sources           = NasaFirmsService::SOURCES;
+        $hasConfiguredKey  = $firmsService->hasConfiguredKey();
+
+        return view('front.fires.index', compact(
+            'zones',
+            'selectedZone',
+            'sources',
+            'hasConfiguredKey'
+        ));
+    }
+
+    /**
+     * API JSON proxy pour l'API NASA FIRMS avec calcul de proximité et métriques.
+     */
+    public function firesApi(Request $request, NasaFirmsService $firmsService): JsonResponse
+    {
+        $lat      = $request->filled('lat') ? (float) $request->input('lat') : null;
+        $lng      = $request->filled('lng') ? (float) $request->input('lng') : null;
+        $radius   = $request->input('radius', 50); // 10, 25, 50, 100, ou 'all'
+        $days     = (int) $request->input('days', 1);
+        $source   = (string) $request->input('source', 'VIIRS_SNPP_NRT');
+        $mapKey   = $request->filled('map_key') ? (string) $request->input('map_key') : null;
+        $zoneId   = $request->input('zone_id');
+
+        // Si zone_id est fourni mais pas lat/lng
+        if ($zoneId && ($lat === null || $lng === null)) {
+            $zone = Zone::find($zoneId);
+            if ($zone && $zone->latitude && $zone->longitude) {
+                $lat = (float) $zone->latitude;
+                $lng = (float) $zone->longitude;
+            }
+        }
+
+        $data = $firmsService->getHotspots(
+            $lat,
+            $lng,
+            $radius,
+            $days,
+            $source,
+            $mapKey,
+            'TUN'
+        );
+
+        // Ajout des infos de géolocalisation demandée pour le frontend
+        $data['queried_location'] = [
+            'lat'    => $lat,
+            'lng'    => $lng,
+            'radius' => $radius,
+        ];
+
+        return response()->json($data);
     }
 }

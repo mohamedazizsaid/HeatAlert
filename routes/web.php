@@ -54,6 +54,10 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/avis-points/{avisPoint}', [FrontPointFraicheurController::class, 'updateAvis'])->name('front.avis_points.update');
     Route::delete('/avis-points/{avisPoint}', [FrontPointFraicheurController::class, 'destroyAvis'])->name('front.avis_points.destroy');
 
+    // ─── Détection des Départs de Feux (NASA FIRMS)
+    Route::get('/feux-foret', [FrontController::class, 'firesIndex'])->name('front.fires.index');
+    Route::get('/feux-foret/api', [FrontController::class, 'firesApi'])->name('front.fires.api');
+
     // ─── Profil Utilisateur (Détails & Modification)
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');

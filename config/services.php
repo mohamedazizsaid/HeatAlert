@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'nasa_firms' => [
+        'map_key' => env('NASA_FIRMS_MAP_KEY', ''),
+        'default_source' => env('NASA_FIRMS_SOURCE', 'VIIRS_SNPP_NRT'),
+        'cache_ttl' => (int) env('NASA_FIRMS_CACHE_TTL', 900), // 15 minutes
+    ],
+
 ];

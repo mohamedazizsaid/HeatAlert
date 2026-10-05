@@ -73,7 +73,7 @@
             </li>
             @php $nbAlertes = \App\Models\AlerteMeteo::where('statut','active')->whereIn('niveau', ['rouge', 'orange'])->count(); @endphp
             <li class="dropdown">
-              <a href="#" class="{{ request()->routeIs('front.alertes.*') || request()->routeIs('front.conseils.*') ? 'active' : '' }}">
+              <a href="#" class="{{ request()->routeIs('front.alertes.*') || request()->routeIs('front.conseils.*') || request()->routeIs('front.coupures.*') || request()->routeIs('front.points_fraicheur.*') || request()->routeIs('front.fires.*') ? 'active' : '' }}">
                 <span>Vigilance & Santé</span>
                 @if($nbAlertes > 0)
                   <span class="badge bg-danger rounded-pill ms-1" style="font-size: 11px; padding: 2px 7px;">{{ $nbAlertes }}</span>
@@ -98,7 +98,7 @@
                   </a>
                 </li>
                 <li>
-                  <a href="{{ route('front.coupures.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.conseils.*') ? 'active' : '' }}">
+                  <a href="{{ route('front.coupures.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.coupures.*') ? 'active' : '' }}">
                     <i class="bi bi-lightning-charge-fill me-1 text-warning"></i>
                     <span>Coupures</span>
                   </a>
@@ -107,6 +107,14 @@
                   <a href="{{ route('front.points_fraicheur.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.points_fraicheur.*') ? 'active' : '' }}">
                     <i class="bi bi-snow text-info"></i>
                     <span>Points de Fraîcheur</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="{{ route('front.fires.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.fires.*') ? 'active' : '' }}" title="Détecte les départs de feux près d'une zone via l'API NASA FIRMS">
+                    <i class="bi bi-fire text-danger"></i>
+                                        <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 9px; padding: 2px 6px;">NASA</span>
+
+                    <span>Détection des Feux</span>
                   </a>
                 </li>
               </ul>
