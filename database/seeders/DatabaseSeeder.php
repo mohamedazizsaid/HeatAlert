@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             AlerteMeteoSeeder::class,
             ConseilSeeder::class,
             CoupureSeeder::class,
+            PointFraicheurSeeder::class,
         ]);
     }
 }

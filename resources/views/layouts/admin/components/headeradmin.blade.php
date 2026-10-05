@@ -52,6 +52,16 @@
             <i class="fa-solid fa-flag"></i>Signalements
           </a>
         </li>
+        <li class="{{ request()->routeIs('admin.points_fraicheur.*') || request()->routeIs('admin.avis_points.*') ? 'active has-sub' : 'has-sub' }}">
+          <a class="js-arrow" href="#">
+            <i class="fa-solid fa-snowflake"></i>Points de Fraîcheur
+          </a>
+          <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
+            <li><a href="{{ route('admin.points_fraicheur.index') }}"><i class="fa-solid fa-list"></i>Liste des points</a></li>
+            <li><a href="{{ route('admin.points_fraicheur.create') }}"><i class="fa-solid fa-plus"></i>Ajouter un point</a></li>
+            <li><a href="{{ route('admin.avis_points.index') }}"><i class="fa-solid fa-star-half-stroke"></i>Supervision des avis</a></li>
+          </ul>
+        </li>
         <li class="{{ request()->routeIs('admin.conseils.*') ? 'active has-sub' : 'has-sub' }}">
           <a class="js-arrow" href="#">
             <i class="fa-solid fa-lightbulb"></i>Conseils
@@ -165,7 +175,23 @@
           </a>
         </li>
 
-
+        {{-- Points de Fraîcheur --}}
+        <li class="{{ request()->routeIs('admin.points_fraicheur.*') || request()->routeIs('admin.avis_points.*') ? 'active has-sub' : 'has-sub' }}">
+          <a class="js-arrow {{ request()->routeIs('admin.points_fraicheur.*') || request()->routeIs('admin.avis_points.*') ? 'open' : '' }}" href="#">
+            <i class="fa-solid fa-snowflake"></i>Points de Fraîcheur
+          </a>
+          <ul class="list-unstyled navbar__sub-list js-sub-list" {{ request()->routeIs('admin.points_fraicheur.*') || request()->routeIs('admin.avis_points.*') ? 'style=display:block' : '' }}>
+            <li class="{{ request()->routeIs('admin.points_fraicheur.index') ? 'active' : '' }}">
+              <a href="{{ route('admin.points_fraicheur.index') }}">Liste des points</a>
+            </li>
+            <li class="{{ request()->routeIs('admin.points_fraicheur.create') ? 'active' : '' }}">
+              <a href="{{ route('admin.points_fraicheur.create') }}">Ajouter un point</a>
+            </li>
+            <li class="{{ request()->routeIs('admin.avis_points.index') ? 'active' : '' }}">
+              <a href="{{ route('admin.avis_points.index') }}">Supervision des avis</a>
+            </li>
+          </ul>
+        </li>
 
         {{-- Statistiques --}}
         <li class="{{ request()->routeIs('admin.statistiques') ? 'active' : '' }}">

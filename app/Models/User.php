@@ -45,4 +45,9 @@ class User extends Authenticatable
     {
         return $this->role === self::ROLE_ADMIN;
     }
+
+    public function avisPoints(): HasMany
+    {
+        return $this->hasMany(AvisPoint::class);
+    }
 }

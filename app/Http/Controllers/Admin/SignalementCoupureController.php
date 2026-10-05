@@ -20,6 +20,21 @@ class SignalementCoupureController extends Controller
             ->orderByRaw("FIELD(statut_validation, 'en_attente', 'valide', 'rejete')")
             ->orderByDesc('date_signalement');
 
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($u) use ($search) {
+                      $u->where('nom', 'like', "%{$search}%")
+                        ->orWhere('prenom', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('coupure.zone', function ($z) use ($search) {
+                      $z->where('nom', 'like', "%{$search}%")
+                        ->orWhere('ville', 'like', "%{$search}%");
+                  });
+            });
+        }
+
         if ($request->filled('statut_validation')) {
             $query->where('statut_validation', $request->input('statut_validation'));
         }

@@ -406,6 +406,229 @@
       </div>
     </div>
 
+  {{-- ── SECTION : MODULE POINTS DE FRAÎCHEUR & ÎLOTS URBAINS ── --}}
+  <div class="d-flex align-items-center justify-content-between mb-3 mt-4">
+    <div>
+      <h4 class="fw-bold mb-0 text-dark">
+        <i class="fa-solid fa-snowflake text-info me-2"></i>Points de Fraîcheur & Refuges Caniculaires
+      </h4>
+      <small class="text-muted">Cartographie, accessibilité PMR et retours citoyens des îlots de fraîcheur</small>
+    </div>
+    <a href="{{ route('admin.points_fraicheur.index') }}" class="m-btn m-btn--ghost m-btn--sm">
+      <i class="fa-solid fa-gear me-1"></i>Gérer les points
+    </a>
+  </div>
+
+  {{-- Cartes KPI Points de Fraîcheur --}}
+  <div class="row g-3 mb-4">
+    {{-- Total Points --}}
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Points Référencés</div>
+            <div class="fs-2 fw-black text-dark mt-1" style="font-weight: 800;">{{ $totaux['points_fraicheur'] ?? 0 }}</div>
+            <div class="small text-success mt-1">
+              <i class="fa-solid fa-circle-check me-1"></i>{{ $totaux['points_actifs'] ?? 0 }} ouverts & actifs
+            </div>
+          </div>
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #e0f2fe; color: #0284c7; font-size: 20px;">
+            <i class="fa-solid fa-snowflake"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- Accessibilité PMR --}}
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Accessibilité PMR</div>
+            @php
+              $pmrCount = $totaux['points_pmr'] ?? 0;
+              $pmrTotal = max(1, $totaux['points_fraicheur'] ?? 1);
+              $pmrPct = round(($pmrCount / $pmrTotal) * 100);
+            @endphp
+            <div class="fs-2 fw-black text-success mt-1" style="font-weight: 800;">{{ $pmrPct }}%</div>
+            <div class="small text-muted mt-1">
+              <i class="fa-solid fa-wheelchair me-1 text-primary"></i>{{ $pmrCount }} points adaptés
+            </div>
+          </div>
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #dcfce7; color: #16a34a; font-size: 20px;">
+            <i class="fa-solid fa-universal-access"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- Avis Citoyens --}}
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Avis Citoyens</div>
+            <div class="fs-2 fw-black text-dark mt-1" style="font-weight: 800;">{{ $totaux['total_avis'] ?? 0 }}</div>
+            <div class="small text-muted mt-1">
+              <a href="{{ route('admin.avis_points.index') }}" class="text-decoration-none text-primary">
+                <i class="fa-solid fa-comments me-1"></i>Modérer les avis
+              </a>
+            </div>
+          </div>
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #fef3c7; color: #d97706; font-size: 20px;">
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- Note Moyenne Globale --}}
+    <div class="col-xl-3 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="text-muted small fw-semibold text-uppercase" style="letter-spacing: 0.5px;">Satisfaction Moy.</div>
+            <div class="fs-2 fw-black text-warning mt-1" style="font-weight: 800;">
+              {{ $totaux['note_moyenne_points'] ?? 0 }}<span class="fs-6 text-muted fw-normal">/5</span>
+            </div>
+            <div class="small mt-1" style="color: #f59e0b;">
+              @php $nm = round($totaux['note_moyenne_points'] ?? 0); @endphp
+              @for($s=1; $s<=5; $s++)
+                <i class="fa-{{ $s <= $nm ? 'solid' : 'regular' }} fa-star" style="font-size:11px;"></i>
+              @endfor
+            </div>
+          </div>
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #fffbeb; color: #f59e0b; font-size: 20px;">
+            <i class="fa-solid fa-medal"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- Graphiques Points de Fraîcheur --}}
+  <div class="row g-4 mb-4">
+    {{-- Répartition par Type --}}
+    <div class="col-xl-4 col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-shapes text-info me-2"></i>Typologie des Espaces</h5>
+          <small class="text-muted">Parcs, salles climatisées, fontaines, etc.</small>
+        </div>
+        <div class="card-body px-4 pt-3 pb-4">
+          <div style="position: relative; height: 260px;">
+            <canvas id="pointsParTypeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- Évaluation Citoyenne (Notes 1 à 5) --}}
+    <div class="col-xl-4 col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-star text-warning me-2"></i>Distribution des Évaluations</h5>
+          <small class="text-muted">Répartition des notes citoyennes (1 à 5 étoiles)</small>
+        </div>
+        <div class="card-body px-4 pt-3 pb-4">
+          <div style="position: relative; height: 260px;">
+            <canvas id="avisParNoteChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- Points par zone --}}
+    <div class="col-xl-4 col-lg-12">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white border-0 px-4 pt-4 pb-0">
+          <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-map-pin text-primary me-2"></i>Disponibilité par Zone</h5>
+          <small class="text-muted">Nombre de points frais par délégation / ville</small>
+        </div>
+        <div class="card-body px-4 pt-3 pb-4">
+          <div style="position: relative; height: 260px;">
+            <canvas id="pointsParZoneChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- Top Points Frais les mieux notés --}}
+  <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
+    <div class="card-header bg-white border-0 px-4 pt-4 pb-2 border-bottom d-flex align-items-center justify-content-between">
+      <div>
+        <h5 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-award text-warning me-2"></i>Top Lieux Frais Recommandés par les Citoyens</h5>
+        <small class="text-muted">Points de fraîcheur ayant les meilleures notes moyennes</small>
+      </div>
+      <a href="{{ route('admin.points_fraicheur.index') }}" class="m-btn m-btn--ghost m-btn--sm">
+        <i class="fa-solid fa-arrow-right me-1"></i>Tous les points
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="font-size: 13px;">
+          <thead class="bg-light">
+            <tr>
+              <th class="px-4 py-3 text-muted fw-semibold">POINT DE FRAÎCHEUR</th>
+              <th class="py-3 text-muted fw-semibold text-center">TYPE</th>
+              <th class="py-3 text-muted fw-semibold text-center">ZONE</th>
+              <th class="py-3 text-muted fw-semibold text-center">ACCÈS PMR</th>
+              <th class="py-3 text-muted fw-semibold text-center">AVIS CITOYENS</th>
+              <th class="py-3 pe-4 text-muted fw-semibold text-center">NOTE MOYENNE</th>
+            </tr>
+          </thead>
+          <tbody>
+            @forelse($topPointsMieuxNotes as $pt)
+            <tr>
+              <td class="px-4 py-3">
+                <a href="{{ route('admin.points_fraicheur.show', $pt) }}" class="fw-bold text-dark text-decoration-none">
+                  {{ $pt->nom }}
+                </a>
+                <div class="text-muted small">{{ Str::limit($pt->adresse, 50) }}</div>
+              </td>
+              <td class="py-3 text-center">
+                @php
+                  $icon  = \App\Models\PointFraicheur::$typeIcons[$pt->type]  ?? 'fa-location-dot';
+                  $color = \App\Models\PointFraicheur::$typeColors[$pt->type] ?? '#64748b';
+                  $label = \App\Models\PointFraicheur::$typeLabels[$pt->type] ?? ucfirst($pt->type);
+                @endphp
+                <span class="badge rounded-pill" style="background:{{ $color }}18;color:{{ $color }};border:1px solid {{ $color }}35;font-size:11px;">
+                  <i class="fa-solid {{ $icon }} me-1"></i>{{ $label }}
+                </span>
+              </td>
+              <td class="py-3 text-center text-muted">{{ $pt->zone?->nom ?? '—' }}</td>
+              <td class="py-3 text-center">
+                @if($pt->accessible_pmr)
+                  <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1"><i class="fa-solid fa-wheelchair me-1"></i>Oui</span>
+                @else
+                  <span class="badge bg-light text-muted border rounded-pill px-2 py-1">Non</span>
+                @endif
+              </td>
+              <td class="py-3 text-center">
+                <span class="badge bg-light text-dark border rounded-pill px-2.5 py-1">{{ $pt->avis_points_count }} avis</span>
+              </td>
+              <td class="py-3 pe-4 text-center">
+                <span style="color:#f59e0b;font-weight:700;">
+                  @for($s = 1; $s <= 5; $s++)
+                    <i class="fa-{{ $s <= round($pt->avis_points_avg_note) ? 'solid' : 'regular' }} fa-star" style="font-size:12px;"></i>
+                  @endfor
+                  <span class="ms-1 text-dark fw-bold">({{ number_format($pt->avis_points_avg_note, 1) }}/5)</span>
+                </span>
+              </td>
+            </tr>
+            @empty
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                <i class="fa-solid fa-snowflake fa-2x mb-2 d-block text-info"></i>
+                Aucun avis pour le moment sur les points de fraîcheur.
+              </td>
+            </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   {{-- ── LIGNE 5 : TABLEAU RÉCAPITULATIF DES DERNIÈRES ALERTES ── --}}
@@ -783,6 +1006,118 @@
       }
     }
   });
+
+  // ── 11. Points de fraîcheur par type ──
+  const pointsTypes = @json($pointsParType->toArray());
+  const typeColorsMap = {
+    'parc': '#16a34a',
+    'salle_climatisee': '#2563eb',
+    'fontaine': '#0ea5e9',
+    'piscine': '#06b6d4',
+    'bibliotheque': '#7c3aed',
+    'autre': '#64748b'
+  };
+  const typeLabelsMap = {
+    'parc': 'Parc / Espace vert',
+    'salle_climatisee': 'Salle climatisée',
+    'fontaine': 'Fontaine / Borne',
+    'piscine': 'Piscine municipale',
+    'bibliotheque': 'Bibliothèque',
+    'autre': 'Autre'
+  };
+
+  const canvasPointsType = document.getElementById('pointsParTypeChart');
+  if (canvasPointsType) {
+    const pKeys = Object.keys(pointsTypes);
+    new Chart(canvasPointsType, {
+      type: 'doughnut',
+      data: {
+        labels: pKeys.map(k => typeLabelsMap[k] || k),
+        datasets: [{
+          data: Object.values(pointsTypes),
+          backgroundColor: pKeys.map(k => typeColorsMap[k] || '#94a3b8'),
+          borderWidth: 3,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
+          tooltip: { ...tooltipStyle, callbacks: { label: (c) => ` ${c.label}: ${c.parsed} point(s)` } }
+        }
+      }
+    });
+  }
+
+  // ── 12. Répartition des Avis par Note ──
+  const avisNotesData = @json($avisParNote);
+  const canvasAvisNote = document.getElementById('avisParNoteChart');
+  if (canvasAvisNote) {
+    new Chart(canvasAvisNote, {
+      type: 'bar',
+      data: {
+        labels: ['★★★★★ 5', '★★★★ 4', '★★★ 3', '★★ 2', '★ 1'],
+        datasets: [{
+          label: 'Avis',
+          data: [
+            avisNotesData[5] || 0,
+            avisNotesData[4] || 0,
+            avisNotesData[3] || 0,
+            avisNotesData[2] || 0,
+            avisNotesData[1] || 0
+          ],
+          backgroundColor: ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444'],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { ...tooltipStyle, callbacks: { label: (c) => ` ${c.parsed.x} avis` } }
+        },
+        scales: {
+          x: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // ── 13. Points de fraîcheur par zone ──
+  const pointsZonesData = @json($pointsParZone->map(fn($z) => ['nom' => $z->nom, 'total' => $z->points_fraicheur_count])->values());
+  const canvasPointsZone = document.getElementById('pointsParZoneChart');
+  if (canvasPointsZone) {
+    new Chart(canvasPointsZone, {
+      type: 'bar',
+      data: {
+        labels: pointsZonesData.map(z => z.nom),
+        datasets: [{
+          label: 'Points de fraîcheur',
+          data: pointsZonesData.map(z => z.total),
+          backgroundColor: '#0ea5e9',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { ...tooltipStyle, callbacks: { label: (c) => ` ${c.parsed.y} point(s)` } }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+  }
 
 })();
 </script>

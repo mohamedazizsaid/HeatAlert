@@ -4,9 +4,11 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AlerteMeteoController;
 use App\Http\Controllers\Admin\ConseilController;
 use App\Http\Controllers\Admin\CoupureController;
+use App\Http\Controllers\Admin\PointFraicheurController;
 use App\Http\Controllers\Admin\SignalementCoupureController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
+use App\Http\Controllers\FrontPointFraicheurController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -43,6 +45,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/conseils/{conseil}', [FrontController::class, 'conseilShow'])->name('front.conseils.show');
     Route::get('/coupures/signaler', [FrontController::class, 'createSignalement'])->name('front.coupures.signaler');
     Route::post('/coupures/signaler', [FrontController::class, 'storeSignalement'])->name('front.coupures.signaler.store');
+
+    // ─── Points de Fraîcheur (front)
+    Route::get('/points-fraicheur', [FrontPointFraicheurController::class, 'index'])->name('front.points_fraicheur.index');
+    Route::get('/points-fraicheur/{pointFraicheur}', [FrontPointFraicheurController::class, 'show'])->name('front.points_fraicheur.show');
+    Route::post('/points-fraicheur/{pointFraicheur}/avis', [FrontPointFraicheurController::class, 'storeAvis'])->name('front.avis_points.store');
+    Route::put('/avis-points/{avisPoint}', [FrontPointFraicheurController::class, 'updateAvis'])->name('front.avis_points.update');
+    Route::delete('/avis-points/{avisPoint}', [FrontPointFraicheurController::class, 'destroyAvis'])->name('front.avis_points.destroy');
 
     // ─── Profil Utilisateur (Détails & Modification)
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -93,6 +102,12 @@ Route::middleware(['auth', 'admin'])
 
         // Gestion des Conseils
         Route::resource('conseils', ConseilController::class);
+
+        // Gestion des Points de Fraîcheur + supervision des avis
+        Route::resource('points_fraicheur', PointFraicheurController::class);
+        Route::get('avis-points', [PointFraicheurController::class, 'avisIndex'])->name('avis_points.index');
+        Route::put('avis-points/{avisPoint}', [PointFraicheurController::class, 'avisUpdate'])->name('avis_points.update');
+        Route::delete('avis-points/{avisPoint}', [PointFraicheurController::class, 'avisDestroy'])->name('avis_points.destroy');
     });
 
 // ─── Routes d'authentification (Breeze)

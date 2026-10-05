@@ -34,4 +34,9 @@ class Zone extends Model
     {
         return $this->hasMany(Coupure::class);
     }
+
+    public function pointsFraicheur(): HasMany
+    {
+        return $this->hasMany(PointFraicheur::class);
+    }
 }

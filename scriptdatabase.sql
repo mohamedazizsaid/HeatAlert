@@ -92,3 +92,35 @@ CREATE TABLE alerte_conseil (
     CONSTRAINT alerte_conseil_conseil_fk FOREIGN KEY (conseil_id) REFERENCES conseils (id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
 
+-- 6. POINTS_FRAICHEUR
+CREATE TABLE points_fraicheur (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nom VARCHAR(150) NOT NULL,
+    type ENUM('parc', 'salle_climatisee', 'fontaine', 'piscine', 'bibliotheque', 'autre') NOT NULL,
+    adresse VARCHAR(255) NOT NULL,
+    latitude DECIMAL(10, 7) NULL,
+    longitude DECIMAL(10, 7) NULL,
+    horaires VARCHAR(255) NULL,
+    accessible_pmr TINYINT(1) NOT NULL DEFAULT 0,
+    actif TINYINT(1) NOT NULL DEFAULT 1,
+    zone_id BIGINT UNSIGNED NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT points_fraicheur_zone_id_foreign FOREIGN KEY (zone_id) REFERENCES zones (id) ON DELETE SET NULL
+) ENGINE = InnoDB;
+
+-- 7. AVIS_POINTS
+CREATE TABLE avis_points (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    note TINYINT UNSIGNED NOT NULL COMMENT '1 à 5',
+    commentaire TEXT NULL,
+    date_avis DATE NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    point_fraicheur_id BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT avis_points_user_id_foreign FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT avis_points_point_id_foreign FOREIGN KEY (point_fraicheur_id) REFERENCES points_fraicheur (id) ON DELETE CASCADE
+) ENGINE = InnoDB;
