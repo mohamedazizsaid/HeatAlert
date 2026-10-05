@@ -89,16 +89,21 @@
   </div>
 
   @if($avis->hasPages())
-  <div class="d-flex justify-content-center align-items-center mt-3 pb-2" style="gap:6px;">
-    @if(!$avis->onFirstPage())
-      <a href="{{ $avis->previousPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;"><i class="fa-solid fa-chevron-left"></i></a>
-    @endif
-    @foreach($avis->getUrlRange(max(1, $avis->currentPage()-2), min($avis->lastPage(), $avis->currentPage()+2)) as $page => $url)
-      <a href="{{ $url }}" class="m-btn {{ $page == $avis->currentPage() ? 'm-btn--primary' : 'm-btn--ghost' }}" style="height:32px;padding:0 11px;font-size:13px;min-width:32px;text-align:center;">{{ $page }}</a>
-    @endforeach
-    @if($avis->hasMorePages())
-      <a href="{{ $avis->nextPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;"><i class="fa-solid fa-chevron-right"></i></a>
-    @endif
+  <div class="d-flex flex-column align-items-center mt-3 pb-2" style="gap:8px;">
+    <div class="text-muted" style="font-size:12px;">
+      Affichage de {{ $avis->firstItem() }} à {{ $avis->lastItem() }} sur {{ $avis->total() }} avis
+    </div>
+    <div class="d-flex justify-content-center align-items-center" style="gap:6px;">
+      @if(!$avis->onFirstPage())
+        <a href="{{ $avis->previousPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;"><i class="fa-solid fa-chevron-left"></i></a>
+      @endif
+      @foreach($avis->getUrlRange(max(1, $avis->currentPage()-2), min($avis->lastPage(), $avis->currentPage()+2)) as $page => $url)
+        <a href="{{ $url }}" class="m-btn {{ $page == $avis->currentPage() ? 'm-btn--primary' : 'm-btn--ghost' }}" style="height:32px;padding:0 11px;font-size:13px;min-width:32px;text-align:center;">{{ $page }}</a>
+      @endforeach
+      @if($avis->hasMorePages())
+        <a href="{{ $avis->nextPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;"><i class="fa-solid fa-chevron-right"></i></a>
+      @endif
+    </div>
   </div>
   @endif
 </section>

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AlerteMeteo;
+use App\Models\AvisPoint;
 use App\Models\Conseil;
 use App\Models\Coupure;
+use App\Models\PointFraicheur;
 use App\Models\SignalementCoupure;
 use App\Models\Zone;
 
@@ -63,16 +65,21 @@ class AdminController extends Controller
 
         // ── Totaux Globaux ──
         $totaux = [
-            'zones'           => Zone::count(),
-            'zones_actives'   => Zone::where('actif', true)->count(),
-            'alertes'         => AlerteMeteo::count(),
-            'alertes_actives' => AlerteMeteo::where('statut', 'active')->count(),
-            'alertes_rouge'   => AlerteMeteo::where('niveau', 'rouge')->count(),
-            'alertes_orange'  => AlerteMeteo::where('niveau', 'orange')->count(),
-            'alertes_jaune'   => AlerteMeteo::where('niveau', 'jaune')->count(),
-            'alertes_vert'    => AlerteMeteo::where('niveau', 'vert')->count(),
-            'conseils'        => Conseil::count(),
-            'conseils_actifs' => Conseil::where('actif', true)->count(),
+            'zones'               => Zone::count(),
+            'zones_actives'       => Zone::where('actif', true)->count(),
+            'alertes'             => AlerteMeteo::count(),
+            'alertes_actives'     => AlerteMeteo::where('statut', 'active')->count(),
+            'alertes_rouge'       => AlerteMeteo::where('niveau', 'rouge')->count(),
+            'alertes_orange'      => AlerteMeteo::where('niveau', 'orange')->count(),
+            'alertes_jaune'       => AlerteMeteo::where('niveau', 'jaune')->count(),
+            'alertes_vert'        => AlerteMeteo::where('niveau', 'vert')->count(),
+            'conseils'            => Conseil::count(),
+            'conseils_actifs'     => Conseil::where('actif', true)->count(),
+            'points_fraicheur'    => PointFraicheur::count(),
+            'points_actifs'       => PointFraicheur::where('actif', true)->count(),
+            'points_pmr'          => PointFraicheur::where('accessible_pmr', true)->count(),
+            'total_avis'          => AvisPoint::count(),
+            'note_moyenne_points' => round((float) (AvisPoint::avg('note') ?? 0), 1),
         ];
 
         // ── Répartition des alertes par niveau ──
@@ -192,12 +199,41 @@ class AdminController extends Controller
             ? round(($signalementsValides / $totalSignalements) * 100, 1)
             : 0;
 
+        // ── Statistiques Points de Fraîcheur ──
+        $pointsParType = PointFraicheur::selectRaw('type, count(*) as total')
+            ->groupBy('type')
+            ->orderByDesc('total')
+            ->pluck('total', 'type');
+
+        $pointsParZone = Zone::withCount('pointsFraicheur')
+            ->having('points_fraicheur_count', '>', 0)
+            ->orderByDesc('points_fraicheur_count')
+            ->take(8)
+            ->get();
+
+        $avisParNote = [
+            5 => AvisPoint::where('note', 5)->count(),
+            4 => AvisPoint::where('note', 4)->count(),
+            3 => AvisPoint::where('note', 3)->count(),
+            2 => AvisPoint::where('note', 2)->count(),
+            1 => AvisPoint::where('note', 1)->count(),
+        ];
+
+        $topPointsMieuxNotes = PointFraicheur::with('zone')
+            ->withCount('avisPoints')
+            ->withAvg('avisPoints', 'note')
+            ->having('avis_points_count', '>', 0)
+            ->orderByDesc('avis_points_avg_note')
+            ->take(5)
+            ->get();
+
         return view('admin.statistiques', compact(
             'totaux', 'alertesParNiveau', 'alertesParStatut', 'alertesParType',
             'topZones', 'alertesParMois', 'tempStats', 'conseilsParCategorie',
             'dernieresAlertes', 'alertesCritiques', 'coupuresParType',
             'coupuresParMois', 'coupuresParZone', 'dureeMoyenneCoupures',
-            'totalSignalements', 'signalementsValides', 'tauxSignalementsValides'
+            'totalSignalements', 'signalementsValides', 'tauxSignalementsValides',
+            'pointsParType', 'pointsParZone', 'avisParNote', 'topPointsMieuxNotes'
         ));
     }
 

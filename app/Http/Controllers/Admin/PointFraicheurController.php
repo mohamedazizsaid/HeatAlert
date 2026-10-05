@@ -25,7 +25,8 @@ class PointFraicheurController extends Controller
     public function index(Request $request): View
     {
         $filters = $request->only(['search', 'type', 'actif', 'zone_id', 'pmr']);
-        $points  = $this->service->getPaginated($filters, 12);
+        $perPage = (int) $request->get('per_page', 8);
+        $points  = $this->service->getPaginated($filters, $perPage);
         $zones   = Zone::orderBy('nom')->get();
 
         return view('admin.points_fraicheur.index', compact('points', 'zones', 'filters'));
@@ -111,7 +112,8 @@ class PointFraicheurController extends Controller
     public function avisIndex(Request $request): View
     {
         $filters = $request->only(['note', 'point_fraicheur_id']);
-        $avis    = $this->avisService->getPaginated($filters, 15);
+        $perPage = (int) $request->get('per_page', 5);
+        $avis    = $this->avisService->getPaginated($filters, $perPage);
         $points  = PointFraicheur::orderBy('nom')->get();
 
         return view('admin.points_fraicheur.avis_index', compact('avis', 'points', 'filters'));

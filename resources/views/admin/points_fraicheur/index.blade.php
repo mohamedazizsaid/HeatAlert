@@ -143,20 +143,25 @@
   </div>
 
   @if($points->hasPages())
-  <div class="d-flex justify-content-center align-items-center mt-3 pb-2" style="gap:6px;">
-    @if(!$points->onFirstPage())
-      <a href="{{ $points->previousPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
-        <i class="fa-solid fa-chevron-left"></i>
-      </a>
-    @endif
-    @foreach($points->getUrlRange(max(1, $points->currentPage()-2), min($points->lastPage(), $points->currentPage()+2)) as $page => $url)
-      <a href="{{ $url }}" class="m-btn {{ $page == $points->currentPage() ? 'm-btn--primary' : 'm-btn--ghost' }}" style="height:32px;padding:0 11px;font-size:13px;min-width:32px;text-align:center;">{{ $page }}</a>
-    @endforeach
-    @if($points->hasMorePages())
-      <a href="{{ $points->nextPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
-        <i class="fa-solid fa-chevron-right"></i>
-      </a>
-    @endif
+  <div class="d-flex flex-column align-items-center mt-3 pb-2" style="gap:8px;">
+    <div class="text-muted" style="font-size:12px;">
+      Affichage de {{ $points->firstItem() }} à {{ $points->lastItem() }} sur {{ $points->total() }} points
+    </div>
+    <div class="d-flex justify-content-center align-items-center" style="gap:6px;">
+      @if(!$points->onFirstPage())
+        <a href="{{ $points->previousPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
+          <i class="fa-solid fa-chevron-left"></i>
+        </a>
+      @endif
+      @foreach($points->getUrlRange(max(1, $points->currentPage()-2), min($points->lastPage(), $points->currentPage()+2)) as $page => $url)
+        <a href="{{ $url }}" class="m-btn {{ $page == $points->currentPage() ? 'm-btn--primary' : 'm-btn--ghost' }}" style="height:32px;padding:0 11px;font-size:13px;min-width:32px;text-align:center;">{{ $page }}</a>
+      @endforeach
+      @if($points->hasMorePages())
+        <a href="{{ $points->nextPageUrl() }}" class="m-btn m-btn--ghost" style="height:32px;padding:0 12px;font-size:13px;">
+          <i class="fa-solid fa-chevron-right"></i>
+        </a>
+      @endif
+    </div>
   </div>
   @endif
 </section>
