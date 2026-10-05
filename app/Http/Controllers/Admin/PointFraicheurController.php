@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePointFraicheurRequest;
+use App\Http\Requests\UpdatePointFraicheurRequest;
+use App\Http\Requests\UpdateAvisPointRequest;
 use App\Models\AvisPoint;
 use App\Models\PointFraicheur;
 use App\Models\Zone;
@@ -45,9 +48,9 @@ class PointFraicheurController extends Controller
     /**
      * Enregistrement d'un nouveau point.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StorePointFraicheurRequest $request): RedirectResponse
     {
-        $validated = $this->validate($request);
+        $validated = $request->validated();
         $validated['accessible_pmr'] = $request->boolean('accessible_pmr');
         $validated['actif']          = $request->boolean('actif');
         $this->service->create($validated);
@@ -81,9 +84,9 @@ class PointFraicheurController extends Controller
     /**
      * Mise à jour d'un point.
      */
-    public function update(Request $request, PointFraicheur $pointsFraicheur): RedirectResponse
+    public function update(UpdatePointFraicheurRequest $request, PointFraicheur $pointsFraicheur): RedirectResponse
     {
-        $validated = $this->validate($request);
+        $validated = $request->validated();
         $validated['accessible_pmr'] = $request->boolean('accessible_pmr');
         $validated['actif']          = $request->boolean('actif');
         $this->service->update($pointsFraicheur, $validated);
@@ -120,6 +123,17 @@ class PointFraicheurController extends Controller
     }
 
     /**
+     * Mise à jour d'un avis (modération admin).
+     */
+    public function avisUpdate(UpdateAvisPointRequest $request, AvisPoint $avisPoint): RedirectResponse
+    {
+        $validated = $request->validated();
+        $this->avisService->update($avisPoint, $validated);
+
+        return back()->with('success', 'L\'avis a été mis à jour avec succès.');
+    }
+
+    /**
      * Suppression d'un avis (modération).
      */
     public function avisDestroy(AvisPoint $avisPoint): RedirectResponse
@@ -127,20 +141,5 @@ class PointFraicheurController extends Controller
         $this->avisService->delete($avisPoint);
 
         return back()->with('deleted', 'L\'avis a été supprimé.');
-    }
-
-    private function validate(Request $request): array
-    {
-        return $request->validate([
-            'nom'            => ['required', 'string', 'max:150'],
-            'type'           => ['required', 'in:parc,salle_climatisee,fontaine,piscine,bibliotheque,autre'],
-            'adresse'        => ['required', 'string', 'max:255'],
-            'latitude'       => ['nullable', 'numeric', 'between:-90,90'],
-            'longitude'      => ['nullable', 'numeric', 'between:-180,180'],
-            'horaires'       => ['nullable', 'string', 'max:255'],
-            'accessible_pmr' => ['nullable', 'boolean'],
-            'actif'          => ['nullable', 'boolean'],
-            'zone_id'        => ['nullable', 'exists:zones,id'],
-        ]);
     }
 }

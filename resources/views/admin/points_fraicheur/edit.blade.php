@@ -17,7 +17,7 @@
   </div>
 </div>
 
-<form method="POST" action="{{ route('admin.points_fraicheur.update', $point) }}">
+<form method="POST" action="{{ route('admin.points_fraicheur.update', $point) }}" id="point-fraicheur-form" novalidate>
   @csrf
   @method('PUT')
   @include('admin.points_fraicheur._form')

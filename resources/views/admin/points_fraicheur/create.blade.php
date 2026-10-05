@@ -12,7 +12,7 @@
   </div>
 </div>
 
-<form method="POST" action="{{ route('admin.points_fraicheur.store') }}">
+<form method="POST" action="{{ route('admin.points_fraicheur.store') }}" id="point-fraicheur-form" novalidate>
   @csrf
   @include('admin.points_fraicheur._form')
 </form>

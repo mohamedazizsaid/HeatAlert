@@ -106,6 +106,7 @@ Route::middleware(['auth', 'admin'])
         // Gestion des Points de Fraîcheur + supervision des avis
         Route::resource('points_fraicheur', PointFraicheurController::class);
         Route::get('avis-points', [PointFraicheurController::class, 'avisIndex'])->name('avis_points.index');
+        Route::put('avis-points/{avisPoint}', [PointFraicheurController::class, 'avisUpdate'])->name('avis_points.update');
         Route::delete('avis-points/{avisPoint}', [PointFraicheurController::class, 'avisDestroy'])->name('avis_points.destroy');
     });
 

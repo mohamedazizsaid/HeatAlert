@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAvisPointRequest;
+use App\Http\Requests\UpdateAvisPointRequest;
 use App\Models\AvisPoint;
 use App\Models\PointFraicheur;
 use App\Models\Zone;
@@ -53,17 +55,14 @@ class FrontPointFraicheurController extends Controller
     /**
      * Enregistrer un avis sur un point.
      */
-    public function storeAvis(Request $request, PointFraicheur $pointFraicheur): RedirectResponse
+    public function storeAvis(StoreAvisPointRequest $request, PointFraicheur $pointFraicheur): RedirectResponse
     {
         // Un user ne peut laisser qu'un seul avis par point
         if ($this->avisService->userHasAvis(auth()->id(), $pointFraicheur->id)) {
             return back()->with('error', 'Vous avez déjà laissé un avis sur ce point.');
         }
 
-        $validated = $request->validate([
-            'note'        => ['required', 'integer', 'min:1', 'max:5'],
-            'commentaire' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $this->avisService->create([
             'note'              => $validated['note'],
@@ -79,17 +78,14 @@ class FrontPointFraicheurController extends Controller
     /**
      * Modifier un avis existant.
      */
-    public function updateAvis(Request $request, AvisPoint $avisPoint): RedirectResponse
+    public function updateAvis(UpdateAvisPointRequest $request, AvisPoint $avisPoint): RedirectResponse
     {
         // Seul l'auteur peut modifier
         if ($avisPoint->user_id !== auth()->id()) {
             abort(403);
         }
 
-        $validated = $request->validate([
-            'note'        => ['required', 'integer', 'min:1', 'max:5'],
-            'commentaire' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $this->avisService->update($avisPoint, [
             'note'        => $validated['note'],
