@@ -84,12 +84,7 @@ class CloudinaryService
      */
     public function url(string $publicId, int $width = 0, int $height = 0, string $crop = 'fill'): string
     {
-        $options = ['secure' => true, 'quality' => 'auto', 'fetch_format' => 'auto'];
-        if ($width  > 0) $options['width']  = $width;
-        if ($height > 0) $options['height'] = $height;
-        if ($width  > 0 || $height > 0) $options['crop'] = $crop;
-
-        return cloudinary()->image($publicId)->toUrl();
+        return Cloudinary::image($publicId)->toUrl();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -108,6 +103,7 @@ class CloudinaryService
 
     /**
      * Retourne l'URL publique d'un champ photo.
+     * - Si déjà une URL HTTPS → retour direct
      * - Si c'est un public_id Cloudinary → URL Cloudinary sécurisée
      * - Si c'est un chemin local → asset() local (rétro-compatibilité)
      * - Si null → null
@@ -116,11 +112,15 @@ class CloudinaryService
     {
         if (! $photoField) return null;
 
+        if (str_starts_with($photoField, 'http://') || str_starts_with($photoField, 'https://')) {
+            return $photoField;
+        }
+
         if ($this->isCloudinaryId($photoField)) {
-            return cloudinary()->image($photoField)->toUrl();
+            return Cloudinary::image($photoField)->toUrl();
         }
 
         // Rétro-compatibilité : anciens fichiers stockés localement
-        return asset('storage/' . $photoField);
+        return asset('storage/' . ltrim($photoField, '/'));
     }
 }
