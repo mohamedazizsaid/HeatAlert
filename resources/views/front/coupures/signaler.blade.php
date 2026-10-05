@@ -47,13 +47,45 @@
 
           {{-- Coupure --}}
           <div class="mb-4">
-            <label for="coupure_id" class="form-label fw-bold">Coupure concernée</label>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <label for="coupure_id" class="form-label fw-bold mb-0">Coupure concernée</label>
+              @if(isset($selectedCoupure) && $selectedCoupure)
+                <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-2 py-1 small">
+                  <i class="bi bi-link-45deg me-1"></i>Coupure liée automatiquement
+                </span>
+              @endif
+            </div>
+
+            @if(isset($selectedCoupure) && $selectedCoupure)
+              <div class="p-3 mb-2 rounded-3 border d-flex align-items-center justify-content-between" style="background:#fff7ed;border-color:#fed7aa !important;">
+                <div class="d-flex align-items-center gap-3">
+                  <span class="badge bg-danger rounded-circle p-2 d-inline-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                    <i class="bi bi-lightning-charge-fill text-white fs-6"></i>
+                  </span>
+                  <div>
+                    <div class="fw-bold text-dark" style="font-size:.92rem;">
+                      Coupure {{ ucfirst($selectedCoupure->type) }} — {{ $selectedCoupure->zone?->nom ?? 'Zone' }}
+                    </div>
+                    <div class="text-muted small">
+                      <i class="bi bi-clock me-1"></i>Début : {{ $selectedCoupure->date_debut?->format('d/m/Y à H:i') }}
+                      @if($selectedCoupure->zone?->ville)
+                        • {{ $selectedCoupure->zone->ville }}
+                      @endif
+                    </div>
+                  </div>
+                </div>
+                <span class="badge {{ $selectedCoupure->statut === 'en_cours' ? 'bg-danger' : ($selectedCoupure->statut === 'prevue' ? 'bg-warning text-dark' : 'bg-success') }} rounded-pill">
+                  {{ ucfirst(str_replace('_', ' ', $selectedCoupure->statut)) }}
+                </span>
+              </div>
+            @endif
+
             <select id="coupure_id" name="coupure_id"
                     class="form-select @error('coupure_id') is-invalid @enderror">
               <option value="">Coupure non encore répertoriée</option>
               @foreach($coupures as $coupure)
                 <option value="{{ $coupure->id }}" @selected(old('coupure_id', request('coupure_id')) == $coupure->id)>
-                  {{ ucfirst($coupure->type) }} — {{ $coupure->date_debut?->format('d/m/Y H:i') }}
+                  {{ ucfirst($coupure->type) }} — {{ $coupure->zone?->nom ? $coupure->zone->nom . ' — ' : '' }}{{ $coupure->date_debut?->format('d/m/Y H:i') }} ({{ ucfirst(str_replace('_', ' ', $coupure->statut)) }})
                 </option>
               @endforeach
             </select>

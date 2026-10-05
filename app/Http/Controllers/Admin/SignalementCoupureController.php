@@ -63,13 +63,39 @@ class SignalementCoupureController extends Controller
 
     /**
      * Valide un signalement.
+     * Si le signalement n'est rattaché à aucune coupure existante,
+     * crée automatiquement une nouvelle coupure "en cours" avec les détails nécessaires.
      */
     public function valider(SignalementCoupure $signalement): RedirectResponse
     {
-        $signalement->update(['statut_validation' => 'valide']);
+        $signalement->loadMissing(['user', 'coupure']);
+
+        if (! $signalement->coupure_id) {
+            $zoneId = $signalement->user?->zone_id
+                ?? Zone::where('actif', true)->value('id')
+                ?? Zone::value('id');
+
+            $nouvelleCoupure = \App\Models\Coupure::create([
+                'type'        => 'panne',
+                'statut'      => 'en_cours',
+                'date_debut'  => $signalement->date_signalement ?? now(),
+                'date_fin'    => null,
+                'cause'       => 'Coupure issue du signalement citoyen #' . $signalement->id . ' : ' . \Illuminate\Support\Str::limit($signalement->description, 180),
+                'zone_id'     => $zoneId,
+            ]);
+
+            $signalement->coupure_id = $nouvelleCoupure->id;
+        }
+
+        $signalement->statut_validation = 'valide';
+        $signalement->save();
+
+        $msg = isset($nouvelleCoupure)
+            ? 'Signalement validé avec succès ! Une nouvelle coupure en cours a été automatiquement créée et liée.'
+            : 'Le signalement a été validé avec succès.';
 
         return redirect()->route('admin.signalements.index')
-            ->with('success', 'Le signalement a été validé avec succès.');
+            ->with('success', $msg);
     }
 
     /**

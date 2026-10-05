@@ -35,7 +35,14 @@
     <p class="small text-muted mb-3">{{ Str::limit($coupure->cause, 120) }}</p>
   @endif
 
-  <a href="{{ route('front.coupures.show', $coupure) }}" class="btn btn-outline-danger rounded-pill w-100">
-    <i class="bi bi-eye me-1"></i>Voir les détails
-  </a>
+  <div class="d-flex gap-2 mt-auto pt-2">
+    <a href="{{ route('front.coupures.show', $coupure) }}" class="btn btn-outline-secondary rounded-pill flex-grow-1 text-nowrap">
+      <i class="bi bi-eye me-1"></i>Détails
+    </a>
+    @if($coupure->statut === 'prevue')
+    <a href="{{ route('front.coupures.signaler', ['coupure_id' => $coupure->id]) }}" class="btn btn-danger rounded-pill flex-grow-1 text-nowrap">
+      <i class="bi bi-megaphone-fill me-1"></i>Signaler
+    </a>
+    @endif
+  </div>
 </article>

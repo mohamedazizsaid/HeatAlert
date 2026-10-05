@@ -27,6 +27,15 @@ class SignalementCoupure extends Model
         'date_signalement' => 'datetime',
     ];
 
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo) {
+            return null;
+        }
+
+        return app(\App\Services\CloudinaryService::class)->resolveUrl($this->photo);
+    }
+
     public function coupure(): BelongsTo
     {
         return $this->belongsTo(Coupure::class);

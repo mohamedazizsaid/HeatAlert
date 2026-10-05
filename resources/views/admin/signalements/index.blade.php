@@ -129,8 +129,8 @@
             </td>
             <td>{{ Str::limit($signalement->description, 75) }}</td>
             <td style="text-align:center;">
-              @if($signalement->photo)
-                <img src="{{ asset('storage/' . ltrim($signalement->photo, '/')) }}"
+              @if($signalement->photo_url)
+                <img src="{{ $signalement->photo_url }}"
                      alt="Photo du signalement"
                      style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">
               @else

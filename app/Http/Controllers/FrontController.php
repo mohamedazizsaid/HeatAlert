@@ -296,20 +296,10 @@ class FrontController extends Controller
     {
         Coupure::actualiserStatuts();
 
-        $query = Coupure::query()
-            ->whereKey($coupure->id)
-            ->with(['zone', 'interventions'])
-            ->withCount(['signalements as signalements_valides_count' => function ($query) {
+        $coupure->load(['zone', 'interventions'])
+            ->loadCount(['signalements as signalements_valides_count' => function ($query) {
                 $query->where('statut_validation', 'valide');
             }]);
-
-        if (! auth()->check()) {
-            $query->where('statut', 'en_cours');
-        } else {
-            $query->whereIn('statut', ['prevue', 'en_cours']);
-        }
-
-        $coupure = $query->firstOrFail();
 
         return view('front.coupures.show', compact('coupure'));
     }
@@ -317,16 +307,30 @@ class FrontController extends Controller
     /**
      * Affiche le formulaire de signalement pour la zone de l'utilisateur.
      */
-    public function createSignalement(): View
+    public function createSignalement(Request $request): View
     {
         Coupure::actualiserStatuts();
 
-        $coupures = Coupure::where('zone_id', auth()->user()->zone_id)
-            ->where('statut', 'en_cours')
-            ->orderByDesc('date_debut')
-            ->get();
+        $user = auth()->user();
+        $selectedCoupureId = $request->query('coupure_id');
+        $selectedCoupure = null;
 
-        return view('front.coupures.signaler', compact('coupures'));
+        if ($selectedCoupureId) {
+            $selectedCoupure = Coupure::with('zone')->find($selectedCoupureId);
+        }
+
+        $query = Coupure::with('zone');
+        if ($user && $user->zone_id) {
+            $query->where('zone_id', $user->zone_id);
+        }
+
+        $coupures = $query->orderByDesc('date_debut')->get();
+
+        if ($selectedCoupure && ! $coupures->contains('id', $selectedCoupure->id)) {
+            $coupures->prepend($selectedCoupure);
+        }
+
+        return view('front.coupures.signaler', compact('coupures', 'selectedCoupure'));
     }
 
     /**
@@ -339,11 +343,11 @@ class FrontController extends Controller
         $data = $request->validated();
         $user = $request->user();
 
-        if (isset($data['coupure_id'])) {
+        if (! empty($data['coupure_id'])) {
             $coupure = Coupure::findOrFail($data['coupure_id']);
 
-            abort_if($coupure->zone_id !== $user->zone_id, 403, 'Cette coupure ne concerne pas votre zone.');
-            abort_if($coupure->statut !== 'en_cours', 422, 'Seule une coupure en cours peut être signalée.');
+            abort_if($user->zone_id && $coupure->zone_id !== $user->zone_id && ! $user->isAdmin(), 403, 'Cette coupure ne concerne pas votre zone.');
+            abort_if($coupure->statut === 'terminee', 422, 'Cette coupure est déjà terminée.');
 
             $signalementsRecents = SignalementCoupure::query()
                 ->where('coupure_id', $coupure->id)

@@ -58,9 +58,13 @@
         <p class="text-muted mb-0"><span id="coupures-count">{{ $coupures->total() }}</span> résultat(s)</p>
       </div>
       @auth
-        <a href="{{ route('front.coupures.signaler') }}" class="btn btn-danger rounded-pill"><i class="bi bi-megaphone-fill me-2"></i>Signaler une coupure</a>
+        <a href="{{ route('front.coupures.signaler') }}" class="btn btn-danger rounded-pill shadow-sm">
+          <i class="bi bi-megaphone-fill me-2"></i>Signaler une coupure
+        </a>
       @else
-        <a href="{{ route('login') }}" class="btn btn-outline-danger rounded-pill"><i class="bi bi-person-lock me-2"></i>Se connecter pour signaler</a>
+        <a href="{{ route('login') }}" class="btn btn-outline-danger rounded-pill">
+          <i class="bi bi-person-lock me-2"></i>Se connecter pour signaler
+        </a>
       @endauth
     </div>
 

@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/conseils/{conseil}', [FrontController::class, 'conseilShow'])->name('front.conseils.show');
     Route::get('/coupures/signaler', [FrontController::class, 'createSignalement'])->name('front.coupures.signaler');
     Route::post('/coupures/signaler', [FrontController::class, 'storeSignalement'])->name('front.coupures.signaler.store');
+    Route::get('/coupures/{coupure}', [FrontController::class, 'coupureShow'])->name('front.coupures.show')->whereNumber('coupure');
 
     // ─── Points de Fraîcheur (front)
     Route::get('/points-fraicheur', [FrontPointFraicheurController::class, 'index'])->name('front.points_fraicheur.index');
@@ -58,8 +59,6 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-Route::get('/coupures/{coupure}', [FrontController::class, 'coupureShow'])->name('front.coupures.show');
 
 // ─── Routes Admin — accessible uniquement aux ROLE_ADMIN
 Route::middleware(['auth', 'admin'])

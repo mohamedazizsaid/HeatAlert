@@ -77,10 +77,10 @@
           <dd class="col-sm-8" style="white-space:pre-line;">{{ $signalement->description }}</dd>
         </dl>
 
-        @if($signalement->photo)
+        @if($signalement->photo_url)
           <div class="mt-4">
             <h3 class="h6 fw-bold">Photo jointe</h3>
-            <img src="{{ asset('storage/' . ltrim($signalement->photo, '/')) }}"
+            <img src="{{ $signalement->photo_url }}"
                  alt="Photo du signalement"
                  class="img-fluid rounded-3 border"
                  style="max-height:320px;object-fit:contain;">
