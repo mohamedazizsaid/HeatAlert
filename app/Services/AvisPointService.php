@@ -26,6 +26,21 @@ class AvisPointService
             $query->where('note', $filters['note']);
         }
 
+        if (!empty($filters['search'])) {
+            $s = $filters['search'];
+            $query->where(function ($q) use ($s) {
+                $q->where('commentaire', 'like', "%{$s}%")
+                  ->orWhereHas('user', function ($sub) use ($s) {
+                      $sub->where('nom', 'like', "%{$s}%")
+                          ->orWhere('prenom', 'like', "%{$s}%")
+                          ->orWhere('email', 'like', "%{$s}%");
+                  })
+                  ->orWhereHas('pointFraicheur', function ($sub) use ($s) {
+                      $sub->where('nom', 'like', "%{$s}%");
+                  });
+            });
+        }
+
         return $query->orderByDesc('date_avis')->paginate($perPage)->withQueryString();
     }
 

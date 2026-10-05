@@ -114,7 +114,7 @@ class PointFraicheurController extends Controller
      */
     public function avisIndex(Request $request): View
     {
-        $filters = $request->only(['note', 'point_fraicheur_id']);
+        $filters = $request->only(['note', 'point_fraicheur_id', 'search']);
         $perPage = (int) $request->get('per_page', 5);
         $avis    = $this->avisService->getPaginated($filters, $perPage);
         $points  = PointFraicheur::orderBy('nom')->get();

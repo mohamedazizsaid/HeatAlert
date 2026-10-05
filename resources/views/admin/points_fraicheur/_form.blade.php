@@ -10,69 +10,87 @@
       </header>
 
       <div class="row g-3 p-3">
+        <div class="col-12 d-none" id="pf-form-alert">
+          <div class="alert alert-danger d-flex align-items-center mb-1 py-2 px-3 rounded-3" style="font-size: 13px;">
+            <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
+            <span id="pf-form-alert-msg">Veuillez corriger les erreurs indiquées ci-dessous avant d'enregistrer.</span>
+          </div>
+        </div>
+
         {{-- Nom --}}
         <div class="col-md-8">
-          <label for="nom" class="form-label fw-semibold">Nom du point <span class="text-danger">*</span></label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="nom" class="form-label fw-semibold mb-0">Nom du point <span class="text-danger">*</span></label>
+            <small class="text-muted" id="nom-counter" style="font-size:11px;">0 / 150</small>
+          </div>
           <input type="text"
                  id="nom" name="nom"
                  class="form-control @error('nom') is-invalid @enderror"
                  value="{{ old('nom', $point->nom ?? '') }}"
-                 placeholder="Ex: Parc Habib Thameur"
+                 placeholder="Ex: Parc Habib Thameur (min 3 car.)"
                  maxlength="150" required>
+          <div id="nom-client-error" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i><span></span></div>
           @error('nom')<div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>@enderror
         </div>
 
         {{-- Type --}}
         <div class="col-md-4">
-          <label for="type" class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+          <label for="type" class="form-label fw-semibold mb-1">Type d'espace <span class="text-danger">*</span></label>
           <select id="type" name="type" class="form-select @error('type') is-invalid @enderror" required>
             <option value="">— Sélectionner —</option>
             @foreach(\App\Models\PointFraicheur::$typeLabels as $val => $label)
               <option value="{{ $val }}" {{ old('type', $point->type ?? '') === $val ? 'selected' : '' }}>{{ $label }}</option>
             @endforeach
           </select>
+          <div id="type-client-error" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i><span></span></div>
           @error('type')<div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>@enderror
         </div>
 
         {{-- Adresse --}}
         <div class="col-12">
-          <label for="adresse" class="form-label fw-semibold">Adresse <span class="text-danger">*</span></label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="adresse" class="form-label fw-semibold mb-0">Adresse géographique <span class="text-danger">*</span></label>
+            <small class="text-muted" id="adresse-counter" style="font-size:11px;">0 / 255</small>
+          </div>
           <input type="text"
                  id="adresse" name="adresse"
                  class="form-control @error('adresse') is-invalid @enderror"
                  value="{{ old('adresse', $point->adresse ?? '') }}"
-                 placeholder="Ex: Avenue de la République, Tunis"
+                 placeholder="Ex: Avenue de la République, Bab El Khadra, Tunis (min 5 car.)"
                  maxlength="255" required>
+          <div id="adresse-client-error" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i><span></span></div>
           @error('adresse')<div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>@enderror
         </div>
 
         {{-- Latitude --}}
         <div class="col-md-6">
-          <label for="latitude" class="form-label fw-semibold">Latitude</label>
+          <label for="latitude" class="form-label fw-semibold mb-1">Latitude (GPS)</label>
           <input type="number" id="latitude" name="latitude"
                  class="form-control @error('latitude') is-invalid @enderror"
                  value="{{ old('latitude', $point->latitude ?? '') }}"
-                 placeholder="Ex: 36.8197" step="0.0000001" min="-90" max="90">
+                 placeholder="Ex: 36.8197 (-90 à 90)" step="0.0000001" min="-90" max="90">
+          <div id="latitude-client-error" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i><span></span></div>
           @error('latitude')<div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>@enderror
         </div>
 
         {{-- Longitude --}}
         <div class="col-md-6">
-          <label for="longitude" class="form-label fw-semibold">Longitude</label>
+          <label for="longitude" class="form-label fw-semibold mb-1">Longitude (GPS)</label>
           <input type="number" id="longitude" name="longitude"
                  class="form-control @error('longitude') is-invalid @enderror"
                  value="{{ old('longitude', $point->longitude ?? '') }}"
-                 placeholder="Ex: 10.1662" step="0.0000001" min="-180" max="180">
+                 placeholder="Ex: 10.1662 (-180 à 180)" step="0.0000001" min="-180" max="180">
+          <div id="longitude-client-error" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i><span></span></div>
           @error('longitude')<div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>@enderror
         </div>
 
         {{-- Horaires --}}
         <div class="col-md-8">
-          <label for="horaires" class="form-label fw-semibold">Horaires d'ouverture</label>
+          <label for="horaires" class="form-label fw-semibold mb-1">Horaires d'ouverture</label>
           <input type="text" id="horaires" name="horaires"
                  class="form-control @error('horaires') is-invalid @enderror"
                  value="{{ old('horaires', $point->horaires ?? '') }}"
-                 placeholder="Ex: 8h00 – 18h00, fermé le dimanche"
+                 placeholder="Ex: 8h00 – 18h00, 7j/7"
                  maxlength="255">
           @error('horaires')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
@@ -219,6 +237,167 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!isNaN(il) && !isNaN(iln)) setTimeout(() => { map.invalidateSize(); ping(il, iln, true); }, 250);
   else setTimeout(() => map.invalidateSize(), 250);
   window.addEventListener('resize', () => map.invalidateSize());
+
+  // ─── Contrôle de saisie en temps réel (Client-side validation) ───────────────
+  const form = document.getElementById('point-fraicheur-form');
+  const typeSelect = document.getElementById('type');
+  const adresseInput = document.getElementById('adresse');
+  const formAlert = document.getElementById('pf-form-alert');
+  const nomCounter = document.getElementById('nom-counter');
+  const adresseCounter = document.getElementById('adresse-counter');
+
+  function setValid(input, errorEl) {
+    input.classList.remove('is-invalid');
+    input.classList.add('is-valid');
+    if (errorEl) {
+      errorEl.classList.add('d-none');
+      errorEl.querySelector('span').textContent = '';
+    }
+  }
+
+  function setInvalid(input, errorEl, message) {
+    input.classList.remove('is-valid');
+    input.classList.add('is-invalid');
+    if (errorEl) {
+      errorEl.classList.remove('d-none');
+      errorEl.querySelector('span').textContent = message;
+    }
+  }
+
+  function clearState(input, errorEl) {
+    input.classList.remove('is-valid', 'is-invalid');
+    if (errorEl) {
+      errorEl.classList.add('d-none');
+      errorEl.querySelector('span').textContent = '';
+    }
+  }
+
+  // Nom validation
+  function validateNom() {
+    const val = (nomInput?.value || '').trim();
+    if (nomCounter) nomCounter.textContent = `${(nomInput?.value || '').length} / 150`;
+    const err = document.getElementById('nom-client-error');
+    if (!val) {
+      setInvalid(nomInput, err, 'Le nom du point de fraîcheur est obligatoire.');
+      return false;
+    }
+    if (val.length < 3) {
+      setInvalid(nomInput, err, 'Le nom doit comporter au moins 3 caractères.');
+      return false;
+    }
+    if (val.length > 150) {
+      setInvalid(nomInput, err, 'Le nom ne peut pas dépasser 150 caractères.');
+      return false;
+    }
+    setValid(nomInput, err);
+    return true;
+  }
+
+  // Type validation
+  function validateType() {
+    const val = typeSelect?.value || '';
+    const err = document.getElementById('type-client-error');
+    if (!val) {
+      setInvalid(typeSelect, err, 'Veuillez sélectionner un type d\'espace.');
+      return false;
+    }
+    setValid(typeSelect, err);
+    return true;
+  }
+
+  // Adresse validation
+  function validateAdresse() {
+    const val = (adresseInput?.value || '').trim();
+    if (adresseCounter) adresseCounter.textContent = `${(adresseInput?.value || '').length} / 255`;
+    const err = document.getElementById('adresse-client-error');
+    if (!val) {
+      setInvalid(adresseInput, err, 'L\'adresse géographique est obligatoire.');
+      return false;
+    }
+    if (val.length < 5) {
+      setInvalid(adresseInput, err, 'L\'adresse doit comporter au moins 5 caractères.');
+      return false;
+    }
+    if (val.length > 255) {
+      setInvalid(adresseInput, err, 'L\'adresse ne peut pas dépasser 255 caractères.');
+      return false;
+    }
+    setValid(adresseInput, err);
+    return true;
+  }
+
+  // Latitude validation
+  function validateLatitude() {
+    const val = latInput?.value?.trim();
+    const err = document.getElementById('latitude-client-error');
+    if (!val) {
+      clearState(latInput, err);
+      return true;
+    }
+    const num = parseFloat(val);
+    if (isNaN(num) || num < -90 || num > 90) {
+      setInvalid(latInput, err, 'La latitude doit être un nombre décimal entre -90 et 90.');
+      return false;
+    }
+    setValid(latInput, err);
+    return true;
+  }
+
+  // Longitude validation
+  function validateLongitude() {
+    const val = lngInput?.value?.trim();
+    const err = document.getElementById('longitude-client-error');
+    if (!val) {
+      clearState(lngInput, err);
+      return true;
+    }
+    const num = parseFloat(val);
+    if (isNaN(num) || num < -180 || num > 180) {
+      setInvalid(lngInput, err, 'La longitude doit être un nombre décimal entre -180 et 180.');
+      return false;
+    }
+    setValid(lngInput, err);
+    return true;
+  }
+
+  // Event listeners live
+  nomInput?.addEventListener('input', validateNom);
+  nomInput?.addEventListener('blur', validateNom);
+  typeSelect?.addEventListener('change', validateType);
+  adresseInput?.addEventListener('input', validateAdresse);
+  adresseInput?.addEventListener('blur', validateAdresse);
+  latInput?.addEventListener('input', validateLatitude);
+  latInput?.addEventListener('blur', validateLatitude);
+  lngInput?.addEventListener('input', validateLongitude);
+  lngInput?.addEventListener('blur', validateLongitude);
+
+  // Initial counters
+  if (nomInput && nomCounter) nomCounter.textContent = `${nomInput.value.length} / 150`;
+  if (adresseInput && adresseCounter) adresseCounter.textContent = `${adresseInput.value.length} / 255`;
+
+  // Submit blocker if invalid
+  form?.addEventListener('submit', function(e) {
+    const okNom = validateNom();
+    const okType = validateType();
+    const okAdr = validateAdresse();
+    const okLat = validateLatitude();
+    const okLng = validateLongitude();
+
+    if (!okNom || !okType || !okAdr || !okLat || !okLng) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (formAlert) {
+        formAlert.classList.remove('d-none');
+        formAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      const firstInvalid = form.querySelector('.is-invalid');
+      if (firstInvalid) {
+        firstInvalid.focus();
+      }
+    } else {
+      if (formAlert) formAlert.classList.add('d-none');
+    }
+  });
 });
 </script>
 @endpush

@@ -122,7 +122,10 @@
             @if($monAvis)
               {{-- Modifier mon avis --}}
               <h5 class="fw-bold mb-3" style="color:#0f172a;"><i class="fa-solid fa-pen-to-square me-2" style="color:{{ $color }};"></i>Modifier mon avis</h5>
-              <form method="POST" action="{{ route('front.avis_points.update', $monAvis) }}">
+              <div id="front-avis-edit-alert" class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-3">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i><span></span>
+              </div>
+              <form method="POST" action="{{ route('front.avis_points.update', $monAvis) }}" id="form-front-avis-edit" novalidate>
                 @csrf @method('PUT')
                 <div class="mb-3">
                   <label class="form-label fw-semibold">Ma note <span class="text-danger">*</span></label>
@@ -134,10 +137,17 @@
                     </div>
                     @endfor
                   </div>
+                  <div id="front-edit-note-err" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i>Veuillez sélectionner une note entre 1 et 5 étoiles.</div>
+                  @error('note')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
-                  <label for="commentaire-edit" class="form-label fw-semibold">Commentaire</label>
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="commentaire-edit" class="form-label fw-semibold mb-0">Commentaire</label>
+                    <small class="text-muted" id="front-edit-char-counter" style="font-size:11px;">0 / 1000</small>
+                  </div>
                   <textarea id="commentaire-edit" name="commentaire" class="form-control" rows="3" maxlength="1000" placeholder="Partagez votre expérience…">{{ old('commentaire', $monAvis->commentaire) }}</textarea>
+                  <div id="front-edit-comm-err" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i>Le commentaire doit comporter au moins 3 caractères s'il est renseigné.</div>
+                  @error('commentaire')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 </div>
                 <div class="d-flex gap-2">
                   <button type="submit" class="btn fw-semibold px-4" style="background:{{ $color }};color:#fff;border-radius:10px;">
@@ -154,7 +164,10 @@
             @else
               {{-- Laisser un avis --}}
               <h5 class="fw-bold mb-3" style="color:#0f172a;"><i class="fa-solid fa-star me-2" style="color:#f59e0b;"></i>Laisser un avis</h5>
-              <form method="POST" action="{{ route('front.avis_points.store', $point) }}">
+              <div id="front-avis-create-alert" class="alert alert-danger d-none py-2 px-3 small rounded-3 mb-3">
+                <i class="fa-solid fa-triangle-exclamation me-1"></i><span></span>
+              </div>
+              <form method="POST" action="{{ route('front.avis_points.store', $point) }}" id="form-front-avis-create" novalidate>
                 @csrf
                 <div class="mb-3">
                   <label class="form-label fw-semibold">Ma note <span class="text-danger">*</span></label>
@@ -166,11 +179,16 @@
                     </div>
                     @endfor
                   </div>
+                  <div id="front-create-note-err" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i>Veuillez sélectionner une note entre 1 et 5 étoiles.</div>
                   @error('note')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 </div>
                 <div class="mb-3">
-                  <label for="commentaire-new" class="form-label fw-semibold">Commentaire (optionnel)</label>
+                  <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="commentaire-new" class="form-label fw-semibold mb-0">Commentaire (optionnel)</label>
+                    <small class="text-muted" id="front-create-char-counter" style="font-size:11px;">0 / 1000</small>
+                  </div>
                   <textarea id="commentaire-new" name="commentaire" class="form-control" rows="3" maxlength="1000" placeholder="Partagez votre expérience sur ce point de fraîcheur…">{{ old('commentaire') }}</textarea>
+                  <div id="front-create-comm-err" class="text-danger small mt-1 d-none"><i class="fa-solid fa-circle-exclamation me-1"></i>Le commentaire doit comporter au moins 3 caractères s'il est renseigné.</div>
                   @error('commentaire')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 </div>
                 <button type="submit" class="btn fw-semibold px-4" style="background:{{ $color }};color:#fff;border-radius:10px;">
@@ -309,6 +327,115 @@ document.addEventListener('DOMContentLoaded', function() {
     const checked = Array.from(radios).findIndex(r => r.checked);
     if (checked >= 0) updateStars(4 - checked);
   });
+
+  // ─── Contrôle de saisie formulaire d'avis (Client-side) ─────────────────────
+  // Formulaire d'ajout
+  const createForm = document.getElementById('form-front-avis-create');
+  if (createForm) {
+    const commInput = document.getElementById('commentaire-new');
+    const counter = document.getElementById('front-create-char-counter');
+    const noteErr = document.getElementById('front-create-note-err');
+    const commErr = document.getElementById('front-create-comm-err');
+    const alertBox = document.getElementById('front-avis-create-alert');
+
+    commInput?.addEventListener('input', function() {
+      const len = this.value.length;
+      if (counter) counter.textContent = `${len} / 1000`;
+      const trimmed = this.value.trim();
+      if (trimmed.length > 0 && trimmed.length < 3) {
+        commErr?.classList.remove('d-none');
+        this.classList.add('is-invalid');
+      } else {
+        commErr?.classList.add('d-none');
+        this.classList.remove('is-invalid');
+      }
+    });
+
+    createForm.addEventListener('submit', function(e) {
+      const radios = createForm.querySelectorAll('input[name="note"]');
+      const hasNote = Array.from(radios).some(r => r.checked);
+      const comm = (commInput?.value || '').trim();
+      let hasErr = false;
+
+      if (!hasNote) {
+        noteErr?.classList.remove('d-none');
+        hasErr = true;
+      } else {
+        noteErr?.classList.add('d-none');
+      }
+
+      if (comm.length > 0 && comm.length < 3) {
+        commErr?.classList.remove('d-none');
+        commInput?.classList.add('is-invalid');
+        hasErr = true;
+      }
+
+      if (hasErr) {
+        e.preventDefault();
+        if (alertBox) {
+          alertBox.classList.remove('d-none');
+          alertBox.querySelector('span').textContent = 'Veuillez attribuer une note (1 à 5 étoiles) avant de publier.';
+        }
+      } else {
+        if (alertBox) alertBox.classList.add('d-none');
+      }
+    });
+  }
+
+  // Formulaire de modification
+  const editForm = document.getElementById('form-front-avis-edit');
+  if (editForm) {
+    const commEditInput = document.getElementById('commentaire-edit');
+    const counterEdit = document.getElementById('front-edit-char-counter');
+    const noteEditErr = document.getElementById('front-edit-note-err');
+    const commEditErr = document.getElementById('front-edit-comm-err');
+    const alertEditBox = document.getElementById('front-avis-edit-alert');
+
+    if (commEditInput && counterEdit) counterEdit.textContent = `${commEditInput.value.length} / 1000`;
+
+    commEditInput?.addEventListener('input', function() {
+      const len = this.value.length;
+      if (counterEdit) counterEdit.textContent = `${len} / 1000`;
+      const trimmed = this.value.trim();
+      if (trimmed.length > 0 && trimmed.length < 3) {
+        commEditErr?.classList.remove('d-none');
+        this.classList.add('is-invalid');
+      } else {
+        commEditErr?.classList.add('d-none');
+        this.classList.remove('is-invalid');
+      }
+    });
+
+    editForm.addEventListener('submit', function(e) {
+      const radios = editForm.querySelectorAll('input[name="note"]');
+      const hasNote = Array.from(radios).some(r => r.checked);
+      const comm = (commEditInput?.value || '').trim();
+      let hasErr = false;
+
+      if (!hasNote) {
+        noteEditErr?.classList.remove('d-none');
+        hasErr = true;
+      } else {
+        noteEditErr?.classList.add('d-none');
+      }
+
+      if (comm.length > 0 && comm.length < 3) {
+        commEditErr?.classList.remove('d-none');
+        commEditInput?.classList.add('is-invalid');
+        hasErr = true;
+      }
+
+      if (hasErr) {
+        e.preventDefault();
+        if (alertEditBox) {
+          alertEditBox.classList.remove('d-none');
+          alertEditBox.querySelector('span').textContent = 'Veuillez corriger les erreurs avant d\'enregistrer.';
+        }
+      } else {
+        if (alertEditBox) alertEditBox.classList.add('d-none');
+      }
+    });
+  }
 
   // ── Carte Leaflet ──
   @if($point->latitude && $point->longitude)
