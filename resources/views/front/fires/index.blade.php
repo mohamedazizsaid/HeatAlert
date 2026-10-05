@@ -117,10 +117,9 @@
               <option value="{{ $srcKey }}" {{ $srcKey === 'VIIRS_SNPP_NRT' ? 'selected' : '' }}>{{ $srcLabel }}</option>
             @endforeach
           </select>
-          <button type="button" class="btn btn-sm btn-light border rounded-pill px-2 py-1 text-muted" data-bs-toggle="modal" data-bs-target="#nasaKeyModal" title="Configurer votre clé API NASA FIRMS personnelle">
-            <i class="bi bi-key-fill text-warning me-1"></i>
-            <span id="keyStatusBadge">Clé NASA FIRMS</span>
-          </button>
+          <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small d-inline-flex align-items-center gap-1">
+            <i class="bi bi-check-circle-fill"></i> Clé NASA Active
+          </span>
         </div>
 
         <div class="col-md-6 d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
@@ -421,45 +420,6 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     MODAL CONFIGURATION CLÉ NASA FIRMS API
-═══════════════════════════════════════════════════════════════════════════ -->
-<div class="modal fade" id="nasaKeyModal" tabindex="-1" aria-labelledby="nasaKeyModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-4 border-0 shadow">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="nasaKeyModalLabel">
-          <i class="bi bi-key-fill text-warning"></i>
-          <span>Configuration Clé NASA FIRMS</span>
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
-      </div>
-      <div class="modal-body">
-        <p class="small text-muted">
-          L'accès en temps réel aux données satellite NASA FIRMS utilise une clé d'authentification <strong>MAP_KEY</strong> gratuite délivrée par la NASA.
-        </p>
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Votre Clé MAP_KEY Personnelle (optionnelle) :</label>
-          <input type="text" id="customMapKeyInput" class="form-control font-monospace" placeholder="Ex: 8a7c29e41b2f48d91054ab...">
-          <div class="form-text small">
-            Si laissée vide, la clé configurée sur le serveur ou les données calibrées de référence pour la Tunisie seront utilisées.
-          </div>
-        </div>
-        <div class="p-3 bg-light rounded-3 small">
-          <div class="fw-bold mb-1"><i class="bi bi-box-arrow-up-right me-1 text-primary"></i>Comment obtenir une clé NASA gratuite ?</div>
-          <p class="mb-1 text-muted">Rendez-vous sur le portail officiel de la NASA, entrez votre e-mail et recevez instantanément votre MAP_KEY personnelle :</p>
-          <a href="https://firms.modaps.eosdis.nasa.gov/api/map_key" target="_blank" rel="noopener noreferrer" class="fw-semibold text-danger">
-            firms.modaps.eosdis.nasa.gov/api/map_key <i class="bi bi-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" onclick="clearCustomKey()">Effacer</button>
-        <button type="button" class="btn btn-danger btn-sm rounded-pill px-4 fw-bold" onclick="saveCustomKey()">Enregistrer & Appliquer</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
      FICHE OFFICIELLE D'IMPRESSION PRO (Visible uniquement lors du print)
@@ -704,7 +664,6 @@
   let currentRadius = 50; // km ou 'all'
   let currentDays = 1;
   let currentSource = 'VIIRS_SNPP_NRT';
-  let currentMapKey = localStorage.getItem('heatAlert_nasa_firms_key') || '';
 
   let map = null;
   let mapTileLayer = null;
@@ -734,7 +693,6 @@
   // ─── Initialisation ───
   document.addEventListener('DOMContentLoaded', function() {
     initMap();
-    initKeySettings();
     fetchFires();
   });
 
@@ -850,9 +808,6 @@
       source: currentSource
     });
 
-    if (currentMapKey) {
-      params.append('map_key', currentMapKey);
-    }
     if (currentZoneId && currentZoneId !== 'custom') {
       params.append('zone_id', currentZoneId);
     }
@@ -1162,52 +1117,6 @@
     map.setView([currentLat, currentLng], currentRadius === 'all' ? 7 : 9, { animate: true });
   };
 
-  // ─── Clé NASA FIRMS Modal & Stockage ───
-
-  function initKeySettings() {
-    const input = document.getElementById('customMapKeyInput');
-    const badge = document.getElementById('keyStatusBadge');
-
-    if (currentMapKey) {
-      if (input) input.value = currentMapKey;
-      if (badge) badge.textContent = "Clé NASA Personnalisée (Active)";
-    } else {
-      const hasServerKey = {{ $hasConfiguredKey ? 'true' : 'false' }};
-      if (badge) badge.textContent = hasServerKey ? "Clé Serveur Active" : "Clé NASA FIRMS";
-    }
-  }
-
-  window.saveCustomKey = function() {
-    const input = document.getElementById('customMapKeyInput');
-    const val = input ? input.value.trim() : '';
-
-    if (val) {
-      localStorage.setItem('heatAlert_nasa_firms_key', val);
-      currentMapKey = val;
-    } else {
-      localStorage.removeItem('heatAlert_nasa_firms_key');
-      currentMapKey = '';
-    }
-
-    initKeySettings();
-
-    const modalEl = document.getElementById('nasaKeyModal');
-    if (modalEl) {
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
-    }
-
-    fetchFires();
-  };
-
-  window.clearCustomKey = function() {
-    const input = document.getElementById('customMapKeyInput');
-    if (input) input.value = '';
-    localStorage.removeItem('heatAlert_nasa_firms_key');
-    currentMapKey = '';
-    initKeySettings();
-    fetchFires();
-  };
 
   // ─── Export CSV ───
 
