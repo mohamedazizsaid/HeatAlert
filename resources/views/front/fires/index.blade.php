@@ -1121,36 +1121,66 @@
   // ─── Export CSV ───
 
   window.exportFiresCsv = function() {
-    if (cachedHotspots.length === 0) {
-      alert("Aucune donnée satellite à exporter pour cette zone.");
-      return;
+    const headers = [
+      'ID',
+      'Latitude',
+      'Longitude',
+      'Localite_Zone',
+      'Gouvernorat',
+      'Puissance_FRP_MW',
+      'Temperature_Brillance_K',
+      'Niveau_Confiance',
+      'Satellite_Instrument',
+      'Date_Acquisition',
+      'Heure_UTC',
+      'Periode_Jour_Nuit',
+      'Distance_KM'
+    ];
+
+    let rows = [];
+
+    if (cachedHotspots && cachedHotspots.length > 0) {
+      rows = cachedHotspots.map((h, i) => [
+        i + 1,
+        h.latitude,
+        h.longitude,
+        `"${(h.locality || currentZoneName || '').replace(/"/g, '""')}"`,
+        `"${(h.gouvernorat || '').replace(/"/g, '""')}"`,
+        h.frp_mw,
+        h.brightness_k,
+        `"${(h.confidence || '').replace(/"/g, '""')}"`,
+        `"${(h.satellite || '').replace(/"/g, '""')}"`,
+        h.acq_date,
+        h.acq_time,
+        `"${h.daynight || ''}"`,
+        h.distance_km !== null && h.distance_km !== undefined ? h.distance_km : ''
+      ]);
+    } else {
+      // Si aucun foyer actif n'est détecté, générer une ligne d'information officielle
+      rows = [
+        [1, currentLat, currentLng, `"${(currentZoneName || '').replace(/"/g, '""')}"`, 'N/A', 0, 0, '"Aucun départ de feu actif détecté"', '"NASA FIRMS"', new Date().toISOString().slice(0, 10), new Date().toTimeString().slice(0, 5), 'N/A', 0]
+      ];
     }
 
-    const headers = ['#', 'Latitude', 'Longitude', 'Localite', 'Gouvernorat', 'FRP_MW', 'Brillance_K', 'Confiance', 'Satellite', 'Date_Acquisition', 'Heure_UTC', 'Jour_Nuit', 'Distance_KM'];
-    const rows = cachedHotspots.map((h, i) => [
-      i + 1,
-      h.latitude,
-      h.longitude,
-      `"${(h.locality || '').replace(/"/g, '""')}"`,
-      `"${(h.gouvernorat || '').replace(/"/g, '""')}"`,
-      h.frp_mw,
-      h.brightness_k,
-      h.confidence,
-      `"${h.satellite}"`,
-      h.acq_date,
-      h.acq_time,
-      h.daynight,
-      h.distance_km ?? ''
-    ]);
+    // Utilisation de Blob avec UTF-8 BOM (\uFEFF) pour compatibilité totale avec Excel
+    const csvContent = '\uFEFF' + [
+      headers.join(';'),
+      ...rows.map(r => r.join(';'))
+    ].join('\r\n');
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const cleanZoneName = (currentZoneName || 'Tunisie').replace(/[^a-zA-Z0-9_\-]/g, '_');
+    const fileName = `HeatAlert_NASA_FIRMS_${cleanZoneName}_${new Date().toISOString().slice(0,10)}.csv`;
+
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `HeatAlert_NASA_FIRMS_${currentZoneName.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.csv`);
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', fileName);
+    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   // ─── Impression Pro (Rapport Officiel) ───
