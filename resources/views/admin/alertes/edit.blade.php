@@ -7,7 +7,7 @@
     <p class="subtitle">{{ Str::limit($alerte->titre, 60) }}</p>
   </div>
 </div>
-<form action="{{ route('admin.alertes.update', $alerte) }}" method="POST" novalidate>
+<form action="{{ route('admin.alertes.update', $alerte) }}" method="POST" id="alerte-form" novalidate>
   @csrf
   @method('PUT')
   @include('admin.alertes._form')

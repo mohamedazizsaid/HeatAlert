@@ -1,6 +1,23 @@
 {{-- Partial: Formulaire Zone (create & edit) --}}
 <div class="row g-4 align-items-stretch">
   <div class="col-lg-8 d-flex flex-column">
+    {{-- Bannière d'erreur dynamique --}}
+    <div id="zone-form-alert" class="alert alert-danger d-none mb-3 py-2 px-3 small rounded-3" style="border-radius:10px;">
+      <i class="fa-solid fa-triangle-exclamation me-1"></i>
+      <span>Veuillez corriger les erreurs ci-dessous avant d'enregistrer la zone.</span>
+    </div>
+
+    @if ($errors->any())
+      <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="border-radius:10px;">
+        <div class="fw-bold mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i>Des erreurs sont survenues :</div>
+        <ul class="mb-0 ps-3">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
     <section class="m-card flex-grow-1 h-100 mb-0">
       <header class="m-card__header">
         <div>
@@ -12,7 +29,10 @@
       <div class="row g-3 p-3">
         {{-- Nom --}}
         <div class="col-md-6">
-          <label for="nom" class="form-label fw-semibold">Nom de la zone <span class="text-danger">*</span></label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="nom" class="form-label fw-semibold mb-0">Nom de la zone <span class="text-danger">*</span></label>
+            <span class="small text-muted" id="nom-char-counter">0 / 100</span>
+          </div>
           <input type="text"
                  id="nom"
                  name="nom"
@@ -21,9 +41,7 @@
                  placeholder="Ex: Zone Tunis Centre"
                  maxlength="100"
                  required>
-          @error('nom')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="nom-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('nom'){{ $message }}@else{{ 'Le nom de la zone est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Ville --}}
@@ -37,9 +55,7 @@
                  placeholder="Ex: Tunis"
                  maxlength="100"
                  required>
-          @error('ville')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="ville-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('ville'){{ $message }}@else{{ 'La ville est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Gouvernorat --}}
@@ -69,9 +85,7 @@
                  maxlength="4"
                  pattern="[0-9]{4}"
                  inputmode="numeric">
-          @error('code_postal')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="code_postal-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('code_postal'){{ $message }}@else{{ 'Le code postal doit comporter exactement 4 chiffres.' }}@enderror</div>
           <div class="form-text">4 chiffres (code postal tunisien)</div>
         </div>
 
@@ -86,9 +100,7 @@
                  placeholder="Ex: 36.8190"
                  step="0.0000001"
                  min="-90" max="90">
-          @error('latitude')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="latitude-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('latitude'){{ $message }}@else{{ 'La latitude doit être comprise entre -90 et 90.' }}@enderror</div>
         </div>
 
         {{-- Longitude --}}
@@ -102,23 +114,22 @@
                  placeholder="Ex: 10.1658"
                  step="0.0000001"
                  min="-180" max="180">
-          @error('longitude')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="longitude-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('longitude'){{ $message }}@else{{ 'La longitude doit être comprise entre -180 et 180.' }}@enderror</div>
         </div>
 
         {{-- Description --}}
         <div class="col-12">
-          <label for="description" class="form-label fw-semibold">Description</label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="description" class="form-label fw-semibold mb-0">Description</label>
+            <span class="small text-muted" id="description-char-counter">0 / 500</span>
+          </div>
           <textarea id="description"
                     name="description"
                     class="form-control @error('description') is-invalid @enderror"
                     rows="3"
                     maxlength="500"
                     placeholder="Description de la zone géographique...">{{ old('description', $zone->description ?? '') }}</textarea>
-          @error('description')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="description-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('description'){{ $message }}@else{{ 'La description ne peut pas dépasser 500 caractères.' }}@enderror</div>
         </div>
 
         {{-- Actif --}}
@@ -348,6 +359,201 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', function() {
     map.invalidateSize();
   });
+
+  // ─── Contrôle de saisie live et synchronisation des erreurs ──────────────
+  const form = document.getElementById('zone-form');
+  const alertBanner = document.getElementById('zone-form-alert');
+  const cpInput = document.getElementById('code_postal');
+  const descTextarea = document.getElementById('description');
+  const nomCounter = document.getElementById('nom-char-counter');
+  const descCounter = document.getElementById('description-char-counter');
+
+  function updateCounters() {
+    if (nomInput && nomCounter) {
+      const len = nomInput.value.length;
+      nomCounter.textContent = `${len} / 100`;
+      nomCounter.style.color = len >= 95 ? '#dc2626' : (len > 0 ? '#16a34a' : '#64748b');
+    }
+    if (descTextarea && descCounter) {
+      const len = descTextarea.value.length;
+      descCounter.textContent = `${len} / 500`;
+      descCounter.style.color = len >= 480 ? '#dc2626' : (len > 0 ? '#16a34a' : '#64748b');
+    }
+  }
+
+  function setFieldError(field, errorId, msg) {
+    if (!field) return;
+    field.classList.remove('is-valid');
+    field.classList.add('is-invalid');
+    const errEl = document.getElementById(errorId);
+    if (errEl) {
+      errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation me-1"></i>${msg}`;
+      errEl.style.display = 'block';
+    }
+  }
+
+  function setFieldSuccess(field, errorId) {
+    if (!field) return;
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    const errEl = document.getElementById(errorId);
+    if (errEl) errEl.style.display = 'none';
+  }
+
+  function validateNom() {
+    const val = (nomInput?.value || '').trim();
+    if (!val) {
+      setFieldError(nomInput, 'nom-error', 'Le nom de la zone est obligatoire.');
+      return false;
+    }
+    if (val.length < 2) {
+      setFieldError(nomInput, 'nom-error', 'Le nom doit comporter au moins 2 caractères.');
+      return false;
+    }
+    if (val.length > 100) {
+      setFieldError(nomInput, 'nom-error', 'Le nom ne peut pas dépasser 100 caractères.');
+      return false;
+    }
+    setFieldSuccess(nomInput, 'nom-error');
+    return true;
+  }
+
+  function validateVille() {
+    const val = (villeInput?.value || '').trim();
+    if (!val) {
+      setFieldError(villeInput, 'ville-error', 'La ville est obligatoire.');
+      return false;
+    }
+    if (val.length < 2) {
+      setFieldError(villeInput, 'ville-error', 'La ville doit comporter au moins 2 caractères.');
+      return false;
+    }
+    if (val.length > 100) {
+      setFieldError(villeInput, 'ville-error', 'La ville ne peut pas dépasser 100 caractères.');
+      return false;
+    }
+    setFieldSuccess(villeInput, 'ville-error');
+    return true;
+  }
+
+  function validateCP() {
+    if (!cpInput) return true;
+    const val = cpInput.value.trim();
+    if (!val) {
+      cpInput.classList.remove('is-invalid');
+      const err = document.getElementById('code_postal-error');
+      if (err) err.style.display = 'none';
+      return true;
+    }
+    if (!/^\d{4}$/.test(val)) {
+      setFieldError(cpInput, 'code_postal-error', 'Le code postal doit comporter exactement 4 chiffres.');
+      return false;
+    }
+    setFieldSuccess(cpInput, 'code_postal-error');
+    return true;
+  }
+
+  function validateLat() {
+    if (!latInput) return true;
+    const val = latInput.value.trim();
+    if (!val) {
+      latInput.classList.remove('is-invalid');
+      const err = document.getElementById('latitude-error');
+      if (err) err.style.display = 'none';
+      return true;
+    }
+    const num = parseFloat(val);
+    if (isNaN(num) || num < -90 || num > 90) {
+      setFieldError(latInput, 'latitude-error', 'La latitude doit être comprise entre -90 et 90.');
+      return false;
+    }
+    setFieldSuccess(latInput, 'latitude-error');
+    return true;
+  }
+
+  function validateLng() {
+    if (!lngInput) return true;
+    const val = lngInput.value.trim();
+    if (!val) {
+      lngInput.classList.remove('is-invalid');
+      const err = document.getElementById('longitude-error');
+      if (err) err.style.display = 'none';
+      return true;
+    }
+    const num = parseFloat(val);
+    if (isNaN(num) || num < -180 || num > 180) {
+      setFieldError(lngInput, 'longitude-error', 'La longitude doit être comprise entre -180 et 180.');
+      return false;
+    }
+    setFieldSuccess(lngInput, 'longitude-error');
+    return true;
+  }
+
+  function validateDesc() {
+    if (!descTextarea) return true;
+    const val = descTextarea.value;
+    if (val.length > 500) {
+      setFieldError(descTextarea, 'description-error', 'La description ne peut pas dépasser 500 caractères.');
+      return false;
+    }
+    setFieldSuccess(descTextarea, 'description-error');
+    return true;
+  }
+
+  if (nomInput) {
+    nomInput.addEventListener('input', function() { updateCounters(); validateNom(); });
+    nomInput.addEventListener('blur', validateNom);
+  }
+  if (villeInput) {
+    villeInput.addEventListener('input', validateVille);
+    villeInput.addEventListener('blur', validateVille);
+  }
+  if (cpInput) {
+    cpInput.addEventListener('input', validateCP);
+    cpInput.addEventListener('blur', validateCP);
+  }
+  if (latInput) {
+    latInput.addEventListener('input', validateLat);
+    latInput.addEventListener('blur', validateLat);
+  }
+  if (lngInput) {
+    lngInput.addEventListener('input', validateLng);
+    lngInput.addEventListener('blur', validateLng);
+  }
+  if (descTextarea) {
+    descTextarea.addEventListener('input', function() { updateCounters(); validateDesc(); });
+    descTextarea.addEventListener('blur', validateDesc);
+  }
+
+  updateCounters();
+
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const v1 = validateNom();
+      const v2 = validateVille();
+      const v3 = validateCP();
+      const v4 = validateLat();
+      const v5 = validateLng();
+      const v6 = validateDesc();
+
+      const allValid = v1 && v2 && v3 && v4 && v5 && v6;
+
+      if (!allValid) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (alertBanner) {
+          alertBanner.classList.remove('d-none');
+          alertBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        const firstInvalid = form.querySelector('.is-invalid');
+        if (firstInvalid) firstInvalid.focus();
+      } else {
+        if (alertBanner) alertBanner.classList.add('d-none');
+      }
+    });
+  }
 });
 </script>
 @endpush

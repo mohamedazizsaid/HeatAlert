@@ -1,6 +1,22 @@
 {{-- Partial: Formulaire AlerteMeteo --}}
 <div class="row align-items-stretch">
   <div class="col-lg-8">
+    {{-- Bannière d'erreur dynamique --}}
+    <div id="alerte-form-alert" class="alert alert-danger d-none mb-3 py-2 px-3 small rounded-3" style="border-radius:10px;">
+      <i class="fa-solid fa-triangle-exclamation me-1"></i>
+      <span>Veuillez corriger les erreurs ci-dessous avant d'enregistrer l'alerte.</span>
+    </div>
+
+    @if ($errors->any())
+      <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="border-radius:10px;">
+        <div class="fw-bold mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i>Des erreurs sont survenues :</div>
+        <ul class="mb-0 ps-3">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
 
     {{-- Infos principales --}}
     <section class="m-card mb-3">
@@ -10,16 +26,17 @@
       <div class="row g-3 p-3">
         {{-- Titre --}}
         <div class="col-12">
-          <label for="titre" class="form-label fw-semibold">Titre <span class="text-danger">*</span></label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="titre" class="form-label fw-semibold mb-0">Titre <span class="text-danger">*</span></label>
+            <span class="small text-muted" id="titre-char-counter">0 / 150</span>
+          </div>
           <input type="text"
                  id="titre" name="titre"
                  class="form-control @error('titre') is-invalid @enderror"
                  value="{{ old('titre', $alerte->titre ?? '') }}"
                  placeholder="Ex: Vague de chaleur intense sur Tunis"
                  maxlength="150" required>
-          @error('titre')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="titre-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('titre'){{ $message }}@else{{ 'Le titre de l\'alerte est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Type --}}
@@ -32,9 +49,7 @@
               </option>
             @endforeach
           </select>
-          @error('type')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="type-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('type'){{ $message }}@else{{ 'Le type d\'aléa est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Niveau --}}
@@ -47,9 +62,7 @@
               </option>
             @endforeach
           </select>
-          @error('niveau')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="niveau-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('niveau'){{ $message }}@else{{ 'Le niveau de gravité est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Statut --}}
@@ -62,9 +75,7 @@
               </option>
             @endforeach
           </select>
-          @error('statut')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="statut-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('statut'){{ $message }}@else{{ 'Le statut est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Zone --}}
@@ -78,9 +89,7 @@
               </option>
             @endforeach
           </select>
-          @error('zone_id')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="zone_id-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('zone_id'){{ $message }}@enderror</div>
         </div>
 
         {{-- Source --}}
@@ -92,22 +101,21 @@
                  value="{{ old('source', $alerte->source ?? '') }}"
                  placeholder="Ex: INM Tunisie"
                  maxlength="100">
-          @error('source')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="source-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('source'){{ $message }}@enderror</div>
         </div>
 
         {{-- Description --}}
         <div class="col-12">
-          <label for="description" class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="description" class="form-label fw-semibold mb-0">Description <span class="text-danger">*</span></label>
+            <span class="small text-muted" id="description-char-counter">0 caractères (min: 10)</span>
+          </div>
           <textarea id="description" name="description"
                     class="form-control @error('description') is-invalid @enderror"
                     rows="4"
                     placeholder="Description détaillée de l'alerte météo..."
                     minlength="10">{{ old('description', $alerte->description ?? '') }}</textarea>
-          @error('description')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="description-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('description'){{ $message }}@else{{ 'La description doit comporter au moins 10 caractères.' }}@enderror</div>
         </div>
       </div>
     </section>
@@ -190,9 +198,7 @@
                  class="form-control @error('date_debut') is-invalid @enderror"
                  value="{{ old('date_debut', isset($alerte->date_debut) ? $alerte->date_debut->format('Y-m-d\TH:i') : '') }}"
                  required>
-          @error('date_debut')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="date_debut-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('date_debut'){{ $message }}@else{{ 'La date de début est obligatoire.' }}@enderror</div>
         </div>
 
         <div class="col-md-6">
@@ -200,9 +206,7 @@
           <input type="datetime-local" id="date_fin" name="date_fin"
                  class="form-control @error('date_fin') is-invalid @enderror"
                  value="{{ old('date_fin', isset($alerte->date_fin) ? $alerte->date_fin->format('Y-m-d\TH:i') : '') }}">
-          @error('date_fin')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="date_fin-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('date_fin'){{ $message }}@else{{ 'La date de fin doit être égale ou postérieure à la date de début.' }}@enderror</div>
         </div>
 
         <div class="col-12">
@@ -634,6 +638,180 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Initial trigger
   updatePreview();
+
+  // ─── Contrôle de saisie live et synchronisation des erreurs ──────────────
+  const form = document.getElementById('alerte-form');
+  const alertBanner = document.getElementById('alerte-form-alert');
+  const descTextarea = document.getElementById('description');
+  const titreCounter = document.getElementById('titre-char-counter');
+  const descCounter = document.getElementById('description-char-counter');
+
+  function updateCounters() {
+    if (titreInput && titreCounter) {
+      const len = titreInput.value.length;
+      titreCounter.textContent = `${len} / 150`;
+      titreCounter.style.color = len >= 145 ? '#dc2626' : (len > 0 ? '#16a34a' : '#64748b');
+    }
+    if (descTextarea && descCounter) {
+      const len = descTextarea.value.length;
+      descCounter.textContent = `${len} caractères (min: 10)`;
+      descCounter.style.color = len >= 10 ? '#16a34a' : (len > 0 ? '#ea580c' : '#dc2626');
+    }
+  }
+
+  function setFieldError(field, errorId, msg) {
+    if (!field) return;
+    field.classList.remove('is-valid');
+    field.classList.add('is-invalid');
+    const errEl = document.getElementById(errorId);
+    if (errEl) {
+      errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation me-1"></i>${msg}`;
+      errEl.style.display = 'block';
+    }
+  }
+
+  function setFieldSuccess(field, errorId) {
+    if (!field) return;
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    const errEl = document.getElementById(errorId);
+    if (errEl) errEl.style.display = 'none';
+  }
+
+  function validateTitre() {
+    const val = (titreInput?.value || '').trim();
+    if (!val) {
+      setFieldError(titreInput, 'titre-error', 'Le titre de l\'alerte est obligatoire.');
+      return false;
+    }
+    if (val.length < 3) {
+      setFieldError(titreInput, 'titre-error', 'Le titre doit comporter au moins 3 caractères.');
+      return false;
+    }
+    if (val.length > 150) {
+      setFieldError(titreInput, 'titre-error', 'Le titre ne peut pas dépasser 150 caractères.');
+      return false;
+    }
+    setFieldSuccess(titreInput, 'titre-error');
+    return true;
+  }
+
+  function validateType() {
+    if (!typeSelect?.value) {
+      setFieldError(typeSelect, 'type-error', 'Le type d\'aléa est obligatoire.');
+      return false;
+    }
+    setFieldSuccess(typeSelect, 'type-error');
+    return true;
+  }
+
+  function validateNiveau() {
+    if (!niveauSelect?.value) {
+      setFieldError(niveauSelect, 'niveau-error', 'Le niveau de gravité est obligatoire.');
+      return false;
+    }
+    setFieldSuccess(niveauSelect, 'niveau-error');
+    return true;
+  }
+
+  function validateStatut() {
+    if (!statutSelect?.value) {
+      setFieldError(statutSelect, 'statut-error', 'Le statut est obligatoire.');
+      return false;
+    }
+    setFieldSuccess(statutSelect, 'statut-error');
+    return true;
+  }
+
+  function validateDesc() {
+    const val = (descTextarea?.value || '').trim();
+    if (!val) {
+      setFieldError(descTextarea, 'description-error', 'La description est obligatoire.');
+      return false;
+    }
+    if (val.length < 10) {
+      setFieldError(descTextarea, 'description-error', 'La description doit comporter au moins 10 caractères.');
+      return false;
+    }
+    setFieldSuccess(descTextarea, 'description-error');
+    return true;
+  }
+
+  function validateDates() {
+    let ok = true;
+    if (!dateDebutInput?.value) {
+      setFieldError(dateDebutInput, 'date_debut-error', 'La date de début est obligatoire.');
+      ok = false;
+    } else {
+      setFieldSuccess(dateDebutInput, 'date_debut-error');
+    }
+
+    if (dateFinInput?.value) {
+      if (dateDebutInput?.value && dateFinInput.value < dateDebutInput.value) {
+        setFieldError(dateFinInput, 'date_fin-error', 'La date de fin doit être égale ou postérieure à la date de début.');
+        ok = false;
+      } else {
+        setFieldSuccess(dateFinInput, 'date_fin-error');
+      }
+    } else {
+      if (dateFinInput) {
+        dateFinInput.classList.remove('is-invalid');
+        const err = document.getElementById('date_fin-error');
+        if (err) err.style.display = 'none';
+      }
+    }
+    return ok;
+  }
+
+  if (titreInput) {
+    titreInput.addEventListener('input', function() { updateCounters(); validateTitre(); });
+    titreInput.addEventListener('blur', validateTitre);
+  }
+  if (typeSelect) typeSelect.addEventListener('change', validateType);
+  if (niveauSelect) niveauSelect.addEventListener('change', validateNiveau);
+  if (statutSelect) statutSelect.addEventListener('change', validateStatut);
+  if (descTextarea) {
+    descTextarea.addEventListener('input', function() { updateCounters(); validateDesc(); });
+    descTextarea.addEventListener('blur', validateDesc);
+  }
+  if (dateDebutInput) {
+    dateDebutInput.addEventListener('input', validateDates);
+    dateDebutInput.addEventListener('change', validateDates);
+  }
+  if (dateFinInput) {
+    dateFinInput.addEventListener('input', validateDates);
+    dateFinInput.addEventListener('change', validateDates);
+  }
+
+  updateCounters();
+
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const v1 = validateTitre();
+      const v2 = validateType();
+      const v3 = validateNiveau();
+      const v4 = validateStatut();
+      const v5 = validateDesc();
+      const v6 = validateDates();
+
+      const allValid = v1 && v2 && v3 && v4 && v5 && v6;
+
+      if (!allValid) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (alertBanner) {
+          alertBanner.classList.remove('d-none');
+          alertBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        const firstInvalid = form.querySelector('.is-invalid');
+        if (firstInvalid) firstInvalid.focus();
+      } else {
+        if (alertBanner) alertBanner.classList.add('d-none');
+      }
+    });
+  }
 });
 </script>
 @endpush

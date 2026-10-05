@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<form action="{{ route('admin.coupures.store') }}" method="POST" novalidate>
+<form action="{{ route('admin.coupures.store') }}" method="POST" id="coupure-form" novalidate>
   @csrf
   @include('admin.coupures._form')
 </form>

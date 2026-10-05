@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<form action="{{ route('admin.zones.store') }}" method="POST" novalidate>
+<form action="{{ route('admin.zones.store') }}" method="POST" id="zone-form" novalidate>
   @csrf
   @include('admin.zones._form')
 </form>

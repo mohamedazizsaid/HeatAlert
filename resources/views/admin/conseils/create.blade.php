@@ -7,7 +7,7 @@
     <p class="subtitle">Créer un nouveau conseil santé / météo.</p>
   </div>
 </div>
-<form action="{{ route('admin.conseils.store') }}" method="POST" novalidate>
+<form action="{{ route('admin.conseils.store') }}" method="POST" id="conseil-form" novalidate>
   @csrf
   @include('admin.conseils._form')
 </form>

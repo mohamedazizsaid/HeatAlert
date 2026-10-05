@@ -7,7 +7,7 @@
     <p class="subtitle">{{ Str::limit($conseil->titre, 60) }}</p>
   </div>
 </div>
-<form action="{{ route('admin.conseils.update', $conseil) }}" method="POST" novalidate>
+<form action="{{ route('admin.conseils.update', $conseil) }}" method="POST" id="conseil-form" novalidate>
   @csrf
   @method('PUT')
   @include('admin.conseils._form')

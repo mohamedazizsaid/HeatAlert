@@ -137,6 +137,17 @@ class ConseilController extends Controller
             'actif'               => ['nullable', 'boolean'],
             'alerte_ids'          => ['nullable', 'array'],
             'alerte_ids.*'        => ['exists:alertes_meteo,id'],
+        ], [
+            'titre.required'      => 'Le titre du conseil est obligatoire.',
+            'titre.max'           => 'Le titre ne peut pas dépasser 150 caractères.',
+            'contenu.required'    => 'Le contenu du conseil est obligatoire.',
+            'contenu.min'         => 'Le contenu doit contenir au moins 10 caractères.',
+            'categorie.required'  => 'La catégorie est obligatoire.',
+            'categorie.in'        => 'La catégorie sélectionnée est invalide.',
+            'niveau_alerte_cible.in' => 'Le niveau d\'alerte cible sélectionné est invalide.',
+            'icone.max'           => 'La classe d\'icône ne peut pas dépasser 60 caractères.',
+            'alerte_ids.array'    => 'La liste des alertes doit être un tableau.',
+            'alerte_ids.*.exists' => 'Une des alertes sélectionnées est introuvable.',
         ]);
     }
 }

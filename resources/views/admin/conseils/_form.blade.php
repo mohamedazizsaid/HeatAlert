@@ -1,6 +1,23 @@
 {{-- Partial: Formulaire Conseil --}}
 <div class="row">
   <div class="col-lg-8">
+    {{-- Bannière d'erreur dynamique --}}
+    <div id="conseil-form-alert" class="alert alert-danger d-none mb-3 py-2 px-3 small rounded-3" style="border-radius:10px;">
+      <i class="fa-solid fa-triangle-exclamation me-1"></i>
+      <span>Veuillez corriger les erreurs ci-dessous avant d'enregistrer le conseil.</span>
+    </div>
+
+    @if ($errors->any())
+      <div class="alert alert-danger py-2 px-3 small rounded-3 mb-3" style="border-radius:10px;">
+        <div class="fw-bold mb-1"><i class="fa-solid fa-circle-exclamation me-1"></i>Des erreurs sont survenues :</div>
+        <ul class="mb-0 ps-3">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
     <section class="m-card">
       <header class="m-card__header">
         <h2 class="m-card__title">Informations du conseil</h2>
@@ -10,16 +27,17 @@
 
         {{-- Titre --}}
         <div class="col-12">
-          <label for="titre" class="form-label fw-semibold">Titre <span class="text-danger">*</span></label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="titre" class="form-label fw-semibold mb-0">Titre <span class="text-danger">*</span></label>
+            <span class="small text-muted" id="titre-char-counter">0 / 150</span>
+          </div>
           <input type="text"
                  id="titre" name="titre"
                  class="form-control @error('titre') is-invalid @enderror"
                  value="{{ old('titre', $conseil->titre ?? '') }}"
                  placeholder="Ex: Boire au moins 2 litres d'eau par jour"
                  maxlength="150" required>
-          @error('titre')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="titre-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('titre'){{ $message }}@else{{ 'Le titre du conseil est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Catégorie --}}
@@ -33,9 +51,7 @@
               </option>
             @endforeach
           </select>
-          @error('categorie')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="categorie-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('categorie'){{ $message }}@else{{ 'La catégorie est obligatoire.' }}@enderror</div>
         </div>
 
         {{-- Niveau alerte cible --}}
@@ -87,15 +103,16 @@
 
         {{-- Contenu --}}
         <div class="col-12">
-          <label for="contenu" class="form-label fw-semibold">Contenu <span class="text-danger">*</span></label>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <label for="contenu" class="form-label fw-semibold mb-0">Contenu <span class="text-danger">*</span></label>
+            <span class="small text-muted" id="contenu-char-counter">0 caractères (min: 10)</span>
+          </div>
           <textarea id="contenu" name="contenu"
                     class="form-control @error('contenu') is-invalid @enderror"
                     rows="4"
                     placeholder="Rédigez le contenu détaillé du conseil..."
                     minlength="10">{{ old('contenu', $conseil->contenu ?? '') }}</textarea>
-          @error('contenu')
-            <div class="invalid-feedback"><i class="fa-solid fa-circle-exclamation me-1"></i>{{ $message }}</div>
-          @enderror
+          <div class="invalid-feedback" id="contenu-error"><i class="fa-solid fa-circle-exclamation me-1"></i>@error('contenu'){{ $message }}@else{{ 'Le contenu doit comporter au moins 10 caractères.' }}@enderror</div>
         </div>
 
         {{-- Liaison multiple aux alertes météo (Sélection simple par cases à cocher) --}}
@@ -363,5 +380,122 @@
     // Initialisation au chargement
     updateCountAndStyle();
   })();
+
+  // ─── Contrôle de saisie live et synchronisation des erreurs ──────────────
+  const form = document.getElementById('conseil-form');
+  const alertBanner = document.getElementById('conseil-form-alert');
+  const titreInput = document.getElementById('titre');
+  const catSelect = document.getElementById('categorie');
+  const contenuTextarea = document.getElementById('contenu');
+  const titreCounter = document.getElementById('titre-char-counter');
+  const contenuCounter = document.getElementById('contenu-char-counter');
+
+  function updateCounters() {
+    if (titreInput && titreCounter) {
+      const len = titreInput.value.length;
+      titreCounter.textContent = `${len} / 150`;
+      titreCounter.style.color = len >= 145 ? '#dc2626' : (len > 0 ? '#16a34a' : '#64748b');
+    }
+    if (contenuTextarea && contenuCounter) {
+      const len = contenuTextarea.value.length;
+      contenuCounter.textContent = `${len} caractères (min: 10)`;
+      contenuCounter.style.color = len >= 10 ? '#16a34a' : (len > 0 ? '#ea580c' : '#dc2626');
+    }
+  }
+
+  function setFieldError(field, errorId, msg) {
+    if (!field) return;
+    field.classList.remove('is-valid');
+    field.classList.add('is-invalid');
+    const errEl = document.getElementById(errorId);
+    if (errEl) {
+      errEl.innerHTML = `<i class="fa-solid fa-circle-exclamation me-1"></i>${msg}`;
+      errEl.style.display = 'block';
+    }
+  }
+
+  function setFieldSuccess(field, errorId) {
+    if (!field) return;
+    field.classList.remove('is-invalid');
+    field.classList.add('is-valid');
+    const errEl = document.getElementById(errorId);
+    if (errEl) errEl.style.display = 'none';
+  }
+
+  function validateTitre() {
+    const val = (titreInput?.value || '').trim();
+    if (!val) {
+      setFieldError(titreInput, 'titre-error', 'Le titre du conseil est obligatoire.');
+      return false;
+    }
+    if (val.length < 3) {
+      setFieldError(titreInput, 'titre-error', 'Le titre doit comporter au moins 3 caractères.');
+      return false;
+    }
+    if (val.length > 150) {
+      setFieldError(titreInput, 'titre-error', 'Le titre ne peut pas dépasser 150 caractères.');
+      return false;
+    }
+    setFieldSuccess(titreInput, 'titre-error');
+    return true;
+  }
+
+  function validateCategorie() {
+    if (!catSelect?.value) {
+      setFieldError(catSelect, 'categorie-error', 'La catégorie est obligatoire.');
+      return false;
+    }
+    setFieldSuccess(catSelect, 'categorie-error');
+    return true;
+  }
+
+  function validateContenu() {
+    const val = (contenuTextarea?.value || '').trim();
+    if (!val) {
+      setFieldError(contenuTextarea, 'contenu-error', 'Le contenu du conseil est obligatoire.');
+      return false;
+    }
+    if (val.length < 10) {
+      setFieldError(contenuTextarea, 'contenu-error', 'Le contenu doit comporter au moins 10 caractères.');
+      return false;
+    }
+    setFieldSuccess(contenuTextarea, 'contenu-error');
+    return true;
+  }
+
+  if (titreInput) {
+    titreInput.addEventListener('input', function() { updateCounters(); validateTitre(); });
+    titreInput.addEventListener('blur', validateTitre);
+  }
+  if (catSelect) catSelect.addEventListener('change', validateCategorie);
+  if (contenuTextarea) {
+    contenuTextarea.addEventListener('input', function() { updateCounters(); validateContenu(); });
+    contenuTextarea.addEventListener('blur', validateContenu);
+  }
+
+  updateCounters();
+
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const v1 = validateTitre();
+      const v2 = validateCategorie();
+      const v3 = validateContenu();
+
+      if (!v1 || !v2 || !v3) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (alertBanner) {
+          alertBanner.classList.remove('d-none');
+          alertBanner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        const firstInvalid = form.querySelector('.is-invalid');
+        if (firstInvalid) firstInvalid.focus();
+      } else {
+        if (alertBanner) alertBanner.classList.add('d-none');
+      }
+    });
+  }
 </script>
 @endpush

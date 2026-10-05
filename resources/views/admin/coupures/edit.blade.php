@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<form action="{{ route('admin.coupures.update', $coupure) }}" method="POST" novalidate>
+<form action="{{ route('admin.coupures.update', $coupure) }}" method="POST" id="coupure-form" novalidate>
   @csrf
   @method('PUT')
   @include('admin.coupures._form')

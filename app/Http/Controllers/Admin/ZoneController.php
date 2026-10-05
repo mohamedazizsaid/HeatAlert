@@ -51,7 +51,7 @@ class ZoneController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'nom'         => ['required', 'string', 'max:100'],
             'ville'       => ['required', 'string', 'max:100'],
             'gouvernorat' => ['nullable', 'string', 'max:100'],
@@ -60,7 +60,23 @@ class ZoneController extends Controller
             'longitude'   => ['nullable', 'numeric', 'between:-180,180'],
             'description' => ['nullable', 'string', 'max:500'],
             'actif'       => ['nullable', 'boolean'],
-        ]);
+        ];
+
+        $messages = [
+            'nom.required'         => 'Le nom de la zone est obligatoire.',
+            'nom.max'              => 'Le nom de la zone ne peut pas dépasser 100 caractères.',
+            'ville.required'       => 'La ville est obligatoire.',
+            'ville.max'            => 'La ville ne peut pas dépasser 100 caractères.',
+            'gouvernorat.max'      => 'Le gouvernorat ne peut pas dépasser 100 caractères.',
+            'code_postal.digits'   => 'Le code postal doit être composé d\'exactement 4 chiffres.',
+            'latitude.numeric'     => 'La latitude doit être une coordonnée numérique.',
+            'latitude.between'     => 'La latitude doit être comprise entre -90 et 90.',
+            'longitude.numeric'    => 'La longitude doit être une coordonnée numérique.',
+            'longitude.between'    => 'La longitude doit être comprise entre -180 et 180.',
+            'description.max'      => 'La description ne peut pas dépasser 500 caractères.',
+        ];
+
+        $validated = $request->validate($rules, $messages);
 
         $validated['actif'] = $request->boolean('actif');
         $this->zoneService->create($validated);
@@ -94,7 +110,7 @@ class ZoneController extends Controller
      */
     public function update(Request $request, Zone $zone): RedirectResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'nom'         => ['required', 'string', 'max:100'],
             'ville'       => ['required', 'string', 'max:100'],
             'gouvernorat' => ['nullable', 'string', 'max:100'],
@@ -103,7 +119,23 @@ class ZoneController extends Controller
             'longitude'   => ['nullable', 'numeric', 'between:-180,180'],
             'description' => ['nullable', 'string', 'max:500'],
             'actif'       => ['nullable', 'boolean'],
-        ]);
+        ];
+
+        $messages = [
+            'nom.required'         => 'Le nom de la zone est obligatoire.',
+            'nom.max'              => 'Le nom de la zone ne peut pas dépasser 100 caractères.',
+            'ville.required'       => 'La ville est obligatoire.',
+            'ville.max'            => 'La ville ne peut pas dépasser 100 caractères.',
+            'gouvernorat.max'      => 'Le gouvernorat ne peut pas dépasser 100 caractères.',
+            'code_postal.digits'   => 'Le code postal doit être composé d\'exactement 4 chiffres.',
+            'latitude.numeric'     => 'La latitude doit être une coordonnée numérique.',
+            'latitude.between'     => 'La latitude doit être comprise entre -90 et 90.',
+            'longitude.numeric'    => 'La longitude doit être une coordonnée numérique.',
+            'longitude.between'    => 'La longitude doit être comprise entre -180 et 180.',
+            'description.max'      => 'La description ne peut pas dépasser 500 caractères.',
+        ];
+
+        $validated = $request->validate($rules, $messages);
 
         $validated['actif'] = $request->boolean('actif');
         $this->zoneService->update($zone, $validated);
