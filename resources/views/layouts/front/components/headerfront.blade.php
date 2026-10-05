@@ -66,16 +66,6 @@
               </a>
             </li>
             <li>
-              <a href="{{ route('front.coupures.index') }}" class="{{ request()->routeIs('front.coupures.*') ? 'active' : '' }}">
-                <i class="bi bi-lightning-charge-fill me-1 text-warning"></i>Coupures
-              </a>
-            </li>
-            <li>
-              <a href="{{ route('front.points_fraicheur.index') }}" class="{{ request()->routeIs('front.points_fraicheur.*') ? 'active' : '' }}">
-                <i class="bi bi-snow me-1" style="color:#0ea5e9;"></i>Fraîcheur
-              </a>
-            </li>
-            <li>
               <a href="{{ route('front.weather.global') }}" class="{{ request()->routeIs('front.weather.global') ? 'active' : '' }}">
                 <i class="bi bi-globe2 me-1 text-danger"></i>Météo Mondiale
                 <span class="badge bg-warning text-dark rounded-pill ms-1" style="font-size: 10px; padding: 2px 6px;">Live</span>
@@ -105,6 +95,12 @@
                   <a href="{{ route('front.conseils.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.conseils.*') ? 'active' : '' }}">
                     <i class="bi bi-heart-pulse-fill text-success"></i>
                     <span>Conseils Santé</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="{{ route('front.coupures.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.conseils.*') ? 'active' : '' }}">
+                    <i class="bi bi-lightning-charge-fill me-1 text-warning"></i>
+                    <span>Coupures</span>
                   </a>
                 </li>
                 <li>

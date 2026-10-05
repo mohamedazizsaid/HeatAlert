@@ -40,6 +40,10 @@ class ConseilController extends Controller
         if ($request->filled('niveau_alerte_cible')) {
             $query->where('niveau_alerte_cible', $request->get('niveau_alerte_cible'));
         }
+        // Alias court utilisé par les filtres rapides de la vue
+        if ($request->filled('niveau')) {
+            $query->where('niveau_alerte_cible', $request->get('niveau'));
+        }
         if ($request->filled('actif')) {
             $query->where('actif', $request->get('actif'));
         }
