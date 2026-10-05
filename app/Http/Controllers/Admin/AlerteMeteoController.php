@@ -44,9 +44,17 @@ class AlerteMeteoController extends Controller
         if ($request->filled('type')) {
             $query->where('type', $request->get('type'));
         }
+        if ($request->filled('zone_id')) {
+            $query->where('zone_id', $request->get('zone_id'));
+        }
 
         $alertes = $query->orderByDesc('date_debut')->paginate(12)->withQueryString();
-        return view('admin.alertes.index', compact('alertes'));
+        $zones   = $this->zoneService->getActiveForSelect();
+        $types   = AlerteMeteo::TYPES;
+        $niveaux = AlerteMeteo::NIVEAUX;
+        $statuts = AlerteMeteo::STATUTS;
+
+        return view('admin.alertes.index', compact('alertes', 'zones', 'types', 'niveaux', 'statuts'));
     }
 
     /**
