@@ -8,9 +8,9 @@
   <meta name="description" content="">
   <meta name="keywords" content="">
 
-  <!-- Favicons -->
-  <link href="assets/img/favicon.png" rel="icon">
-  <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+  <!-- Favicons — Logo HeatAlert (Thermomètre-Soleil) -->
+  <link href="{{ asset('assets/front/img/favicon-heatalert.jpg') }}" rel="icon" type="image/jpeg">
+  <link href="{{ asset('assets/front/img/favicon-heatalert.jpg') }}" rel="apple-touch-icon">
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -118,7 +118,7 @@
           <div class="col-lg-6">
             <div class="hero-visual" data-aos="fade-left" data-aos-delay="400">
               <div class="main-image">
-                <img src="{{ asset('assets/front/img/health/staff-10.webp') }}" alt="Surveillance HeatAlert Tunisie" class="img-fluid">
+                <img src="{{ asset('assets/front/img/health/ha-surveillance.jpg') }}" alt="Surveillance HeatAlert Tunisie" class="img-fluid">
                 <div class="floating-card appointment-card">
                   <div class="card-icon">
                     <i class="bi bi-thermometer-high text-danger"></i>
@@ -253,7 +253,7 @@
                 </a>
               </div>
               <div class="specialty-visual">
-                <img src={{ asset('assets/front/img/health/cardiology-1.webp') }} alt="Surveillance Canicule" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/ha-services.jpg') }} alt="Dashboard de surveillance canicule INM Tunisie" class="img-fluid">
                 <div class="visual-overlay">
                   <i class="bi bi-thermometer-sun"></i>
                 </div>
@@ -278,7 +278,7 @@
                 </a>
               </div>
               <div class="specialty-visual">
-                <img src={{ asset('assets/front/img/health/neurology-4.webp') }} alt="Protection Vulnérable" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/ha-protection.jpg') }} alt="Aide soignante et personne âgée durant la canicule en Tunisie" class="img-fluid">
                 <div class="visual-overlay">
                   <i class="bi bi-shield-heart"></i>
                 </div>
@@ -373,8 +373,7 @@
           <div class="col-lg-8" data-aos="fade-right" data-aos-delay="200">
             <div class="featured-service-main">
               <div class="service-image-wrapper">
-                <img src={{ asset('assets/front/img/health/consultation-4.webp') }} alt="Services HeatAlert" class="img-fluid"
-                  loading="lazy">
+                <img src={{ asset('assets/front/img/health/ha-services.jpg') }} alt="Station météo en Tunisie sous chaleur extrême" class="img-fluid" loading="lazy">
                 <div class="service-overlay">
                   <div class="service-badge">
                     <i class="bi bi-shield-check"></i>
@@ -437,7 +436,7 @@
             <div class="col-lg-3 col-md-6">
               <div class="specialty-card">
                 <div class="specialty-image">
-                  <img src={{ asset('assets/front/img/health/maternal-2.webp') }} alt="Hydratation" class="img-fluid" loading="lazy">
+                  <img src={{ asset('assets/front/img/health/ha-protection.jpg') }} alt="Hydratation et gestes santé canicule" class="img-fluid" loading="lazy">
                 </div>
                 <div class="specialty-content">
                   <h5>Hydratation Continue</h5>
@@ -449,7 +448,7 @@
             <div class="col-lg-3 col-md-6">
               <div class="specialty-card">
                 <div class="specialty-image">
-                  <img src={{ asset('assets/front/img/health/vaccination-3.webp') }} alt="Protection Solaire" class="img-fluid" loading="lazy">
+                  <img src={{ asset('assets/front/img/health/ha-services.jpg') }} alt="Protection UV et station météorologique" class="img-fluid" loading="lazy">
                 </div>
                 <div class="specialty-content">
                   <h5>Protection UV Maximale</h5>
@@ -536,7 +535,7 @@
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="100">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-2.webp') }} alt="Dr. Sonia Ben Romdhane" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/ha-doctor-sonia.jpg') }} alt="Dr. Sonia Ben Romdhane - Gériatrie CHU Tunis" class="img-fluid">
                 <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
@@ -570,7 +569,7 @@
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="200">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-6.webp') }} alt="Dr. Karim Mansour" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/ha-doctor-karim.jpg') }} alt="Dr. Karim Mansour - Pédiatrie Tunis" class="img-fluid">
                 <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
@@ -604,7 +603,7 @@
           <div class="doctor-profile" data-aos="zoom-in" data-aos-delay="300">
             <div class="profile-header">
               <div class="doctor-avatar">
-                <img src={{ asset('assets/front/img/health/staff-4.webp') }} alt="Dr. Leila Trabelsi" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/staff-3.webp') }} alt="Dr. Leila Trabelsi - Médecine du Travail" class="img-fluid">
                 <div class="status-indicator available"></div>
               </div>
               <div class="doctor-details">
@@ -677,7 +676,7 @@
 
             <div class="col-lg-6">
               <div class="image-container" data-aos="fade-left" data-aos-delay="300">
-                <img src={{ asset('assets/front/img/health/facilities-9.webp') }} alt="Protection Canicule HeatAlert" class="img-fluid">
+                <img src={{ asset('assets/front/img/health/emergency-2.webp') }} alt="Station de surveillance météorologique HeatAlert Tunisie" class="img-fluid">
               </div>
             </div>
 

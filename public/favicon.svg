@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="32" height="32">
+  <!-- Fond blanc arrondi -->
+  <rect width="16" height="16" rx="3" fill="#ffffff"/>
+  <!-- Thermomètre-soleil Bootstrap icon (bi-thermometer-sun) -->
+  <!-- Corps du thermomètre -->
+  <path fill="#dc2626" d="M5 12.5a1.5 1.5 0 1 1-2-1.415V9.5a1 1 0 0 1 2 0v1.585A1.5 1.5 0 0 1 5 12.5z"/>
+  <path fill="#dc2626" d="M4 8.585V2.5a.5.5 0 0 0-1 0v6.085a2.5 2.5 0 1 0 1 0z"/>
+  <!-- Rayons solaires -->
+  <path fill="#dc2626" stroke="#dc2626" stroke-width="0.2"
+        d="M10.5 5a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9z
+           M10 1V0m0 9v-1
+           M13.5 2.5l.7-.7m-7 7 .7-.7
+           M15 5h1M8 5H7
+           M13.5 7.5l.7.7m-7-7-.7-.7"/>
+  <!-- Soleil simplifié -->
+  <circle fill="#dc2626" cx="10.5" cy="3.5" r="1.5"/>
+  <line x1="10.5" y1="0.5" x2="10.5" y2="1.2" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="10.5" y1="5.8" x2="10.5" y2="6.5" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="7.5" y1="3.5" x2="8.2" y2="3.5" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="12.8" y1="3.5" x2="13.5" y2="3.5" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="8.4" y1="1.4" x2="8.9" y2="1.9" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="12.1" y1="5.1" x2="12.6" y2="5.6" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="12.1" y1="1.9" x2="12.6" y2="1.4" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="8.4" y1="5.6" x2="8.9" y2="5.1" stroke="#dc2626" stroke-width="0.6" stroke-linecap="round"/>
+</svg>
