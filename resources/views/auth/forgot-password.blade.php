@@ -6,6 +6,11 @@
   <title>Mot de passe oublié — HeatAlert</title>
   <meta name="description" content="Réinitialisez votre mot de passe HeatAlert.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <!-- Favicons — Logo HeatAlert (Thermomètre-Soleil) -->
+  <link href="{{ asset('assets/front/img/favicon-heatalert.jpg') }}" rel="icon" type="image/jpeg">
+  <link href="{{ asset('assets/front/img/favicon-heatalert.jpg') }}" rel="apple-touch-icon">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="{{ asset('assets/front/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">

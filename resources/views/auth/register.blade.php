@@ -7,6 +7,11 @@
   <meta name="description" content="Créez votre compte HeatAlert pour recevoir des alertes météo en Tunisie.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Favicons — Logo HeatAlert (Thermomètre-Soleil) -->
+  <link href="{{ asset('assets/front/img/favicon-heatalert.jpg') }}" rel="icon" type="image/jpeg">
+  <link href="{{ asset('assets/front/img/favicon-heatalert.jpg') }}" rel="apple-touch-icon">
+
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="{{ asset('assets/front/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ asset('assets/front/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet">
