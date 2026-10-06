@@ -50,4 +50,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(AvisPoint::class);
     }
+
+    public function equipementsSensibles(): HasMany
+    {
+        return $this->hasMany(EquipementSensible::class);
+    }
+
+    public function module4Notifications(): HasMany
+    {
+        return $this->hasMany(Module4Notification::class);
+    }
 }

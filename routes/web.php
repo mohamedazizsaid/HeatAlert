@@ -9,7 +9,10 @@ use App\Http\Controllers\Admin\SignalementCoupureController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\FrontPointFraicheurController;
+use App\Http\Controllers\FrontEquipementSensibleController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Module4NotificationController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +65,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profil', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profil', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::resource('mes-equipements', FrontEquipementSensibleController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
+        ->parameters(['mes-equipements' => 'equipementSensible'])
+        ->names('front.equipements_sensibles');
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::apiResource('mes-equipements', \App\Http\Controllers\Api\EquipementSensibleController::class)
+            ->parameters(['mes-equipements' => 'equipementSensible']);
+    });
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('front.notifications.index');
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('front.notifications.read');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('front.notifications.read_all');
+    Route::get('/mes-notifications-prevention', [Module4NotificationController::class, 'index'])->name('front.module4_notifications.index');
+    Route::patch('/mes-notifications-prevention/{notification}/read', [Module4NotificationController::class, 'read'])->name('front.module4_notifications.read');
+    Route::post('/mes-notifications-prevention/generate', [Module4NotificationController::class, 'generate'])->name('front.module4_notifications.generate');
 });
 
 // ─── Routes Admin — accessible uniquement aux ROLE_ADMIN
@@ -81,6 +98,11 @@ Route::middleware(['auth', 'admin'])
 
         // Gestion des Alertes Météo
         Route::resource('alertes', AlerteMeteoController::class);
+        Route::resource('equipements-sensibles', \App\Http\Controllers\Admin\EquipementSensibleController::class)
+            ->parameters(['equipements-sensibles' => 'equipementSensible']);
+        Route::get('notifications-prevention', [\App\Http\Controllers\Admin\Module4NotificationController::class, 'index'])->name('module4_notifications.index');
+        Route::get('notifications-prevention/create', [\App\Http\Controllers\Admin\Module4NotificationController::class, 'create'])->name('module4_notifications.create');
+        Route::post('notifications-prevention', [\App\Http\Controllers\Admin\Module4NotificationController::class, 'store'])->name('module4_notifications.store');
 
         // Gestion des Coupures électriques
         Route::get('coupures/{coupure}/interventions/create', [CoupureController::class, 'createIntervention'])

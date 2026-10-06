@@ -138,6 +138,17 @@
           </ul>
         </li>
 
+        {{-- Équipements sensibles --}}
+        <li class="{{ request()->routeIs('admin.equipements-sensibles.*') ? 'active has-sub' : 'has-sub' }}">
+          <a class="js-arrow {{ request()->routeIs('admin.equipements-sensibles.*') ? 'open' : '' }}" href="#">
+            <i class="fa-solid fa-shield-heart"></i>Équipements sensibles
+          </a>
+          <ul class="list-unstyled navbar__sub-list js-sub-list" {{ request()->routeIs('admin.equipements-sensibles.*') ? 'style=display:block' : '' }}>
+            <li><a href="{{ route('admin.equipements-sensibles.index') }}">Liste des équipements</a></li>
+            <li><a href="{{ route('admin.equipements-sensibles.create') }}">Ajouter un équipement</a></li>
+          </ul>
+        </li>
+
                 {{-- Conseils --}}
         <li class="{{ request()->routeIs('admin.conseils.*') ? 'active has-sub' : 'has-sub' }}">
           <a class="js-arrow {{ request()->routeIs('admin.conseils.*') ? 'open' : '' }}" href="#">
