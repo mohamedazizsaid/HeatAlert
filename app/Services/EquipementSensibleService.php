@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use App\Models\EquipementSensible;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\Module4Notification;
 use App\Models\User;
+use App\Notifications\EquipementSensibleZoneMailNotification;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 
 class EquipementSensibleService
 {
@@ -67,5 +70,48 @@ class EquipementSensibleService
     public function delete(EquipementSensible $equipement): bool
     {
         return $equipement->delete();
+    }
+
+    /**
+     * Envoie une notification par e-mail et enregistre l'historique pour les utilisateurs de la même zone.
+     */
+    public function notifyUsersInSameZone(EquipementSensible $equipement, string $action = 'created'): int
+    {
+        if (!$equipement->zone_id) {
+            return 0;
+        }
+
+        $equipement->loadMissing('zone');
+
+        $users = User::where('zone_id', $equipement->zone_id)
+            ->whereNotNull('email')
+            ->get();
+
+        $sentCount = 0;
+        foreach ($users as $user) {
+            // Création de l'enregistrement in-app Module 4
+            try {
+                Module4Notification::create([
+                    'user_id' => $user->id,
+                    'equipement_sensible_id' => $equipement->id,
+                    'message' => ($action === 'created' ? 'Nouvel équipement sensible référencé dans votre zone : ' : 'Mise à jour d’un équipement sensible dans votre zone : ') . $equipement->nom,
+                    'canal' => 'email',
+                    'date_envoi' => now(),
+                    'lue' => false,
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning("Impossible d'enregistrer la notification Module 4 : " . $e->getMessage());
+            }
+
+            // Envoi de l'e-mail
+            try {
+                $user->notify(new EquipementSensibleZoneMailNotification($equipement, $action));
+                $sentCount++;
+            } catch (\Throwable $e) {
+                Log::warning("Impossible d'envoyer l'e-mail équipement sensible à l'utilisateur {$user->id} ({$user->email}) : " . $e->getMessage());
+            }
+        }
+
+        return $sentCount;
     }
 }

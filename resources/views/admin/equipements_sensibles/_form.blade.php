@@ -214,6 +214,7 @@
         <li><strong>Type :</strong> Choisissez la catégorie correspondante pour adapter les seuils d'alerte.</li>
         <li><strong>Niveau Élevé :</strong> Réservé aux équipements vitaux (chambres froides de médicaments, assistance respiratoire).</li>
         <li><strong>Zone :</strong> Permet de corréler automatiquement l'équipement aux alertes météo et coupures locales.</li>
+        <li class="text-primary mt-1"><strong><i class="fa-solid fa-envelope me-1"></i>Notification e-mail :</strong> Les citoyens rattachés à cette zone reçoivent automatiquement un e-mail d'information lors de l'ajout ou de la modification.</li>
       </ul>
     </div>
 

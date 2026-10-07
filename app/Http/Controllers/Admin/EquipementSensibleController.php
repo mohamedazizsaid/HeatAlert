@@ -44,10 +44,17 @@ class EquipementSensibleController extends Controller
         $data = $request->validated();
         $data['actif'] = $request->boolean('actif', true);
 
-        $this->service->create($data);
+        $equipement = $this->service->create($data);
+
+        $notifiedCount = $this->service->notifyUsersInSameZone($equipement, 'created');
+
+        $message = 'Équipement sensible créé avec succès.';
+        if ($notifiedCount > 0) {
+            $message .= " Un e-mail d'information a été envoyé à {$notifiedCount} utilisateur(s) de cette zone.";
+        }
 
         return redirect()->route('admin.equipements-sensibles.index')
-            ->with('success', 'Équipement sensible créé avec succès.');
+            ->with('success', $message);
     }
 
     public function show(EquipementSensible $equipementSensible): View
@@ -76,9 +83,17 @@ class EquipementSensibleController extends Controller
         $data['actif'] = $request->boolean('actif');
 
         $this->service->update($equipementSensible, $data);
+        $equipementSensible->refresh();
+
+        $notifiedCount = $this->service->notifyUsersInSameZone($equipementSensible, 'updated');
+
+        $message = 'Équipement sensible mis à jour avec succès.';
+        if ($notifiedCount > 0) {
+            $message .= " Un e-mail d'information a été envoyé à {$notifiedCount} utilisateur(s) de cette zone.";
+        }
 
         return redirect()->route('admin.equipements-sensibles.index')
-            ->with('success', 'Équipement sensible mis à jour avec succès.');
+            ->with('success', $message);
     }
 
     public function destroy(EquipementSensible $equipementSensible): RedirectResponse
