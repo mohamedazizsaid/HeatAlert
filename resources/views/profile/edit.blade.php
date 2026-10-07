@@ -148,6 +148,9 @@
                 <i class="bi bi-key-fill"></i>
                 <span>Sécurité</span>
               </button>
+              <a href="{{ route('front.equipements_sensibles.index') }}" class="btn btn-danger px-3 py-2 rounded-pill fw-semibold d-inline-flex align-items-center gap-2">
+                <i class="bi bi-shield-heart"></i><span>Ma préparation</span>
+              </a>
             </div>
           </div>
         </div>
