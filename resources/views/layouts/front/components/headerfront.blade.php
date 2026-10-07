@@ -112,8 +112,8 @@
                 @auth
                 <li>
                   <a href="{{ route('front.equipements_sensibles.index') }}" class="d-flex align-items-center gap-2 {{ request()->routeIs('front.equipements_sensibles.*') ? 'active' : '' }}">
-                    <i class="bi bi-shield-heart text-danger"></i>
-                    <span>Ma préparation personnelle</span>
+                    <i class="bi bi-tools text-warning"></i>
+                    <span>Préparation personnelle</span>
                   </a>
                 </li>
                 <li>

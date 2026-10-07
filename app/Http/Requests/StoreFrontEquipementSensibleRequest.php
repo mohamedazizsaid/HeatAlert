@@ -15,9 +15,9 @@ class StoreFrontEquipementSensibleRequest extends FormRequest
         return [
             'nom' => ['required', 'string', 'min:2', 'max:150'],
             'type' => ['required', Rule::in(EquipementSensible::TYPES)],
-            'description' => ['nullable', 'string', 'max:2000'],
             'niveau_sensibilite' => ['required', Rule::in(EquipementSensible::NIVEAUX)],
-            'actif' => ['boolean'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'actif' => ['nullable', 'boolean'],
         ];
     }
 
@@ -29,9 +29,10 @@ class StoreFrontEquipementSensibleRequest extends FormRequest
             'nom.max' => 'Le nom ne peut pas dépasser 150 caractères.',
             'type.required' => 'Le type d’équipement est obligatoire.',
             'type.in' => 'Le type d’équipement sélectionné est invalide.',
-            'description.max' => 'La description ne peut pas dépasser 2 000 caractères.',
             'niveau_sensibilite.required' => 'Le niveau de risque est obligatoire.',
             'niveau_sensibilite.in' => 'Le niveau de risque sélectionné est invalide.',
+            'description.max' => 'La description ne peut pas dépasser 2 000 caractères.',
+            'actif.boolean' => 'Le statut sélectionné est invalide.',
         ];
     }
 }

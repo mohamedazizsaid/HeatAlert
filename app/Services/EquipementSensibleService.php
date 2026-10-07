@@ -10,26 +10,27 @@ class EquipementSensibleService
 {
     public function getPaginated(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
-        $query = EquipementSensible::with('zone');
+        $query = EquipementSensible::with(['zone', 'user']);
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(function ($query) use ($search) {
                 $query->where('nom', 'like', "%{$search}%")
                     ->orWhere('type', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
                     ->orWhere('adresse', 'like', "%{$search}%")
-                    ->orWhereHas('zone', fn ($zone) => $zone->where('nom', 'like', "%{$search}%"));
+                    ->orWhereHas('zone', fn ($zone) => $zone->where('nom', 'like', "%{$search}%")->orWhere('ville', 'like', "%{$search}%"));
             });
         }
 
-        foreach (['zone_id', 'niveau_sensibilite'] as $filter) {
+        foreach (['zone_id', 'type', 'niveau_sensibilite'] as $filter) {
             if (!empty($filters[$filter])) {
                 $query->where($filter, $filters[$filter]);
             }
         }
 
         if (isset($filters['actif']) && $filters['actif'] !== '') {
-            $query->where('actif', (bool) $filters['actif']);
+            $query->where('actif', (bool) (int) $filters['actif']);
         }
 
         return $query->latest()->paginate($perPage)->withQueryString();

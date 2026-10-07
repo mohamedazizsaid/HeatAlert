@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <h2 class="modal-title h5" id="addEquipementModalLabel"><i class="bi bi-shield-plus me-2"></i>Ajouter un équipement sensible</h2>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
-      <form method="POST" action="{{ route('front.equipements_sensibles.store') }}">
+      <form method="POST" action="{{ route('front.equipements_sensibles.store') }}" class="js-front-equipement-form" novalidate>
         @csrf
         <input type="hidden" name="_modal" value="create">
         <div class="modal-body p-4">@include('front.equipements_sensibles._form', ['equipement' => null])</div>
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
         <h2 class="modal-title h5" id="editEquipementModalLabel{{ $equipement->id }}"><i class="bi bi-pencil-square me-2"></i>Modifier l’équipement</h2>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
-      <form method="POST" action="{{ route('front.equipements_sensibles.update', $equipement) }}">
+      <form method="POST" action="{{ route('front.equipements_sensibles.update', $equipement) }}" class="js-front-equipement-form" novalidate>
         @csrf
         @method('PUT')
         <input type="hidden" name="_modal" value="edit-{{ $equipement->id }}">

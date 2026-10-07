@@ -31,14 +31,17 @@ class FrontEquipementSensibleController extends Controller
 
     public function create(): View
     {
-        return view('front.equipements_sensibles.create', ['niveaux' => EquipementSensible::NIVEAUX]);
+        return view('front.equipements_sensibles.create', [
+            'niveaux' => EquipementSensible::NIVEAUX,
+            'types' => EquipementSensible::TYPES,
+        ]);
     }
 
     public function store(StoreFrontEquipementSensibleRequest $request): RedirectResponse
     {
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
-        $data['actif'] = $request->boolean('actif');
+        $data['actif'] = $request->boolean('actif', true);
         $this->service->create($data);
         $this->notificationService->generateForUser($request->user());
         return redirect()->route('front.equipements_sensibles.index')->with('success', 'Équipement ajouté à votre préparation.');
@@ -50,6 +53,7 @@ class FrontEquipementSensibleController extends Controller
         return view('front.equipements_sensibles.edit', [
             'equipement' => $equipementSensible,
             'niveaux' => EquipementSensible::NIVEAUX,
+            'types' => EquipementSensible::TYPES,
         ]);
     }
 
