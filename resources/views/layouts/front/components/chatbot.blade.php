@@ -903,6 +903,223 @@
     transform: translateY(-1px);
   }
 
+  /* ── Assistant Vocal & Contrôles Audio (Seniors & Accessibilité) ── */
+  .heatbot-voice-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 8px 4px;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 1px dashed rgba(226, 232, 240, 0.9);
+    margin-bottom: 8px;
+  }
+
+  .heatbot-voice-lang-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .heatbot-voice-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-right: 2px;
+  }
+
+  .heatbot-lang-chip {
+    border: 1px solid #cbd5e1;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .heatbot-lang-chip:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+  }
+
+  .heatbot-lang-chip.active {
+    background: #ea580c;
+    color: #ffffff;
+    border-color: #ea580c;
+    box-shadow: 0 2px 6px rgba(234, 88, 12, 0.35);
+  }
+
+  .heatbot-voice-speech-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .heatbot-auto-speech-btn {
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #64748b;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+  }
+
+  .heatbot-auto-speech-btn:hover {
+    background: #e2e8f0;
+  }
+
+  .heatbot-auto-speech-btn.active {
+    background: #ecfdf5;
+    border-color: #10b981;
+    color: #059669;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  }
+
+  /* Bouton Microphone */
+  .heatbot-mic-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    outline: none;
+    background: #f1f5f9;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    position: relative;
+  }
+
+  .heatbot-mic-btn:hover {
+    background: #fed7aa;
+    color: #ea580c;
+    border-color: #fdba74;
+    transform: scale(1.06);
+  }
+
+  .heatbot-mic-btn.listening {
+    background: #ef4444 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+    transform: scale(1.12);
+    animation: heatbotMicPulse 1.4s infinite;
+  }
+
+  @keyframes heatbotMicPulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65);
+    }
+    70% {
+      box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+  }
+
+  /* Bandeau d'écoute active */
+  .heatbot-listening-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 1px solid #fca5a5;
+    border-radius: 12px;
+    padding: 6px 12px;
+    margin-bottom: 8px;
+    animation: toastSlideDown 0.2s ease-out;
+  }
+
+  .heatbot-listening-text-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #991b1b;
+  }
+
+  .heatbot-listening-pulse-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #dc2626;
+    animation: heatbotPulseDot 1s infinite alternate;
+  }
+
+  @keyframes heatbotPulseDot {
+    from { opacity: 0.4; transform: scale(0.85); }
+    to { opacity: 1; transform: scale(1.2); }
+  }
+
+  .heatbot-stop-mic-btn {
+    border: none;
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .heatbot-stop-mic-btn:hover {
+    background: #b91c1c;
+  }
+
+  /* Bouton Écouter le message dans la bulle */
+  .heatbot-msg-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+    padding: 0 2px;
+  }
+
+  .heatbot-msg-speak-btn {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 13.5px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .heatbot-msg-speak-btn:hover {
+    color: #ea580c;
+    background: rgba(234, 88, 12, 0.1);
+  }
+
+  .heatbot-msg-speak-btn.speaking {
+    color: #ef4444;
+    animation: speakSoundwave 0.8s infinite alternate;
+  }
+
+  @keyframes speakSoundwave {
+    from { transform: scale(1); }
+    to { transform: scale(1.22); }
+  }
+
   /* Zone d'Input / Footer */
   .heatbot-input-area {
     padding: 12px 14px;
@@ -1155,11 +1372,40 @@
       </div>
     </div>
 
-    <!-- Zone de Saisie Utilisateur -->
+    <!-- Zone de Saisie Utilisateur & Assistant Vocal -->
     <div class="heatbot-input-area">
+
+      <!-- Barre de contrôle vocal & Langues (Français / Tunisien / Arabe) -->
+      <div class="heatbot-voice-bar">
+        <div class="heatbot-voice-lang-group">
+          <span class="heatbot-voice-label"><i class="bi bi-translate me-1"></i>Langue vocale :</span>
+          <button type="button" class="heatbot-lang-chip active" id="heatbotLangFR" title="Français" onclick="setHeatBotVoiceLang('fr-FR')">🇫🇷 FR</button>
+          <button type="button" class="heatbot-lang-chip" id="heatbotLangTN" title="Dialecte Tunisien" onclick="setHeatBotVoiceLang('ar-TN')">🇹🇳 تونسي</button>
+          <button type="button" class="heatbot-lang-chip" id="heatbotLangAR" title="Arabe Classique" onclick="setHeatBotVoiceLang('ar-SA')">🇸🇦 عربي</button>
+        </div>
+        <div class="heatbot-voice-speech-toggle">
+          <button type="button" id="heatbotAutoSpeechBtn" class="heatbot-auto-speech-btn" title="Activer / Désactiver la lecture automatique des réponses à voix haute" onclick="toggleHeatBotAutoSpeech()">
+            <i id="heatbotAutoSpeechIcon" class="bi bi-volume-up"></i>
+            <span>Lecture auto</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bandeau d'écoute active (affiché quand le microphone est ouvert) -->
+      <div id="heatbotListeningBanner" class="heatbot-listening-banner" style="display: none;">
+        <div class="heatbot-listening-text-wrap">
+          <span class="heatbot-listening-pulse-dot"></span>
+          <span id="heatbotListeningText">🎤 Écoute en cours... Parlez maintenant</span>
+        </div>
+        <button type="button" class="heatbot-stop-mic-btn" onclick="stopHeatBotSpeechRecognition()">Terminer</button>
+      </div>
+
       <div class="heatbot-input-area-inner">
+        <button type="button" id="heatbotMicBtn" class="heatbot-mic-btn" title="Parler à HeatBot (Saisie Vocale)" onclick="toggleHeatBotSpeechRecognition()">
+          <i id="heatbotMicIcon" class="bi bi-mic-fill"></i>
+        </button>
         <textarea id="heatbotInput" class="heatbot-textarea"
-                  placeholder="Posez votre question"
+                  placeholder="Posez votre question ou dictez au micro..."
                   rows="1" onkeydown="handleHeatBotKeyDown(event)"></textarea>
         <button type="button" id="heatbotSendBtn" class="heatbot-send-btn" title="Envoyer le message" onclick="submitHeatBotMessage()">
           <i class="bi bi-send-fill"></i>
@@ -1204,11 +1450,17 @@
     activeConversationTitle: null,
     history: [],
     chartInstances: {},
+    voiceLang: sessionStorage.getItem('heatbot_voice_lang') || 'fr-FR',
+    autoSpeech: sessionStorage.getItem('heatbot_auto_speech') === 'true',
+    isRecording: false,
+    isSpeaking: false,
+    lastUsedVoice: false,
   };
 
   // ── Initialisation au chargement de la page ──
   document.addEventListener('DOMContentLoaded', () => {
     loadHeatBotSession();
+    initVoiceControls();
 
     // Si aucune conversation n'a démarré, afficher le message de bienvenue pro
     if (heatbotState.history.length === 0) {
@@ -1259,6 +1511,8 @@
   function closeHeatBot() {
     heatbotState.isOpen = false;
     closeHeatBotHistoryPanel();
+    stopSpeaking();
+    stopHeatBotSpeechRecognition();
     const container = document.getElementById('heatbot-floating-container');
     const windowEl = document.getElementById('heatbotChatWindow');
     const iconEl = document.getElementById('heatbotLauncherIcon');
@@ -1607,12 +1861,15 @@
   }
 
   // ── Envoi du message au serveur ──
-  async function submitHeatBotMessage() {
+  async function submitHeatBotMessage(fromVoice = false) {
     const input = document.getElementById('heatbotInput');
     const sendBtn = document.getElementById('heatbotSendBtn');
     const message = input.value.trim();
 
     if (!message || heatbotState.isThinking) return;
+
+    // Arrêter la dictée vocale si elle était en cours
+    stopHeatBotSpeechRecognition();
 
     // Ajout message utilisateur
     const userTime = getCurrentTime();
@@ -1666,6 +1923,14 @@
           time: botTime,
         });
         saveHeatBotSession();
+
+        // Si l'utilisateur a dicté vocalement ou si l'auto-lecture est activée : lire la réponse
+        if (heatbotState.autoSpeech || fromVoice || heatbotState.lastUsedVoice) {
+          heatbotState.lastUsedVoice = false;
+          setTimeout(() => {
+            speakText(data.reply);
+          }, 350);
+        }
 
         // Mettre à jour les suggestions rapides
         if (data.suggestions && data.suggestions.length) {
@@ -1730,7 +1995,13 @@
           ${htmlContent}
           ${chartHtml}
         </div>
-        <span class="heatbot-msg-time">${time}</span>
+        <div class="heatbot-msg-footer">
+          <span class="heatbot-msg-time">${time}</span>
+          <button type="button" class="heatbot-msg-speak-btn" title="Écouter la réponse à voix haute" onclick="toggleSpeakMessage(this)">
+            <i class="bi bi-volume-up"></i>
+            <span style="font-size:11px;">Écouter</span>
+          </button>
+        </div>
       </div>
     `;
 
@@ -1743,6 +2014,548 @@
         renderChartOnCanvas(chartCanvasId, chartData);
       }, 100);
     }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // ── ASSISTANT VOCAL (SPEECH-TO-TEXT & TEXT-TO-SPEECH) ────
+  // ══════════════════════════════════════════════════════════
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+  let heatbotRecognition = null;
+
+  function initVoiceControls() {
+    // Restaurer l'affichage de la langue active
+    const savedLang = heatbotState.voiceLang || 'fr-FR';
+    setHeatBotVoiceLang(savedLang, false);
+
+    // Mettre à jour le bouton d'auto-lecture
+    updateAutoSpeechUI();
+
+    // Précharger les voix disponibles dans le navigateur
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        try { window.speechSynthesis.getVoices(); } catch(e){}
+      };
+      try { window.speechSynthesis.getVoices(); } catch(e){}
+    }
+  }
+
+  function setHeatBotVoiceLang(langCode, notify = true) {
+    heatbotState.voiceLang = langCode;
+    sessionStorage.setItem('heatbot_voice_lang', langCode);
+
+    ['heatbotLangFR', 'heatbotLangTN', 'heatbotLangAR'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+    });
+
+    let langLabel = 'Français 🇫🇷';
+    if (langCode === 'fr-FR') {
+      const el = document.getElementById('heatbotLangFR');
+      if (el) el.classList.add('active');
+      langLabel = 'Français 🇫🇷';
+    } else if (langCode === 'ar-TN') {
+      const el = document.getElementById('heatbotLangTN');
+      if (el) el.classList.add('active');
+      langLabel = 'Dialecte Tunisien 🇹🇳';
+    } else if (langCode === 'ar-SA') {
+      const el = document.getElementById('heatbotLangAR');
+      if (el) el.classList.add('active');
+      langLabel = 'Arabe 🇸🇦';
+    }
+
+    if (heatbotRecognition) {
+      heatbotRecognition.lang = langCode;
+    }
+
+    if (notify) {
+      showHeatBotNotification(`Langue vocale : ${langLabel}`);
+    }
+  }
+
+  function toggleHeatBotAutoSpeech() {
+    heatbotState.autoSpeech = !heatbotState.autoSpeech;
+    sessionStorage.setItem('heatbot_auto_speech', heatbotState.autoSpeech ? 'true' : 'false');
+    updateAutoSpeechUI();
+
+    if (heatbotState.autoSpeech) {
+      showHeatBotNotification("Lecture vocale automatique activée 🔊");
+    } else {
+      stopSpeaking();
+      showHeatBotNotification("Lecture vocale désactivée 🔇");
+    }
+  }
+
+  function updateAutoSpeechUI() {
+    const btn = document.getElementById('heatbotAutoSpeechBtn');
+    const icon = document.getElementById('heatbotAutoSpeechIcon');
+    if (!btn) return;
+
+    if (heatbotState.autoSpeech) {
+      btn.classList.add('active');
+      if (icon) icon.className = 'bi bi-volume-up-fill text-success';
+    } else {
+      btn.classList.remove('active');
+      if (icon) icon.className = 'bi bi-volume-mute';
+    }
+  }
+
+  function toggleHeatBotSpeechRecognition() {
+    if (!SpeechRecognition) {
+      showHeatBotNotification("⚠️ La reconnaissance vocale nécessite Google Chrome, Microsoft Edge ou Safari.");
+      return;
+    }
+
+    if (heatbotState.isRecording) {
+      stopHeatBotSpeechRecognition();
+    } else {
+      startHeatBotSpeechRecognition();
+    }
+  }
+
+  function startHeatBotSpeechRecognition() {
+    stopSpeaking(); // Couper la voix si HeatBot parle déjà
+
+    if (!heatbotRecognition) {
+      heatbotRecognition = createSpeechRecognitionInstance();
+    }
+
+    if (!heatbotRecognition) return;
+
+    heatbotRecognition.lang = heatbotState.voiceLang || 'fr-FR';
+
+    try {
+      heatbotRecognition.start();
+    } catch(err) {
+      console.warn('SpeechRecognition start failed (already running):', err);
+    }
+  }
+
+  function stopHeatBotSpeechRecognition() {
+    if (heatbotRecognition && heatbotState.isRecording) {
+      try {
+        heatbotRecognition.stop();
+      } catch(e){}
+    }
+    heatbotState.isRecording = false;
+    updateMicUI(false);
+  }
+
+  function createSpeechRecognitionInstance() {
+    if (!SpeechRecognition) return null;
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+    recognition.lang = heatbotState.voiceLang || 'fr-FR';
+
+    recognition.onstart = () => {
+      heatbotState.isRecording = true;
+      updateMicUI(true);
+    };
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      let final = '';
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          final += event.results[i][0].transcript;
+        } else {
+          interim += event.results[i][0].transcript;
+        }
+      }
+
+      const input = document.getElementById('heatbotInput');
+      if (input) {
+        input.value = final || interim;
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.warn('Speech recognition error:', event.error);
+      heatbotState.isRecording = false;
+      updateMicUI(false);
+
+      if (event.error === 'not-allowed') {
+        showHeatBotNotification("⚠️ Accès au micro refusé. Veuillez autoriser le microphone.");
+      } else if (event.error === 'network') {
+        showHeatBotNotification("⚠️ Connexion réseau requise pour la reconnaissance vocale.");
+      } else if (event.error !== 'no-speech') {
+        showHeatBotNotification("Information vocale : " + event.error);
+      }
+    };
+
+    recognition.onend = () => {
+      heatbotState.isRecording = false;
+      updateMicUI(false);
+
+      const input = document.getElementById('heatbotInput');
+      const text = input ? input.value.trim() : '';
+
+      // Si du texte a été dicté, l'envoyer automatiquement au chatbot pour assister les personnes âgées
+      if (text.length >= 2) {
+        heatbotState.lastUsedVoice = true;
+        showHeatBotNotification("Question dictée reçue ! HeatBot analyse... 🎙️");
+        setTimeout(() => {
+          submitHeatBotMessage(true);
+        }, 300);
+      }
+    };
+
+    return recognition;
+  }
+
+  function updateMicUI(isRecording) {
+    const btn = document.getElementById('heatbotMicBtn');
+    const icon = document.getElementById('heatbotMicIcon');
+    const banner = document.getElementById('heatbotListeningBanner');
+    const textEl = document.getElementById('heatbotListeningText');
+
+    let langName = 'Français 🇫🇷';
+    if (heatbotState.voiceLang === 'ar-TN') langName = 'Dialecte Tunisien 🇹🇳';
+    if (heatbotState.voiceLang === 'ar-SA') langName = 'Arabe 🇸🇦';
+
+    if (isRecording) {
+      if (btn) btn.classList.add('listening');
+      if (icon) icon.className = 'bi bi-mic-fill text-white';
+      if (banner) banner.style.display = 'flex';
+      if (textEl) textEl.innerText = `Écoute en ${langName}... Parlez maintenant`;
+    } else {
+      if (btn) btn.classList.remove('listening');
+      if (icon) icon.className = 'bi bi-mic-fill';
+      if (banner) banner.style.display = 'none';
+    }
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // ── MOTEUR TTS NATUREL — Lecture Humaine (FR / AR / Tunisien) ──
+  // ══════════════════════════════════════════════════════════════
+
+  /**
+   * Sélectionne la meilleure voix disponible selon la langue cible,
+   * avec ordre de priorité : native > régionale > famille linguistique.
+   */
+  function selectBestVoice(targetLang, isArabic) {
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    const normalize = s => s.toLowerCase().replace('_', '-');
+    const tl = normalize(targetLang);
+    const family = tl.split('-')[0];
+
+    // Priorité 1 : correspondance exacte
+    let v = voices.find(v => normalize(v.lang) === tl);
+
+    // Priorité 2 : même région (ex: ar-SA -> ar-EG -> ar-*)
+    if (!v && isArabic) {
+      // Préférer des voix arabes à débit naturel connues
+      const preferredAr = ['ar-SA', 'ar-EG', 'ar-MA', 'ar-DZ', 'ar-TN'];
+      for (const pref of preferredAr) {
+        v = voices.find(v2 => normalize(v2.lang) === normalize(pref));
+        if (v) break;
+      }
+    }
+
+    // Priorité 3 : même famille linguistique
+    if (!v) v = voices.find(v => normalize(v.lang).startsWith(family));
+
+    // Priorité 4 : voix premium connues (Google / Microsoft)
+    if (!v && isArabic) {
+      v = voices.find(v => v.name.toLowerCase().includes('arabic') || normalize(v.lang).includes('ar'));
+    }
+    if (!v && !isArabic) {
+      v = voices.find(v => v.name.toLowerCase().includes('french') || normalize(v.lang).includes('fr'));
+    }
+
+    return v || null;
+  }
+
+  /**
+   * Convertit le markdown / puces / HTML en texte naturel parlé,
+   * sans lecture mécanique mot-par-mot. Les listes deviennent des
+   * phrases connectées avec des conjonctions naturelles.
+   */
+  function prepareTextForSpeech(rawText, voiceLang) {
+    if (!rawText) return '';
+    const isArabicLang = (voiceLang || '').startsWith('ar');
+
+    let clean = rawText;
+
+    // ── 1. Supprimer les blocs de code (chart, json, etc.) ──
+    clean = clean.replace(/```[\s\S]*?```/gi, '');
+    clean = clean.replace(/\[CHART_DATA\][\s\S]*?\[\/CHART_DATA\]/gi, '');
+
+    // ── 2. Supprimer les balises HTML ──
+    clean = clean.replace(/<[^>]*>/g, ' ');
+
+    // ── 3. Convertir les titres markdown en phrases avec pause ──
+    clean = clean.replace(/#{1,6}\s+(.+)/g, '$1. ');
+
+    // ── 4. Convertir les listes à puces en phrases liées naturellement ──
+    //   Chaque puce devient une clause avec connecteur selon la langue
+    const bulletConnectors = isArabicLang
+      ? ['أولاً،', 'كذلك،', 'بالإضافة إلى ذلك،', 'ومن المهم أيضاً،', 'وأخيراً،']
+      : ['Premièrement,', 'Ensuite,', 'De plus,', 'Il est aussi important de noter que', 'Enfin,'];
+
+    let bulletIndex = 0;
+    clean = clean.replace(/^[\*\-\+•]\s+(.+)$/gm, (match, content) => {
+      const connector = bulletConnectors[bulletIndex % bulletConnectors.length];
+      bulletIndex++;
+      return connector + ' ' + content + '. ';
+    });
+
+    // ── 5. Convertir les listes numérotées ──
+    let numIndex = 0;
+    const numConnectors = isArabicLang
+      ? ['أولاً،', 'ثانياً،', 'ثالثاً،', 'رابعاً،', 'خامساً،', 'سادساً،']
+      : ['Premièrement,', 'Deuxièmement,', 'Troisièmement,', 'Quatrièmement,', 'Cinquièmement,', 'Sixièmement,'];
+    clean = clean.replace(/^\d+\.\s+(.+)$/gm, (match, content) => {
+      const connector = numConnectors[numIndex % numConnectors.length];
+      numIndex++;
+      return connector + ' ' + content + '. ';
+    });
+
+    // ── 6. Nettoyer le formatage markdown restant ──
+    clean = clean.replace(/\*\*(.*?)\*\*/g, '$1');
+    clean = clean.replace(/\*(.*?)\*/g, '$1');
+    clean = clean.replace(/__(.*?)__/g, '$1');
+    clean = clean.replace(/_(.*?)_/g, '$1');
+    clean = clean.replace(/\[(.*?)\]\(.*?\)/g, '$1');
+    clean = clean.replace(/`([^`]+)`/g, '$1');
+    clean = clean.replace(/>/g, '');
+
+    // ── 7. Supprimer les emojis (ils seraient lus comme noms Unicode) ──
+    clean = clean.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '');
+    // Emojis complémentaires
+    clean = clean.replace(/[\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}\u{1F100}-\u{1F1FF}]/gu, '');
+
+    // ── 8. Normalisation spéciale pour l'arabe et le tunisien ──
+    if (isArabicLang) {
+      // Supprimer les tachkilat (voyellation) qui peuvent perturber le TTS
+      clean = clean.replace(/[\u064B-\u065F\u0670]/g, '');
+      // Corriger les espaces autour de la ponctuation arabe
+      clean = clean.replace(/([.،؟!])\s*/g, '$1 ');
+    }
+
+    // ── 9. Pour le Tunisien (ar-TN), translittérer les mots Derja courants
+    //      en arabe standard pour une meilleure prononciation TTS ──
+    if (voiceLang === 'ar-TN') {
+      const derjaMap = {
+        'bardo': 'باردو',
+        'sahit': 'صحيح',
+        'mazel': 'مازال',
+        'famma': 'فمة',
+        'barsha': 'برشا',
+        'kifesh': 'كيفاش',
+        'wesh': 'واش',
+        'mrigel': 'مريجل',
+        'bkri': 'بكري',
+        'touja': 'تواجا',
+        'ya5i': 'يا خي',
+        'ya kho': 'يا أخي',
+        'sami': 'سامي',
+        'chkoun': 'شكون',
+        'win': 'وين',
+        'shnowa': 'شنوا',
+        'inti': 'إنتي',
+        'inti': 'أنتِ',
+        'enti': 'أنتِ',
+        'enta': 'أنتَ',
+        'howwa': 'هو',
+        'hia': 'هي',
+        'ahna': 'إحنا',
+        'oumek': 'أمك',
+        'babek': 'أبوك',
+      };
+      for (const [derja, arMsa] of Object.entries(derjaMap)) {
+        clean = clean.replace(new RegExp('\\b' + derja + '\\b', 'gi'), arMsa);
+      }
+    }
+
+    // ── 10. Ponctuation naturelle : ajouter des pauses aux transitions ──
+    // Double saut de ligne → forte pause
+    clean = clean.replace(/\n\s*\n/g, '. ');
+    // Saut de ligne simple → légère pause
+    clean = clean.replace(/\n/g, ', ');
+    // Nettoyer la ponctuation multiple
+    clean = clean.replace(/[.!?]+\s*[.!?,]+/g, '. ');
+    clean = clean.replace(/,\s*,+/g, ',');
+    clean = clean.replace(/\.\s*\.+/g, '.');
+
+    // ── 11. Supprimer les caractères spéciaux restants ──
+    clean = clean.replace(/[\|\\<>\{\}\[\]=#~^]/g, ' ');
+    clean = clean.replace(/\s{2,}/g, ' ');
+
+    return clean.trim();
+  }
+
+  /**
+   * Découpe un texte long en segments naturels (phrases) pour éviter
+   * la coupure ou la troncature silencieuse du Web Speech API.
+   */
+  function splitIntoSpeechChunks(text, maxLen) {
+    maxLen = maxLen || 220;
+    if (text.length <= maxLen) return [text];
+
+    const chunks = [];
+    // Découper d'abord par phrases (. ! ?)
+    const sentences = text.split(/(?<=[.!?،؟])\s+/);
+    let current = '';
+
+    for (const sentence of sentences) {
+      if ((current + ' ' + sentence).trim().length > maxLen) {
+        if (current.trim()) chunks.push(current.trim());
+        // Si la phrase elle-même est trop longue, la découper par virgule
+        if (sentence.length > maxLen) {
+          const subParts = sentence.split(/,\s*/);
+          let sub = '';
+          for (const part of subParts) {
+            if ((sub + ', ' + part).length > maxLen) {
+              if (sub.trim()) chunks.push(sub.trim());
+              sub = part;
+            } else {
+              sub = sub ? sub + ', ' + part : part;
+            }
+          }
+          if (sub.trim()) current = sub;
+          else current = '';
+        } else {
+          current = sentence;
+        }
+      } else {
+        current = current ? current + ' ' + sentence : sentence;
+      }
+    }
+    if (current.trim()) chunks.push(current.trim());
+    return chunks.filter(c => c.length > 0);
+  }
+
+  /**
+   * Moteur TTS principal : lit le texte de manière naturelle et humaine.
+   * Utilise la lecture par chunks enchaînés pour une fluidité maximale.
+   */
+  function speakText(rawText, onEndCallback) {
+    if (!('speechSynthesis' in window)) {
+      showHeatBotNotification("La synthèse vocale n'est pas supportée sur ce navigateur.");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    heatbotState._ttsAborted = false;
+
+    // ✅ La langue TTS suit TOUJOURS le choix de l'utilisateur (voiceLang),
+    //    jamais le contenu du texte. isArabic sert uniquement à la priorité
+    //    de sélection de voix au sein de la même famille linguistique.
+    const voiceLang  = heatbotState.voiceLang || 'fr-FR';
+    const targetLang = voiceLang; // fr-FR, ar-TN, ar-SA → respecté sans exception
+    const isArabic   = voiceLang.startsWith('ar'); // pour selectBestVoice
+
+    const cleanText = prepareTextForSpeech(rawText, voiceLang);
+    if (!cleanText || cleanText.length < 2) return;
+
+    // ── Paramètres vocaux par langue ──
+    const voiceParams = {
+      'fr-FR': { rate: 0.92, pitch: 1.05, volume: 1.0 },
+      'ar-SA': { rate: 0.90, pitch: 1.00, volume: 1.0 },
+      'ar-TN': { rate: 0.88, pitch: 0.98, volume: 1.0 },
+      'ar-EG': { rate: 0.90, pitch: 1.00, volume: 1.0 },
+    };
+    const params = voiceParams[targetLang] || { rate: 0.92, pitch: 1.0, volume: 1.0 };
+
+    // Attendre que les voix soient chargées, puis lire
+    function doSpeak() {
+      const chunks = splitIntoSpeechChunks(cleanText, 230);
+      let chunkIndex = 0;
+
+      function speakNextChunk() {
+        if (heatbotState._ttsAborted || chunkIndex >= chunks.length) {
+          heatbotState.isSpeaking = false;
+          if (!heatbotState._ttsAborted) {
+            resetAllSpeakButtons();
+            if (typeof onEndCallback === 'function') onEndCallback();
+          }
+          return;
+        }
+
+        const chunk = chunks[chunkIndex++];
+        if (!chunk || chunk.trim().length < 2) {
+          speakNextChunk();
+          return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(chunk);
+        utterance.lang   = targetLang;
+        utterance.rate   = params.rate;
+        utterance.pitch  = params.pitch;
+        utterance.volume = params.volume;
+
+        const bestVoice = selectBestVoice(targetLang, isArabic);
+        if (bestVoice) utterance.voice = bestVoice;
+
+        utterance.onend   = speakNextChunk;
+        utterance.onerror = (e) => {
+          if (e.error !== 'interrupted') console.warn('TTS chunk error:', e.error);
+          speakNextChunk();
+        };
+
+        window.speechSynthesis.speak(utterance);
+      }
+
+      heatbotState.isSpeaking = true;
+      speakNextChunk();
+    }
+
+    // Si les voix ne sont pas encore chargées, attendre
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) {
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.onvoiceschanged = null;
+        doSpeak();
+      };
+    } else {
+      doSpeak();
+    }
+  }
+
+  function stopSpeaking() {
+    if ('speechSynthesis' in window) {
+      heatbotState._ttsAborted = true;
+      window.speechSynthesis.cancel();
+    }
+    heatbotState.isSpeaking = false;
+    resetAllSpeakButtons();
+  }
+
+  function toggleSpeakMessage(btn) {
+    if (btn.classList.contains('speaking')) {
+      stopSpeaking();
+      btn.classList.remove('speaking');
+      btn.innerHTML = '<i class="bi bi-volume-up"></i> <span style="font-size:11px;">Écouter</span>';
+    } else {
+      stopSpeaking();
+      const body   = btn.closest('.heatbot-msg-body');
+      const bubble = body ? body.querySelector('.heatbot-msg-bubble') : null;
+      const text   = bubble ? bubble.innerText : '';
+
+      if (!text || text.trim().length < 2) return;
+
+      btn.classList.add('speaking');
+      btn.innerHTML = '<i class="bi bi-stop-circle-fill text-danger"></i> <span style="font-size:11px;">Arrêter</span>';
+
+      speakText(text, () => {
+        btn.classList.remove('speaking');
+        btn.innerHTML = '<i class="bi bi-volume-up"></i> <span style="font-size:11px;">Écouter</span>';
+      });
+    }
+  }
+
+  function resetAllSpeakButtons() {
+    document.querySelectorAll('.heatbot-msg-speak-btn').forEach(btn => {
+      btn.classList.remove('speaking');
+      btn.innerHTML = '<i class="bi bi-volume-up"></i> <span style="font-size:11px;">Écouter</span>';
+    });
   }
 
   // ── Instanciation graphique Chart.js ──
