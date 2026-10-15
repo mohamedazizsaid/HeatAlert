@@ -36,7 +36,7 @@ class GeminiChatbotService
      */
     public function chat(string $message, array $history = [], ?User $user = null): array
     {
-        // 1. Détection de zone ou ville spécifique demandée (ex: Hammamet, Tunis, Sousse, Paris...)
+        // 1. Détection de zone ou ville spécifique (locale tunisienne ou mondiale)
         $targetLocation = $this->detectTargetLocation($message);
 
         // 2. Collecte du knowledge global et du knowledge ciblé
@@ -58,59 +58,57 @@ class GeminiChatbotService
     }
 
     /**
-     * Détecte si l'utilisateur interroge une zone, ville ou région spécifique.
+     * Détecte si l'utilisateur interroge une zone, ville ou région spécifique (Tunisie ou Monde).
      *
      * @param string $message
      * @return array|null
      */
     public function detectTargetLocation(string $message): ?array
     {
-        $cleanMessage = mb_strtolower($message);
+        $cleanMessage = mb_strtolower(trim($message));
 
-        // Liste des villes et gouvernorats tunisiens connus
+        // 1. Villes et gouvernorats tunisiens connus
         $tunisianLocations = [
-            'hammamet' => ['name' => 'Hammamet', 'admin1' => 'Nabeul', 'lat' => 36.4000, 'lng' => 10.6167],
-            'nabeul' => ['name' => 'Nabeul', 'admin1' => 'Nabeul', 'lat' => 36.4561, 'lng' => 10.7376],
-            'tunis' => ['name' => 'Tunis', 'admin1' => 'Tunis', 'lat' => 36.8065, 'lng' => 10.1815],
-            'ariana' => ['name' => 'Ariana', 'admin1' => 'Ariana', 'lat' => 36.8663, 'lng' => 10.1956],
-            'ben arous' => ['name' => 'Ben Arous', 'admin1' => 'Ben Arous', 'lat' => 36.7533, 'lng' => 10.2222],
-            'manouba' => ['name' => 'Manouba', 'admin1' => 'Manouba', 'lat' => 36.8083, 'lng' => 10.0972],
-            'bizerte' => ['name' => 'Bizerte', 'admin1' => 'Bizerte', 'lat' => 37.2744, 'lng' => 9.8739],
-            'sousse' => ['name' => 'Sousse', 'admin1' => 'Sousse', 'lat' => 35.8256, 'lng' => 10.6084],
-            'monastir' => ['name' => 'Monastir', 'admin1' => 'Monastir', 'lat' => 35.7780, 'lng' => 10.8262],
-            'mahdia' => ['name' => 'Mahdia', 'admin1' => 'Mahdia', 'lat' => 35.5047, 'lng' => 11.0622],
-            'sfax' => ['name' => 'Sfax', 'admin1' => 'Sfax', 'lat' => 34.7406, 'lng' => 10.7603],
-            'kairouan' => ['name' => 'Kairouan', 'admin1' => 'Kairouan', 'lat' => 35.6781, 'lng' => 10.0963],
-            'kasserine' => ['name' => 'Kasserine', 'admin1' => 'Kasserine', 'lat' => 35.1676, 'lng' => 8.8365],
-            'sidi bouzid' => ['name' => 'Sidi Bouzid', 'admin1' => 'Sidi Bouzid', 'lat' => 35.0382, 'lng' => 9.4849],
-            'jendouba' => ['name' => 'Jendouba', 'admin1' => 'Jendouba', 'lat' => 36.5011, 'lng' => 8.7802],
-            'beja' => ['name' => 'Béja', 'admin1' => 'Béja', 'lat' => 36.7256, 'lng' => 9.1817],
-            'béja' => ['name' => 'Béja', 'admin1' => 'Béja', 'lat' => 36.7256, 'lng' => 9.1817],
-            'le kef' => ['name' => 'Le Kef', 'admin1' => 'Le Kef', 'lat' => 36.1742, 'lng' => 8.7049],
-            'kef' => ['name' => 'Le Kef', 'admin1' => 'Le Kef', 'lat' => 36.1742, 'lng' => 8.7049],
-            'siliana' => ['name' => 'Siliana', 'admin1' => 'Siliana', 'lat' => 36.0847, 'lng' => 9.3708],
-            'zaghouan' => ['name' => 'Zaghouan', 'admin1' => 'Zaghouan', 'lat' => 36.4029, 'lng' => 10.1429],
-            'gabes' => ['name' => 'Gabès', 'admin1' => 'Gabès', 'lat' => 33.8815, 'lng' => 10.0982],
-            'gabès' => ['name' => 'Gabès', 'admin1' => 'Gabès', 'lat' => 33.8815, 'lng' => 10.0982],
-            'medenine' => ['name' => 'Médenine', 'admin1' => 'Médenine', 'lat' => 33.3549, 'lng' => 10.5055],
-            'médenine' => ['name' => 'Médenine', 'admin1' => 'Médenine', 'lat' => 33.3549, 'lng' => 10.5055],
-            'djerba' => ['name' => 'Djerba', 'admin1' => 'Médenine', 'lat' => 33.8076, 'lng' => 10.8451],
-            'tataouine' => ['name' => 'Tataouine', 'admin1' => 'Tataouine', 'lat' => 32.9297, 'lng' => 10.4518],
-            'gafsa' => ['name' => 'Gafsa', 'admin1' => 'Gafsa', 'lat' => 34.4250, 'lng' => 8.7842],
-            'tozeur' => ['name' => 'Tozeur', 'admin1' => 'Tozeur', 'lat' => 33.9197, 'lng' => 8.1335],
-            'kebili' => ['name' => 'Kébili', 'admin1' => 'Kébili', 'lat' => 33.7044, 'lng' => 8.9690],
-            'kébili' => ['name' => 'Kébili', 'admin1' => 'Kébili', 'lat' => 33.7044, 'lng' => 8.9690],
-            'kelibia' => ['name' => 'Kélibia', 'admin1' => 'Nabeul', 'lat' => 36.8483, 'lng' => 11.0939],
-            'kélibia' => ['name' => 'Kélibia', 'admin1' => 'Nabeul', 'lat' => 36.8483, 'lng' => 11.0939],
-            'tabarka' => ['name' => 'Tabarka', 'admin1' => 'Jendouba', 'lat' => 36.9544, 'lng' => 8.7580],
-            'la marsa' => ['name' => 'La Marsa', 'admin1' => 'Tunis', 'lat' => 36.8782, 'lng' => 10.3247],
-            'carthage' => ['name' => 'Carthage', 'admin1' => 'Tunis', 'lat' => 36.8528, 'lng' => 10.3233],
+            'hammamet' => ['name' => 'Hammamet', 'admin1' => 'Nabeul', 'country' => 'Tunisie', 'lat' => 36.4000, 'lng' => 10.6167],
+            'nabeul' => ['name' => 'Nabeul', 'admin1' => 'Nabeul', 'country' => 'Tunisie', 'lat' => 36.4561, 'lng' => 10.7376],
+            'tunis' => ['name' => 'Tunis', 'admin1' => 'Tunis', 'country' => 'Tunisie', 'lat' => 36.8065, 'lng' => 10.1815],
+            'ariana' => ['name' => 'Ariana', 'admin1' => 'Ariana', 'country' => 'Tunisie', 'lat' => 36.8663, 'lng' => 10.1956],
+            'ben arous' => ['name' => 'Ben Arous', 'admin1' => 'Ben Arous', 'country' => 'Tunisie', 'lat' => 36.7533, 'lng' => 10.2222],
+            'manouba' => ['name' => 'Manouba', 'admin1' => 'Manouba', 'country' => 'Tunisie', 'lat' => 36.8083, 'lng' => 10.0972],
+            'bizerte' => ['name' => 'Bizerte', 'admin1' => 'Bizerte', 'country' => 'Tunisie', 'lat' => 37.2744, 'lng' => 9.8739],
+            'sousse' => ['name' => 'Sousse', 'admin1' => 'Sousse', 'country' => 'Tunisie', 'lat' => 35.8256, 'lng' => 10.6084],
+            'monastir' => ['name' => 'Monastir', 'admin1' => 'Monastir', 'country' => 'Tunisie', 'lat' => 35.7780, 'lng' => 10.8262],
+            'mahdia' => ['name' => 'Mahdia', 'admin1' => 'Mahdia', 'country' => 'Tunisie', 'lat' => 35.5047, 'lng' => 11.0622],
+            'sfax' => ['name' => 'Sfax', 'admin1' => 'Sfax', 'country' => 'Tunisie', 'lat' => 34.7406, 'lng' => 10.7603],
+            'kairouan' => ['name' => 'Kairouan', 'admin1' => 'Kairouan', 'country' => 'Tunisie', 'lat' => 35.6781, 'lng' => 10.0963],
+            'kasserine' => ['name' => 'Kasserine', 'admin1' => 'Kasserine', 'country' => 'Tunisie', 'lat' => 35.1676, 'lng' => 8.8365],
+            'sidi bouzid' => ['name' => 'Sidi Bouzid', 'admin1' => 'Sidi Bouzid', 'country' => 'Tunisie', 'lat' => 35.0382, 'lng' => 9.4849],
+            'jendouba' => ['name' => 'Jendouba', 'admin1' => 'Jendouba', 'country' => 'Tunisie', 'lat' => 36.5011, 'lng' => 8.7802],
+            'beja' => ['name' => 'Béja', 'admin1' => 'Béja', 'country' => 'Tunisie', 'lat' => 36.7256, 'lng' => 9.1817],
+            'béja' => ['name' => 'Béja', 'admin1' => 'Béja', 'country' => 'Tunisie', 'lat' => 36.7256, 'lng' => 9.1817],
+            'le kef' => ['name' => 'Le Kef', 'admin1' => 'Le Kef', 'country' => 'Tunisie', 'lat' => 36.1742, 'lng' => 8.7049],
+            'kef' => ['name' => 'Le Kef', 'admin1' => 'Le Kef', 'country' => 'Tunisie', 'lat' => 36.1742, 'lng' => 8.7049],
+            'siliana' => ['name' => 'Siliana', 'admin1' => 'Siliana', 'country' => 'Tunisie', 'lat' => 36.0847, 'lng' => 9.3708],
+            'zaghouan' => ['name' => 'Zaghouan', 'admin1' => 'Zaghouan', 'country' => 'Tunisie', 'lat' => 36.4029, 'lng' => 10.1429],
+            'gabes' => ['name' => 'Gabès', 'admin1' => 'Gabès', 'country' => 'Tunisie', 'lat' => 33.8815, 'lng' => 10.0982],
+            'gabès' => ['name' => 'Gabès', 'admin1' => 'Gabès', 'country' => 'Tunisie', 'lat' => 33.8815, 'lng' => 10.0982],
+            'medenine' => ['name' => 'Médenine', 'admin1' => 'Médenine', 'country' => 'Tunisie', 'lat' => 33.3549, 'lng' => 10.5055],
+            'médenine' => ['name' => 'Médenine', 'admin1' => 'Médenine', 'country' => 'Tunisie', 'lat' => 33.3549, 'lng' => 10.5055],
+            'djerba' => ['name' => 'Djerba', 'admin1' => 'Médenine', 'country' => 'Tunisie', 'lat' => 33.8076, 'lng' => 10.8451],
+            'tataouine' => ['name' => 'Tataouine', 'admin1' => 'Tataouine', 'country' => 'Tunisie', 'lat' => 32.9297, 'lng' => 10.4518],
+            'gafsa' => ['name' => 'Gafsa', 'admin1' => 'Gafsa', 'country' => 'Tunisie', 'lat' => 34.4250, 'lng' => 8.7842],
+            'tozeur' => ['name' => 'Tozeur', 'admin1' => 'Tozeur', 'country' => 'Tunisie', 'lat' => 33.9197, 'lng' => 8.1335],
+            'kebili' => ['name' => 'Kébili', 'admin1' => 'Kébili', 'country' => 'Tunisie', 'lat' => 33.7044, 'lng' => 8.9690],
+            'kébili' => ['name' => 'Kébili', 'admin1' => 'Kébili', 'country' => 'Tunisie', 'lat' => 33.7044, 'lng' => 8.9690],
+            'kelibia' => ['name' => 'Kélibia', 'admin1' => 'Nabeul', 'country' => 'Tunisie', 'lat' => 36.8483, 'lng' => 11.0939],
+            'kélibia' => ['name' => 'Kélibia', 'admin1' => 'Nabeul', 'country' => 'Tunisie', 'lat' => 36.8483, 'lng' => 11.0939],
+            'tabarka' => ['name' => 'Tabarka', 'admin1' => 'Jendouba', 'country' => 'Tunisie', 'lat' => 36.9544, 'lng' => 8.7580],
+            'la marsa' => ['name' => 'La Marsa', 'admin1' => 'Tunis', 'country' => 'Tunisie', 'lat' => 36.8782, 'lng' => 10.3247],
+            'carthage' => ['name' => 'Carthage', 'admin1' => 'Tunis', 'country' => 'Tunisie', 'lat' => 36.8528, 'lng' => 10.3233],
         ];
 
-        // 1. Recherche directe dans la liste tunisienne
         foreach ($tunisianLocations as $key => $info) {
             if (preg_match('/\b' . preg_quote($key, '/') . '\b/ui', $cleanMessage)) {
-                // Trouver la zone en base correspondante
                 $zoneModel = Zone::where('actif', true)
                     ->where(function($q) use ($info) {
                         $q->where('nom', 'like', "%{$info['name']}%")
@@ -138,6 +136,7 @@ class GeminiChatbotService
                 return [
                     'name' => $z->ville ?: $z->nom,
                     'admin1' => $z->gouvernorat ?: $z->nom,
+                    'country' => 'Tunisie',
                     'lat' => (float) ($z->latitude ?: 36.8),
                     'lng' => (float) ($z->longitude ?: 10.18),
                     'zone_id' => $z->id,
@@ -146,13 +145,64 @@ class GeminiChatbotService
             }
         }
 
-        // 3. Détection par motif linguistique de recherche météo / ville (ex: "meteo de rome", "meteo a paris")
-        if (preg_match('/(?:meteo|météo|point|fraicheur|fraîcheur|temps|chaleur|ville|pays)\s+(?:de|d\'|à|a|dans|pour|sur)\s+([a-zA-ZÀ-ÿ\s\-]{3,25})/ui', $cleanMessage, $matches)) {
+        // 3. Villes et capitales internationales majeures courantes
+        $worldMajorCities = [
+            'paris' => ['name' => 'Paris', 'admin1' => 'Île-de-France', 'country' => 'France', 'lat' => 48.8566, 'lng' => 2.3522],
+            'tokyo' => ['name' => 'Tokyo', 'admin1' => 'Tokyo', 'country' => 'Japon', 'lat' => 35.6762, 'lng' => 139.6503],
+            'madrid' => ['name' => 'Madrid', 'admin1' => 'Madrid', 'country' => 'Espagne', 'lat' => 40.4168, 'lng' => -3.7038],
+            'new york' => ['name' => 'New York', 'admin1' => 'New York', 'country' => 'États-Unis', 'lat' => 40.7128, 'lng' => -74.0060],
+            'rome' => ['name' => 'Rome', 'admin1' => 'Latium', 'country' => 'Italie', 'lat' => 41.9028, 'lng' => 12.4964],
+            'roma' => ['name' => 'Rome', 'admin1' => 'Latium', 'country' => 'Italie', 'lat' => 41.9028, 'lng' => 12.4964],
+            'londres' => ['name' => 'Londres', 'admin1' => 'Angleterre', 'country' => 'Royaume-Uni', 'lat' => 51.5074, 'lng' => -0.1278],
+            'london' => ['name' => 'Londres', 'admin1' => 'Angleterre', 'country' => 'Royaume-Uni', 'lat' => 51.5074, 'lng' => -0.1278],
+            'berlin' => ['name' => 'Berlin', 'admin1' => 'Berlin', 'country' => 'Allemagne', 'lat' => 52.5200, 'lng' => 13.4050],
+            'alger' => ['name' => 'Alger', 'admin1' => 'Alger', 'country' => 'Algérie', 'lat' => 36.7538, 'lng' => 3.0588],
+            'casablanca' => ['name' => 'Casablanca', 'admin1' => 'Casablanca-Settat', 'country' => 'Maroc', 'lat' => 33.5731, 'lng' => -7.5898],
+            'rabat' => ['name' => 'Rabat', 'admin1' => 'Rabat-Salé-Kénitra', 'country' => 'Maroc', 'lat' => 34.0209, 'lng' => -6.8416],
+            'tripoli' => ['name' => 'Tripoli', 'admin1' => 'Tripoli', 'country' => 'Libye', 'lat' => 32.8872, 'lng' => 13.1913],
+            'le caire' => ['name' => 'Le Caire', 'admin1' => 'Le Caire', 'country' => 'Égypte', 'lat' => 30.0444, 'lng' => 31.2357],
+            'cairo' => ['name' => 'Le Caire', 'admin1' => 'Le Caire', 'country' => 'Égypte', 'lat' => 30.0444, 'lng' => 31.2357],
+            'dubai' => ['name' => 'Dubaï', 'admin1' => 'Dubaï', 'country' => 'Émirats Arabes Unis', 'lat' => 25.2048, 'lng' => 55.2708],
+            'dubaï' => ['name' => 'Dubaï', 'admin1' => 'Dubaï', 'country' => 'Émirats Arabes Unis', 'lat' => 25.2048, 'lng' => 55.2708],
+            'riyad' => ['name' => 'Riyad', 'admin1' => 'Riyad', 'country' => 'Arabie Saoudite', 'lat' => 24.7136, 'lng' => 46.6753],
+            'montreal' => ['name' => 'Montréal', 'admin1' => 'Québec', 'country' => 'Canada', 'lat' => 45.5017, 'lng' => -73.5673],
+            'montréal' => ['name' => 'Montréal', 'admin1' => 'Québec', 'country' => 'Canada', 'lat' => 45.5017, 'lng' => -73.5673],
+            'los angeles' => ['name' => 'Los Angeles', 'admin1' => 'Californie', 'country' => 'États-Unis', 'lat' => 34.0522, 'lng' => -118.2437],
+            'pekin' => ['name' => 'Pékin', 'admin1' => 'Pékin', 'country' => 'Chine', 'lat' => 39.9042, 'lng' => 116.4074],
+            'beijing' => ['name' => 'Pékin', 'admin1' => 'Pékin', 'country' => 'Chine', 'lat' => 39.9042, 'lng' => 116.4074],
+            'sydney' => ['name' => 'Sydney', 'admin1' => 'Nouvelle-Galles du Sud', 'country' => 'Australie', 'lat' => -33.8688, 'lng' => 151.2093],
+            'amsterdam' => ['name' => 'Amsterdam', 'admin1' => 'Hollande-Septentrionale', 'country' => 'Pays-Bas', 'lat' => 52.3676, 'lng' => 4.9041],
+            'istanbul' => ['name' => 'Istanbul', 'admin1' => 'Istanbul', 'country' => 'Turquie', 'lat' => 41.0082, 'lng' => 28.9784],
+            'marseille' => ['name' => 'Marseille', 'admin1' => 'Provence-Alpes-Côte d\'Azur', 'country' => 'France', 'lat' => 43.2965, 'lng' => 5.3698],
+            'lyon' => ['name' => 'Lyon', 'admin1' => 'Auvergne-Rhône-Alpes', 'country' => 'France', 'lat' => 45.7640, 'lng' => 4.8357],
+            'barcelone' => ['name' => 'Barcelone', 'admin1' => 'Catalogne', 'country' => 'Espagne', 'lat' => 41.3879, 'lng' => 2.1699],
+            'nice' => ['name' => 'Nice', 'admin1' => 'Provence-Alpes-Côte d\'Azur', 'country' => 'France', 'lat' => 43.7102, 'lng' => 7.2620],
+        ];
+
+        foreach ($worldMajorCities as $key => $info) {
+            if (preg_match('/\b' . preg_quote($key, '/') . '\b/ui', $cleanMessage)) {
+                return array_merge($info, ['zone_id' => null, 'zone_nom' => null]);
+            }
+        }
+
+        // 4. Extraction par motif syntaxique (ex: "meteo a berlin", "temperature de tokyo", "stats canicule a rome")
+        if (preg_match('/(?:meteo|météo|point|fraicheur|fraîcheur|temps|chaleur|canicule|temperature|température|climat|stats?)\s+(?:de|d\'|à|a|dans|pour|sur)\s+([a-zA-ZÀ-ÿ\s\-]{3,30})/ui', $cleanMessage, $matches)) {
             $extractedCity = trim($matches[1]);
-            // Exclure les faux positifs
-            $excluded = ['demain', 'aujourd', 'cette', 'notre', 'mon', 'ce', 'tous', 'toutes', 'la plateforme', 'tunisie', 'monde'];
+            $excluded = ['demain', 'aujourd', 'cette', 'notre', 'mon', 'ce', 'tous', 'toutes', 'la plateforme', 'tunisie', 'monde', 'la zone', 'les alertes', 'un point', 'les points'];
             if (!in_array($extractedCity, $excluded)) {
-                return $this->geocodeLocation($extractedCity);
+                $geo = $this->geocodeLocation($extractedCity);
+                if ($geo) return $geo;
+            }
+        }
+
+        // 5. Test si le message est un simple nom de ville (1 à 2 mots)
+        $words = preg_split('/\s+/', $cleanMessage);
+        if (count($words) <= 3) {
+            foreach ($words as $w) {
+                if (mb_strlen($w) >= 4 && !in_array($w, ['bonjour', 'salut', 'meteo', 'météo', 'merci', 'stats', 'feux', 'aide'])) {
+                    $geo = $this->geocodeLocation($w);
+                    if ($geo) return $geo;
+                }
             }
         }
 
@@ -180,7 +230,7 @@ class GeminiChatbotService
                         return [
                             'name' => $r['name'],
                             'admin1' => $r['admin1'] ?? ($r['country'] ?? ''),
-                            'country' => $r['country'] ?? '',
+                            'country' => $r['country'] ?? 'International',
                             'lat' => (float) $r['latitude'],
                             'lng' => (float) $r['longitude'],
                             'zone_id' => null,
@@ -196,7 +246,7 @@ class GeminiChatbotService
     }
 
     /**
-     * Récupère la météo en direct de haute précision pour des coordonnées géographiques via Open-Meteo.
+     * Récupère la météo en direct de haute précision pour des coordonnées via Open-Meteo.
      */
     public function fetchLiveWeather(float $lat, float $lng, string $cityName = ''): ?array
     {
@@ -221,11 +271,9 @@ class GeminiChatbotService
                 $cur = $data['current'] ?? [];
                 $hourly = $data['hourly'] ?? [];
 
-                // Description du code météo WMO
                 $wmoCode = (int) ($cur['weather_code'] ?? 0);
                 $condition = $this->interpretWmoCode($wmoCode);
 
-                // Extraction des heures clés (08h, 11h, 14h, 17h, 20h, 23h)
                 $hoursLabels = ['08:00', '11:00', '14:00', '17:00', '20:00', '23:00'];
                 $tempSeries = [];
                 $feltSeries = [];
@@ -280,7 +328,7 @@ class GeminiChatbotService
     }
 
     /**
-     * Appelle l'API Google Gemini Flash avec directives strictes de localisation.
+     * Appelle l'API Google Gemini Flash avec directives strictes et support Google Search Grounding.
      */
     protected function callGeminiApi(string $message, array $history, array $knowledge, ?User $user, ?array $targetLocation): array
     {
@@ -288,17 +336,15 @@ class GeminiChatbotService
 
         $contents = [];
 
-        // Injection du contexte système
         $contents[] = [
             'role' => 'user',
             'parts' => [['text' => "Voici ton contexte système et tes instructions prioritaires :\n" . $systemPrompt]],
         ];
         $contents[] = [
             'role' => 'model',
-            'parts' => [['text' => "Compris ! Je suis HeatBot. J'applique une précision absolue : si une zone ou ville spécifique est demandée, je réponds UNIQUEMENT sur celle-ci sans mentionner de villes hors-sujet."]],
+            'parts' => [['text' => "Compris ! Je suis HeatBot. Si l'utilisateur me pose une question sur une ville mondiale ou une zone tunisienne, je réponds immédiatement avec les données météorologiques réelles, les indices UV, les risques de canicule et les graphiques. Je ne dis JAMAIS de consulter une autre page."]],
         ];
 
-        // Historique récent (max 6 échanges)
         $recentHistory = array_slice($history, -6);
         foreach ($recentHistory as $turn) {
             $role = ($turn['role'] ?? 'user') === 'bot' || ($turn['role'] ?? 'user') === 'model' ? 'model' : 'user';
@@ -311,7 +357,6 @@ class GeminiChatbotService
             }
         }
 
-        // Message courant de l'utilisateur
         $contents[] = [
             'role' => 'user',
             'parts' => [['text' => $message]],
@@ -319,14 +364,36 @@ class GeminiChatbotService
 
         $endpoint = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent?key={$this->apiKey}";
 
-        $response = Http::timeout(20)->post($endpoint, [
+        // Payload avec Google Search Grounding pour que Gemini puisse chercher sur Google en temps réel
+        $payloadWithTools = [
             'contents' => $contents,
+            'tools' => [
+                ['google_search' => new \stdClass()],
+            ],
             'generationConfig' => [
-                'temperature' => 0.5,
+                'temperature' => 0.4,
                 'topP' => 0.9,
                 'maxOutputTokens' => 1200,
             ],
-        ]);
+        ];
+
+        try {
+            $response = Http::timeout(22)->post($endpoint, $payloadWithTools);
+            if (!$response->successful()) {
+                // Si l'option tools échoue, relancer sans tools
+                $payloadWithoutTools = [
+                    'contents' => $contents,
+                    'generationConfig' => [
+                        'temperature' => 0.4,
+                        'topP' => 0.9,
+                        'maxOutputTokens' => 1200,
+                    ],
+                ];
+                $response = Http::timeout(20)->post($endpoint, $payloadWithoutTools);
+            }
+        } catch (\Throwable $e) {
+            throw $e;
+        }
 
         if (!$response->successful()) {
             throw new \Exception('Gemini API returned status ' . $response->status() . ': ' . $response->body());
@@ -369,7 +436,7 @@ class GeminiChatbotService
             }
         }
 
-        // Si une ville spécifique était demandée et aucun graphique n'a été produit, on injecte la courbe de météo
+        // Si une localité était demandée et aucun graphique n'a été produit, on injecte la courbe de météo
         if ($targetLocation && !$chart && !empty($knowledge['target_location_weather'])) {
             $w = $knowledge['target_location_weather'];
             $chart = [
@@ -412,7 +479,6 @@ class GeminiChatbotService
         $cacheKey = 'chatbot_knowledge_' . ($user?->id ?? 'guest') . '_' . ($targetLocation['name'] ?? 'general');
 
         return Cache::remember($cacheKey, 120, function () use ($user, $targetLocation) {
-            // Météo en direct pour la zone demandée (si présente)
             $targetWeather = null;
             $targetAlertes = [];
             $targetPoints = [];
@@ -425,7 +491,6 @@ class GeminiChatbotService
                     $targetLocation['name']
                 );
 
-                // Alertes spécifiques à cette zone
                 $locName = $targetLocation['name'];
                 $locAdmin = $targetLocation['admin1'];
 
@@ -448,7 +513,6 @@ class GeminiChatbotService
                         'description' => $a->description,
                     ])->toArray();
 
-                // Points fraîcheur spécifiques à cette zone
                 $targetPoints = PointFraicheur::where('actif', true)
                     ->where(function($q) use ($locName, $locAdmin) {
                         $q->where('adresse', 'like', "%{$locName}%")
@@ -467,7 +531,6 @@ class GeminiChatbotService
                         'horaires' => $p->horaires ?? 'Libre',
                     ])->toArray();
 
-                // Coupures de cette zone
                 if (!empty($targetLocation['zone_id'])) {
                     $targetCoupures = Coupure::where('zone_id', $targetLocation['zone_id'])
                         ->whereIn('statut', ['en_cours', 'prevue'])
@@ -495,7 +558,6 @@ class GeminiChatbotService
                 'bibliotheque'    => PointFraicheur::where('actif', true)->where('type', 'bibliotheque')->count(),
             ];
 
-            // Feux NASA FIRMS
             $feuxStats = ['total_hotspots' => 0, 'high_confidence' => 0];
             try {
                 $firmsData = $this->firmsService->getHotspots(null, null, 'all', 1);
@@ -542,28 +604,30 @@ class GeminiChatbotService
         if ($targetLocation) {
             $locName = $targetLocation['name'];
             $locRegion = $targetLocation['admin1'];
+            $locCountry = $targetLocation['country'] ?? 'International';
             $locationDirective = <<<LOC
-### 🎯 DIRECTIVE MAJEURE — QUESTION CIBLÉE SUR UNE LOCALITÉ :
-L'utilisateur s'intéresse spécifiquement à la localité : '{$locName}' (Région / Gouvernorat : {$locRegion}).
-CONSIGNE ABSOLUE ET STRICTE :
-1. Tu dois répondre UNIQUEMENT et EXCLUSIVEMENT sur '{$locName}'.
-2. Ne cite JAMAIS d'autres gouvernorats ou villes hors-sujet (ne dis PAS "Voici les alertes à Tunis, Sidi Bouzid, Jendouba...").
-3. Utilise les données en direct fournies dans "target_location_weather", "target_alertes", "target_points" pour '{$locName}'.
-4. Si aucune alerte météo n'est active pour {$locName}, dis clairement : "✅ Aucune alerte canicule en cours pour {$locName}. Les conditions thermiques y sont stables."
-5. Fournis la météo exacte (température, ressenti, UV, vent) et propose un graphique en courbe (type "line") des températures de la journée pour {$locName}.
+### 🎯 DIRECTIVE MAJEURE — QUESTION SUR UNE LOCALITÉ ({$locName}, {$locCountry}) :
+L'utilisateur s'intéresse spécifiquement à la localité : '{$locName}' (Région : {$locRegion}, Pays : {$locCountry}).
+RÈGLES CAPITALES :
+1. Tu dois répondre DIRECTEMENT, INTÉGRALEMENT et PRÉCISÉMENT sur '{$locName}'.
+2. INTERDICTION FORMELLE de dire "Consultez la météo mondiale" ou de renvoyer l'utilisateur vers une page web. Donne-lui immédiatement les données météo exactes, la température, le ressenti, l'indice UV et les prévisions.
+3. Ne cite JAMAIS d'autres gouvernorats ou villes hors-sujet sans lien avec {$locName}.
+4. Si la ville est internationale (ex: Paris, Tokyo, Madrid, New York, Rome, Dubaï), analyse le niveau de vigilance thermique mondial (ex: canicule si > 34°C, fortes chaleurs si > 30°C, UV extrême si > 8).
+5. Inclus un graphique Chart.js (type "line") des températures de la journée pour {$locName}.
 LOC;
         }
 
         return <<<EOT
-Tu es "HeatBot", le conseiller d'intelligence artificielle officiel de la plateforme "HeatAlert" (Système d'Alerte Canicule, Météo Mondiale & Protection Civile).
+Tu es "HeatBot", le conseiller d'intelligence artificielle expert de la plateforme "HeatAlert" (Système d'Alerte Canicule, Météo Mondiale & Protection Civile).
 
 {$locationDirective}
 
 ### RÈGLES GÉNÉRALES :
 1. Ton ton est professionnel, chaleureux, hautement qualifié, concis et bienveillant.
 2. Structure tes réponses avec des puces élégantes, des titres clairs et des chiffres précis.
-3. En cas de malaise ou risque grave, rappelle les numéros d'urgence : 198 (Protection Civile) et 190 (SAMU).
-4. Lorsque des statistiques ou prévisions sont demandées, inclus un bloc JSON Chart.js strict délimité par:
+3. Ne dis JAMAIS "consultez la météo mondiale" ou "allez voir la page". Tu as la recherche Google en direct et les données Open-Meteo pour répondre immédiatement à l'utilisateur avec exactitude.
+4. En cas de malaise ou risque grave, rappelle les numéros d'urgence : 198 (Protection Civile) et 190 (SAMU).
+5. Lorsque des statistiques ou prévisions sont demandées, inclus un bloc JSON Chart.js strict délimité par:
 ```json:chart
 {
   "type": "doughnut" | "bar" | "line",
@@ -587,56 +651,70 @@ EOT;
         $stats = $knowledge['stats'];
         $chart = null;
 
-        // ── CAS 1 : UNE LOCALITÉ SPÉCIFIQUE EST DEMANDÉE (ex: Hammamet, Sousse, Tunis, Paris...) ──
+        // ── CAS 1 : UNE LOCALITÉ SPÉCIFIQUE (TUNISIE OU VILLE MONDIALE) ──
         if ($targetLocation) {
             $locName = $targetLocation['name'];
             $locAdmin = $targetLocation['admin1'];
+            $locCountry = $targetLocation['country'] ?? 'Tunisie';
+            $isInternational = !in_array(mb_strtolower($locCountry), ['tunisie', 'tunisia']);
             $weather = $knowledge['target_location_weather'];
             $alertes = $knowledge['target_alertes'];
             $points = $knowledge['target_points'];
             $coupures = $knowledge['target_coupures'];
 
-            $reply = "### 📍 Situation & Météo en Direct — {$locName} ({$locAdmin})\n\n";
+            $countryDisplay = $isInternational ? " — {$locCountry}" : " ({$locAdmin})";
+            $reply = "### 📍 Météo & Vigilance Thermique — {$locName}{$countryDisplay}\n\n";
 
             // 1. Météo en direct
             if ($weather) {
-                $reply .= "🌤️ **Conditions Météorologiques Actuelles :**\n";
-                $reply .= "- **Ciel :** {$weather['condition']}\n";
-                $reply .= "- **Température :** **{$weather['temperature']}°C** (Ressentie : **{$weather['apparent_temp']}°C**)\n";
-                $reply .= "- **Indice UV :** **{$weather['uv_index']} / 11** " . ($weather['uv_index'] >= 8 ? '🔴 *(Très élevé - Protection solaire indispensable)*' : '🟢 *(Modéré)*') . "\n";
-                $reply .= "- **Humidité :** {$weather['humidity']}%\n";
-                $reply .= "- **Vent :** {$weather['wind_speed']} km/h\n\n";
-            }
+                $temp = $weather['temperature'];
+                $felt = $weather['apparent_temp'];
+                $uv = $weather['uv_index'];
 
-            // 2. Alertes canicule pour cette zone
-            if (!empty($alertes)) {
-                $a = $alertes[0];
-                $niveauBadge = strtoupper($a['niveau']);
-                $reply .= "⚠️ **Alerte Canicule en Cours pour {$locName} :**\n";
-                $reply .= "- **Niveau :** **{$niveauBadge}** — {$a['titre']}\n";
-                $reply .= "- **Température attendue :** Jusqu'à {$a['temp_max']}°C (Ressenti {$a['ressenti']}°C)\n";
-                $reply .= "- **Description :** {$a['description']}\n\n";
-            } else {
-                $reply .= "✅ **Vigilance Canicule :** Aucune alerte active pour le secteur de **{$locName} / {$locAdmin}**. La situation thermique est sous contrôle.\n\n";
-            }
-
-            // 3. Points fraîcheur de cette localité
-            if (!empty($points)) {
-                $reply .= "❄️ **Points Fraîcheur Répertoriés à {$locName} :**\n";
-                foreach (array_slice($points, 0, 3) as $pt) {
-                    $reply .= "- **{$pt['nom']}** ({$pt['type']}) — *{$pt['adresse']}* [PMR: {$pt['pmr']}]\n";
+                // Évaluation du niveau de risque canicule mondial
+                $riskBadge = "🟢 **Conditions Tempérées** : Aucun stress thermique critique.";
+                if ($temp >= 38 || $felt >= 42) {
+                    $riskBadge = "🔴 **Alerte Canicule Sévère** : Chaleur extrême ! Risque élevé d'insolation et de déshydratation.";
+                } elseif ($temp >= 33 || $felt >= 36) {
+                    $riskBadge = "🟠 **Vigilance Canicule Élevée** : Températures très chaudes, hydratez-vous abondamment.";
+                } elseif ($temp >= 29) {
+                    $riskBadge = "🟡 **Chaleur Modérée** : Conditions estivales chaudes.";
                 }
-                $reply .= "\n";
+
+                $uvBadge = $uv >= 8 ? "🔴 *Très Élevé (Protection solaire indispensable)*" : ($uv >= 6 ? "🟠 *Élevé*" : "🟢 *Modéré*");
+
+                $reply .= "🌤️ **Données en Direct :**\n";
+                $reply .= "- **Ciel :** {$weather['condition']}\n";
+                $reply .= "- **Température :** **{$temp}°C** (Ressentie : **{$felt}°C**)\n";
+                $reply .= "- **Indice UV Solaire :** **{$uv} / 11** — {$uvBadge}\n";
+                $reply .= "- **Humidité :** {$weather['humidity']}%\n";
+                $reply .= "- **Vitesse du vent :** {$weather['wind_speed']} km/h\n\n";
+                $reply .= "🌡️ **Statut Vigilance :** {$riskBadge}\n\n";
+            }
+
+            // 2. Alertes spécifiques plateforme (si Tunisie)
+            if (!$isInternational) {
+                if (!empty($alertes)) {
+                    $a = $alertes[0];
+                    $reply .= "⚠️ **Alerte Officielle HeatAlert :**\n";
+                    $reply .= "- **Niveau :** **" . strtoupper($a['niveau']) . "** — {$a['titre']}\n";
+                    $reply .= "- **Description :** {$a['description']}\n\n";
+                } else {
+                    $reply .= "✅ **Alerte Nationale :** Aucune alerte canicule critique émise par HeatAlert pour {$locName}.\n\n";
+                }
+
+                if (!empty($points)) {
+                    $reply .= "❄️ **Points Fraîcheur Répertoriés à {$locName} :**\n";
+                    foreach (array_slice($points, 0, 3) as $pt) {
+                        $reply .= "- **{$pt['nom']}** ({$pt['type']}) — *{$pt['adresse']}* [PMR: {$pt['pmr']}]\n";
+                    }
+                    $reply .= "\n";
+                }
             } else {
-                $reply .= "❄️ **Points Fraîcheur :** Aucun espace municipal spécifique n'est actuellement labellisé à {$locName}. Consultez la carte interactive pour les zones voisines.\n\n";
+                $reply .= "🌍 **Surveillance Internationale :** Nos stations mondiales suivent en continu les variations thermiques et les vagues de chaleur pour {$locName}.\n\n";
             }
 
-            // 4. Coupures éventuelles
-            if (!empty($coupures)) {
-                $reply .= "⚡ **Coupure signalée :** {$coupures[0]['type']} en cours, rétablissement estimé : {$coupures[0]['retablissement']}.\n\n";
-            }
-
-            $reply .= "💡 *Consultez le graphique ci-dessous pour suivre l'évolution des températures au fil des heures à {$locName}.*";
+            $reply .= "📊 *Voici le graphique d'évolution des températures de la journée pour {$locName} :*";
 
             if ($weather) {
                 $chart = [
@@ -666,9 +744,9 @@ EOT;
                 'reply' => $reply,
                 'chart' => $chart,
                 'suggestions' => [
-                    "Points fraîcheur proches de {$locName}",
                     "Conseils canicule",
-                    "Statistiques globales",
+                    "Météo de Tunis",
+                    "📊 Statistiques globales de la plateforme",
                 ],
             ];
         }
@@ -709,7 +787,7 @@ EOT;
                 'suggestions' => [
                     'Détection des feux NASA FIRMS',
                     'Météo de Tunis',
-                    'Météo de Hammamet',
+                    'Météo de Paris',
                     'Conseils canicule',
                 ],
             ];
@@ -765,7 +843,7 @@ EOT;
             $reply .= "- 💧 **Fontaines & Bornes d'Eau Potable :** {$stats['points_par_type']['fontaine']}\n";
             $reply .= "- 🏊 **Piscines Municipales :** {$stats['points_par_type']['piscine']}\n";
             $reply .= "- 📚 **Médiathèques & Bibliothèques :** {$stats['points_par_type']['bibliotheque']}\n\n";
-            $reply .= "💡 *Pour obtenir les points d'une ville précise, demandez par exemple : 'Points fraîcheur à Hammamet' ou 'Points fraîcheur à Tunis'.*";
+            $reply .= "💡 *Indiquez votre ville (ex: 'Points fraîcheur à Hammamet' ou 'Points fraîcheur à Tunis') pour obtenir les adresses exactes.*";
 
             $chart = [
                 'type' => 'bar',
@@ -813,32 +891,32 @@ EOT;
                 'chart' => null,
                 'suggestions' => [
                     'Symptômes du coup de chaleur',
-                    'Météo de ma ville',
-                    'Statistiques des alertes',
+                    'Météo de Paris',
+                    'Météo de Hammamet',
                 ],
             ];
         }
 
         // ── CAS 6 : MÉTÉO GÉNÉRALE (AUCUNE VILLE PRÉCISÉE) ──
         if (str_contains($lower, 'meteo') || str_contains($lower, 'météo') || str_contains($lower, 'temperature')) {
-            $reply = "### 🌤️ Météo & Vigilance Thermique\n\n";
-            $reply .= "HeatAlert surveille en direct les conditions météo et canicule sur l'ensemble de la Tunisie et du monde via **Open-Meteo**.\n\n";
-            $reply .= "🎯 **Pour une précision absolue, indiquez votre ville ou région !**\n";
-            $reply .= "Exemples :\n";
-            $reply .= "- *'Météo de Hammamet'*\n";
-            $reply .= "- *'Météo de Tunis'*\n";
-            $reply .= "- *'Météo de Sousse'*\n";
-            $reply .= "- *'Météo de Paris'*\n\n";
-            $reply .= "Je vous donnerai immédiatement la température exacte, le ressenti, l'indice UV et les prévisions heure par heure.";
+            $reply = "### 🌤️ Météo & Vigilance Thermique — Monde & Tunisie\n\n";
+            $reply .= "Je surveille les conditions météorologiques, les indices UV solaires et les vagues de chaleur pour **n'importe quelle ville dans le monde**.\n\n";
+            $reply .= "Indiquez simplement le nom de votre ville :\n";
+            $reply .= "- 🌍 *'Météo de Paris'*\n";
+            $reply .= "- 🌍 *'Météo de Tokyo'*\n";
+            $reply .= "- 🌍 *'Météo de Madrid'*\n";
+            $reply .= "- 🇹🇳 *'Météo de Hammamet'*\n";
+            $reply .= "- 🇹🇳 *'Météo de Tunis'*\n\n";
+            $reply .= "Je vous donnerai immédiatement la météo exacte, le ressenti, l'indice UV et les statistiques en graphique.";
 
             return [
                 'reply' => $reply,
                 'chart' => null,
                 'suggestions' => [
+                    'Météo de Paris',
+                    'Météo de Tokyo',
                     'Météo de Hammamet',
-                    'Météo de Tunis',
-                    'Météo de Sousse',
-                    'Météo de Sfax',
+                    'Météo de Madrid',
                 ],
             ];
         }
@@ -846,9 +924,9 @@ EOT;
         // Salutation générale
         $userName = $user ? " **{$user->name}**" : '';
         $reply = "Bonjour{$userName} ! Je suis **HeatBot**, votre assistant d'intelligence artificielle dédié.\n\n";
-        $reply .= "Je peux vous renseigner avec précision sur n'importe quelle localité (météo, indice UV, alertes, points fraîcheur), par exemple :\n";
-        $reply .= "- 📍 *'Météo de Hammamet'*\n";
-        $reply .= "- 📍 *'Points fraîcheur à Nabeul'*\n";
+        $reply .= "Posez-moi votre question sur n'importe quelle ville mondiale ou zone tunisienne :\n";
+        $reply .= "- 🌍 *'Météo de Paris'* ou *'Météo de Tokyo'*\n";
+        $reply .= "- 🇹🇳 *'Météo de Hammamet'* ou *'Points fraîcheur à Nabeul'*\n";
         $reply .= "- 🔥 *'Détection des feux de forêts NASA FIRMS'*\n";
         $reply .= "- 📊 *'Statistiques globales de la plateforme'*\n\n";
         $reply .= "Que souhaitez-vous savoir ?";
@@ -857,10 +935,10 @@ EOT;
             'reply' => $reply,
             'chart' => null,
             'suggestions' => [
+                'Météo de Paris',
                 'Météo de Hammamet',
                 '📊 Statistiques globales',
                 '🔥 Feux récents (FIRMS)',
-                '❄️ Points fraîcheur',
             ],
         ];
     }
@@ -873,8 +951,8 @@ EOT;
         if ($targetLocation) {
             $loc = $targetLocation['name'];
             return [
-                "Points fraîcheur à {$loc}",
                 "Conseils de prévention",
+                "Météo de Paris",
                 "📊 Statistiques de la plateforme",
             ];
         }
@@ -882,8 +960,8 @@ EOT;
         return [
             '📊 Statistiques globales',
             '🔥 Feux récents (FIRMS)',
+            '🌤️ Météo de Paris',
             '🌤️ Météo de Hammamet',
-            '❄️ Points Fraîcheur',
         ];
     }
 }
