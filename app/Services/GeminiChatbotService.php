@@ -706,14 +706,520 @@ EOT;
 
     /**
      * Moteur de réponse autonome local (Fallback zéro échec).
+     * Couvre toutes les catégories : canicule, RAG, profils, urgences, hors-sujet, sécurité, multi-langue, contexte.
      */
     public function generateLocalResponse(string $message, array $knowledge, ?User $user = null, ?array $targetLocation = null): array
     {
         $lower = mb_strtolower($message);
         $stats = $knowledge['stats'];
         $chart = null;
+        $userName = $user ? " **{$user->name}**" : '';
 
+        // ══════════════════════════════════════════════════════════
+        // ── SÉCURITÉ SYSTÈME : Tentatives de jailbreak / injection ──
+        // ══════════════════════════════════════════════════════════
+        $jailbreakPatterns = [
+            'ignore tes instructions', 'ignore ton', 'oublie tes', 'oublie ton', 'sans restrictions',
+            'tu es maintenant', 'prompt système', 'prompt system', 'system prompt', 'tes règles internes',
+            'fais semblant', 'donne-moi la liste des utilisateurs', 'liste des utilisateurs',
+            'supprime les alertes', 'supprime toutes', 'modifie la base', 'accès à la base',
+            'ignore previous', 'ignore your instructions', 'act as', 'pretend you are',
+            'données personnelles', 'clé api', 'api key', 'mot de passe', 'password',
+        ];
+        foreach ($jailbreakPatterns as $pattern) {
+            if (str_contains($lower, $pattern)) {
+                return [
+                    'reply' => "🛡️ Je suis **HeatBot** et je reste dans mon rôle dédié à la vigilance canicule et à la sécurité.\n\nJe ne peux pas répondre à cette demande. Comment puis-je vous aider sur la météo, les alertes ou les conseils de protection contre la chaleur ?",
+                    'chart' => null,
+                    'suggestions' => ['Conseils canicule', 'Alertes météo en cours', 'Météo de ma ville'],
+                ];
+            }
+        }
+
+        // ══════════════════════════════════════════
+        // ── HORS PÉRIMÈTRE : Sujets sans rapport ──
+        // ══════════════════════════════════════════
+        $outOfScopePatterns = [
+            'recette' => true, 'pizza' => true, 'gâteau' => true, 'cuisine' => true,
+            'match de foot' => true, 'football' => true, 'score' => true, 'ligue' => true,
+            'script python' => true, 'programme java' => true, 'code informatique' => true,
+            'sens de la vie' => true, 'philosophie' => true, 'politique' => true,
+            'film' => true, 'série tv' => true, 'musique' => true, 'chanson' => true,
+            'jeu vidéo' => true, 'crypto' => true, 'bitcoin' => true, 'bourse' => true,
+        ];
+        // Exceptions liées à la chaleur
+        $heatRelated = str_contains($lower, 'chaleur') || str_contains($lower, 'chaud') ||
+            str_contains($lower, 'canicule') || str_contains($lower, 'eau') ||
+            str_contains($lower, 'alerte') || str_contains($lower, 'courant') ||
+            str_contains($lower, 'meteo') || str_contains($lower, 'météo') ||
+            str_contains($lower, 'fraicheur') || str_contains($lower, 'brûlant') ||
+            str_contains($lower, 'temperature') || str_contains($lower, 'soleil');
+        if (!$heatRelated) {
+            foreach ($outOfScopePatterns as $pattern => $_) {
+                if (str_contains($lower, $pattern)) {
+                    return [
+                        'reply' => "🤖 Ce sujet dépasse mon domaine d'expertise.\n\nJe suis **HeatBot**, spécialisé en **vigilance canicule, météo, sécurité et coupures de courant**. Je peux vous aider avec :\n- 🌡️ La météo de votre ville\n- ⚠️ Les alertes canicule en cours\n- 💧 Des conseils de protection contre la chaleur\n- ❄️ Les points fraîcheur proches de chez vous",
+                        'chart' => null,
+                        'suggestions' => ['Conseils canicule', 'Alertes en cours', 'Météo de Tunis', '📊 Statistiques'],
+                    ];
+                }
+            }
+        }
+
+        // ══════════════════════════════════════════════════════════
+        // ── CAS URGENCES MÉDICALES (PRIORITÉ HAUTE) ──
+        // ══════════════════════════════════════════════════════════
+        $urgenceTerms = [
+            'étourdi', 'malaise', 'perte de conscience', 'inconscient', 'confusion', 'confus',
+            'peau rouge', 'brûlante', 'ne répond pas', 'ne bouge plus', 'voisin', 'voisine',
+            'coup de chaleur', 'insolation', 'enfant fièvre', 'bébé fièvre', 'fièvre élevée',
+            'étourdissement', 'vertiges', 'vomissement', 'nausée', 'syncope', 'très chaud je',
+        ];
+        foreach ($urgenceTerms as $term) {
+            if (str_contains($lower, $term)) {
+                $isChildOrElderly = str_contains($lower, 'enfant') || str_contains($lower, 'bébé') ||
+                    str_contains($lower, 'voisin') || str_contains($lower, 'voisine') ||
+                    str_contains($lower, 'âgé') || str_contains($lower, 'personne agée');
+
+                $reply = "### 🆘 Situation d'Urgence Médicale Potentielle\n\n";
+                $reply .= "**Appelez immédiatement :**\n";
+                $reply .= "- 📞 **190** — SAMU (urgences médicales)\n";
+                $reply .= "- 📞 **198** — Protection Civile\n\n";
+
+                $reply .= "**En attendant les secours :**\n";
+                $reply .= "1. 🌑 Placez la personne **à l'ombre ou dans une pièce fraîche**\n";
+                $reply .= "2. 💧 **Rafraîchissez progressivement** : linges humides sur nuque, poignets et aisselles (eau fraîche, pas glacée)\n";
+                $reply .= "3. 🥤 Faites boire de l'eau fraîche si la personne est **consciente et peut avaler**\n";
+                $reply .= "4. 🚫 **Ne donnez JAMAIS** : alcool, douche glacée, médicaments sans avis médical\n";
+                $reply .= "5. 👁️ **Surveillez** en permanence : respiration, conscience, coloration de la peau\n\n";
+
+                if ($isChildOrElderly) {
+                    $reply .= "⚠️ **Pour un enfant ou une personne âgée**, le risque est maximal. N'attendez pas que l'état s'aggrave.\n\n";
+                }
+
+                $reply .= "**Signes de coup de chaleur (urgence absolue) :**\n";
+                $reply .= "- Peau rouge, brûlante et **sèche** (pas de transpiration)\n";
+                $reply .= "- Confusion, propos incohérents, perte de conscience\n";
+                $reply .= "- Température corporelle > 40°C\n\n";
+                $reply .= "🏥 *Je ne suis pas médecin. L'appel au 190 est la priorité absolue.*";
+
+                return [
+                    'reply' => $reply,
+                    'chart' => null,
+                    'suggestions' => ['Symptômes coup de chaleur', 'Conseils personnes âgées', 'Conseils bébé chaleur'],
+                ];
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS SANTÉ : Symptômes coup de chaleur ──
+        // ══════════════════════════════════════════════════════
+        if (str_contains($lower, 'symptôme') || str_contains($lower, 'symptome') ||
+            str_contains($lower, 'coup de chaleur') || str_contains($lower, 'insolation') ||
+            (str_contains($lower, 'reconnaître') && str_contains($lower, 'chaleur'))) {
+
+            $reply = "### 🌡️ Symptômes du Coup de Chaleur — Reconnaître et Agir\n\n";
+            $reply .= "**⚠️ Épuisement par la chaleur (stade 1) :**\n";
+            $reply .= "- Transpiration abondante, fatigue intense, maux de tête\n";
+            $reply .= "- Peau pâle et moite, crampes musculaires, nausées\n";
+            $reply .= "- Étourdissements, pouls rapide et faible\n\n";
+            $reply .= "**🔴 Coup de chaleur (stade 2 — URGENCE ABSOLUE) :**\n";
+            $reply .= "- Peau rouge, brûlante et **SÈCHE** (arrêt de la transpiration)\n";
+            $reply .= "- Confusion mentale, propos incohérents, agitation\n";
+            $reply .= "- Température corporelle > 40°C\n";
+            $reply .= "- Possible perte de conscience\n\n";
+            $reply .= "**🆘 Action immédiate :**\n";
+            $reply .= "Appeler le **190 (SAMU)** → ombre → rafraîchissement progressif → surveillance constante.\n\n";
+            $reply .= "🚫 *Ne jamais tenter une douche glacée — risque de choc thermique fatal.*";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Que faire en cas de coup de chaleur', 'Conseils personnes âgées', 'Conseils bébé'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS PROFIL : PERSONNES ÂGÉES ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(âgé|agé|vieux|vieille|senior|grand.?m[eè]re|grand.?père|retraité|\d{2,3}\s*ans.*seul|seul.*\d{2,3}\s*ans|dernier étage)/iu', $message)) {
+            $reply = "### 👴👵 Conseils Prioritaires — Personne Âgée Vivant Seule\n\n";
+            $reply .= "Les personnes âgées sont les plus vulnérables lors d'une canicule. Voici les actions prioritaires :\n\n";
+            $reply .= "**☎️ Maintien du lien :**\n";
+            $reply .= "- Appel téléphonique **au minimum 2 fois par jour** (matin et soir)\n";
+            $reply .= "- Signaler la personne à la mairie locale pour les registres de vigilance canicule\n\n";
+            $reply .= "**🏠 Environnement :**\n";
+            $reply .= "- Maintenir T° intérieure < 28°C (fermer volets, ouvrir la nuit)\n";
+            $reply .= "- Si appartement > 30°C en permanence : **l'accompagner dans un point fraîcheur** (mairie, centre commercial, bibliothèque)\n\n";
+            $reply .= "**💊 Médicaments :**\n";
+            $reply .= "- Certains traitements augmentent le risque : **diurétiques, antihypertenseurs, neuroleptiques, antidépresseurs**\n";
+            $reply .= "- Consulter le médecin traitant pour adapter le traitement en période de canicule\n\n";
+            $reply .= "**💧 Alimentation & hydratation :**\n";
+            $reply .= "- 1,5 à 2L d'eau/jour minimum (eau, soupes froides, fruits et légumes riches en eau)\n";
+            $reply .= "- Ne pas attendre d'avoir soif : la sensation de soif disparaît avec l'âge\n\n";
+            $reply .= "🚨 **Signes d'alarme → appeler 190 (SAMU) immédiatement :** confusion, propos incohérents, peau très chaude et sèche, refus de boire.";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Symptômes coup de chaleur', 'Points fraîcheur proches', 'Que faire en cas de malaise'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS PROFIL : BÉBÉ / NOURRISSON ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(bébé|nourrisson|enfant|fils|fille|nouveau.né|\d\s*mois|\d\s*an.*enfant|tout.?petit)/iu', $message)) {
+            $reply = "### 👶 Protéger un Bébé ou un Jeune Enfant de la Chaleur\n\n";
+            $reply .= "Les bébés régulent mal leur température corporelle — la chaleur est un danger réel.\n\n";
+            $reply .= "**🚫 Règles absolues :**\n";
+            $reply .= "- **Jamais en voiture stationnée**, même fenêtre ouverte, même 2 minutes\n";
+            $reply .= "- Jamais exposé au soleil direct, même en poussette\n";
+            $reply .= "- Jamais ventilateur soufflant directement sur le nourrisson\n\n";
+            $reply .= "**🌡️ Maintenir la chambre fraîche :**\n";
+            $reply .= "- Température idéale : **18 à 20°C** maximum\n";
+            $reply .= "- Volets fermés en journée, fenêtre ouverte la nuit avec moustiquaire\n";
+            $reply .= "- Vêtements légers (body coton, couche légère)\n\n";
+            $reply .= "**💧 Hydratation :**\n";
+            $reply .= "- Bébé allaité : tétées plus fréquentes (pas d'eau avant 6 mois)\n";
+            $reply .= "- À partir de 6 mois : proposer de l'eau entre les repas\n";
+            $reply .= "- Bains tièdes (pas froids) pour faire baisser la température\n\n";
+            $reply .= "**🆘 Signes d'alarme → 190 immédiatement :**\n";
+            $reply .= "- Fontanelle enfoncée (déshydratation sévère)\n";
+            $reply .= "- Pleurs inhabituels ou au contraire absence de pleurs et léthargie\n";
+            $reply .= "- Peau très rouge, sèche et chaude, yeux creux\n";
+            $reply .= "- Fièvre > 38.5°C sans raison évidente";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Conseils voiture et chaleur', 'Symptômes déshydratation', 'Points fraîcheur familiaux'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS PROFIL : ANIMAUX DOMESTIQUES ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(chien|chat|animal|animaux|chiot|chatte|canin|félin|vétérin)/iu', $message)) {
+            $reply = "### 🐾 Protéger Vos Animaux de Compagnie de la Chaleur\n\n";
+            $reply .= "**🌡️ Signes de coup de chaleur chez l'animal :**\n";
+            $reply .= "- Chien : halètement excessif, bave, prostration, vomissements, gencives pâles ou rouges\n";
+            $reply .= "- Chat : bouche ouverte (rare — alarme immédiate), léthargie, salive épaisse\n";
+            $reply .= "→ **Vétérinaire d'urgence** si ces signes apparaissent.\n\n";
+            $reply .= "**✅ Prévention quotidienne :**\n";
+            $reply .= "- 🥣 Eau fraîche renouvelée plusieurs fois par jour\n";
+            $reply .= "- 🚗 JAMAIS en voiture stationnée (même 5 min → 60°C en 10 min)\n";
+            $reply .= "- ⏰ Promenades : **avant 8h ou après 20h** uniquement\n";
+            $reply .= "- 🖐️ Test du bitume : appuyer la main 5 secondes — si brûlant, les pattes brûleront aussi\n";
+            $reply .= "- ❄️ Zone fraîche à disposition : carrelage, endroit ventilé, jamais de cage en plein soleil\n";
+            $reply .= "- ✂️ Ne pas tondre à ras les chiens à poil long : le pelage protège aussi du soleil";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Chaleur et voiture', 'Points fraîcheur', 'Conseils canicule'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS PROFIL : TRAVAILLEUR EXTÉRIEUR ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(travail.*dehors|travail.*extérieur|travaille.*dehors|chantier|agriculteur|jardinier|ouvrier|dehors.*journée|journée.*dehors)/iu', $message)) {
+            $reply = "### 👷 Conseils pour les Travailleurs en Plein Air\n\n";
+            $reply .= "Le travail extérieur en période de canicule est une activité à haut risque.\n\n";
+            $reply .= "**🛡️ Équipement indispensable :**\n";
+            $reply .= "- 🧢 Chapeau à large bord ou casquette avec protection nuque\n";
+            $reply .= "- 👕 Vêtements couvrants, clairs, en fibres naturelles (coton léger)\n";
+            $reply .= "- 🕶️ Lunettes de soleil (indice UV élevé)\n";
+            $reply .= "- 🧴 Crème solaire SPF 50+ renouvelée toutes les 2h\n\n";
+            $reply .= "**💧 Hydratation :**\n";
+            $reply .= "- Boire **500ml toutes les 30 minutes** (ne pas attendre la soif)\n";
+            $reply .= "- Éviter les boissons sucrées et surtout l'alcool\n\n";
+            $reply .= "**⏸️ Organisation du travail :**\n";
+            $reply .= "- Pause à l'ombre **minimum 15 min toutes les heures**\n";
+            $reply .= "- Éviter les tâches physiques intenses entre **11h et 17h**\n";
+            $reply .= "- En alerte rouge : ne **jamais travailler seul** à l'extérieur\n\n";
+            $reply .= "🆘 **En cas de malaise → 190 (SAMU) ou 198 (Protection Civile)** immédiatement.";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Symptômes coup de chaleur', 'Alertes canicule en cours', 'Conseils hydratation'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS PROFIL : APPAREIL MÉDICAL / COUPURE ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(appareil médical|respirateur|pompe|dialyse|appareil.*médical|médical.*appareil|mère.*appareil|appareil.*mère|père.*appareil|onduleur)/iu', $message)) {
+            $reply = "### ⚡🏥 Appareil Médical et Coupure de Courant\n\n";
+            $reply .= "**Préparation avant une coupure :**\n";
+            $reply .= "- 🔋 Disposer d'un **onduleur (UPS)** ou d'une batterie de secours rechargée\n";
+            $reply .= "- 📋 Informer le médecin traitant de la situation pour adapter la prise en charge\n";
+            $reply .= "- 📞 Avoir en mémoire : médecin traitant + pharmacie + SAMU (190)\n";
+            $reply .= "- 🏥 Signaler le domicile comme \"foyer vulnérable\" auprès de la mairie\n\n";
+            $reply .= "**Pendant une coupure avec appareil médical :**\n";
+            $reply .= "1. Basculer immédiatement sur l'onduleur ou la batterie de secours\n";
+            $reply .= "2. Appeler le médecin traitant pour conseil\n";
+            $reply .= "3. Si appareil défaillant ou autonomie insuffisante : **190 (SAMU) immédiatement**\n\n";
+            $reply .= "**Pour les médicaments sensibles (insuline, vaccins) :**\n";
+            $reply .= "- Glacière isotherme + pack de glace enveloppé dans un linge (pas contact direct)\n";
+            $reply .= "- Le frigo tient 4 à 6h fermé → ne pas ouvrir inutilement\n\n";
+            $reply .= "📱 *Enregistrez cet équipement dans la section **Mes Équipements Sensibles** de HeatAlert pour recevoir des alertes préventives.*";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Signaler une coupure', 'Conseils médicaments chaleur', 'Points fraîcheur proches'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : FAUSSES CROYANCES ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(alcool.*rafraîchit|boire.*alcool.*chaud|alcool.*frais|bière.*chaleur)/iu', $message) ||
+            (str_contains($lower, 'alcool') && (str_contains($lower, 'rafraîch') || str_contains($lower, 'aide') || str_contains($lower, 'frais')))) {
+            return [
+                'reply' => "### ❌ Idée Reçue Dangereuse : L'Alcool ne Rafraîchit PAS\n\nL'alcool donne une **impression de fraîcheur** mais c'est trompeur :\n\n- 🌡️ Il **dilate les vaisseaux sanguins**, ce qui fait monter la température corporelle\n- 💧 Il provoque une **déshydratation accélérée** (effet diurétique)\n- 😵 En période de canicule, la consommation d'alcool **multiplie le risque de coup de chaleur**\n\n**✅ Ce qu'il faut boire :**\n- Eau fraîche (pas glacée) : 2 à 3 litres par jour\n- Eau aromatisée, tisanes froides, jus de fruits dilués\n- Éviter aussi les boissons sucrées et la caféine",
+                'chart' => null,
+                'suggestions' => ['Combien d\'eau boire par jour ?', 'Conseils canicule', 'Symptômes déshydratation'],
+            ];
+        }
+
+        if (preg_match('/\b(fermer.*fenêtre.*nuit|fenêtre.*fermé.*nuit|fermer tout)/iu', $message) ||
+            (str_contains($lower, 'fenêtre') && str_contains($lower, 'nuit'))) {
+            return [
+                'reply' => "### ❌ Idée Reçue : Il ne faut PAS fermer les fenêtres la nuit\n\n**La règle d'or de la ventilation en canicule :**\n\n- 🌞 **Le jour** : fermer fenêtres ET volets (pour bloquer la chaleur et le rayonnement solaire)\n- 🌙 **La nuit** : **ouvrir largement** quand la température extérieure descend sous la température intérieure\n\n**Pourquoi ?**\nL'air nocturne est plus frais. L'aération nocturne permet de \"purger\" la chaleur accumulée dans les murs et les meubles pendant la journée.\n\n💡 *Si vous habitez dans un quartier peu sûr, ouvrez au moins les petites fenêtres ou disposez d'un ventilateur aspirant l'air nocturne.*",
+                'chart' => null,
+                'suggestions' => ['Rester au frais sans climatisation', 'Conseils canicule', 'Points fraîcheur'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : HYDRATATION / EAU / BOIRE ──
+        // ══════════════════════════════════════════════════════
+        if (str_contains($lower, 'eau') || str_contains($lower, 'boire') || str_contains($lower, 'hydrat') || str_contains($lower, 'litre')) {
+            $reply = "### 💧 Hydratation en Période de Canicule\n\n";
+            $reply .= "**La règle d'or : boire AVANT d'avoir soif.**\n\n";
+            $reply .= "**🧑 Adulte en bonne santé :**\n";
+            $reply .= "- Minimum **2 à 3 litres d'eau par jour** lors d'une canicule\n";
+            $reply .= "- En activité physique ou travail extérieur : **500ml toutes les 30 minutes**\n\n";
+            $reply .= "**👴👵 Personnes âgées :**\n";
+            $reply .= "- La sensation de soif diminue avec l'âge → boire selon un **planning horaire**\n";
+            $reply .= "- 1,5 à 2L/jour minimum, privilégier les soupes, fruits et légumes gorgés d'eau\n\n";
+            $reply .= "**👶 Bébés et enfants :**\n";
+            $reply .= "- Avant 6 mois : pas d'eau (lait maternel ou biberon suffisent)\n";
+            $reply .= "- Après 6 mois : proposer de l'eau fraîche régulièrement\n\n";
+            $reply .= "**✅ Bonnes sources d'hydratation :**\n";
+            $reply .= "Eau plate, eau gazeuse, tisanes froides, bouillon, laitages, fruits (pastèque, concombre, melon)\n\n";
+            $reply .= "**❌ À éviter :**\n";
+            $reply .= "Alcool (déshydrate), sodas sucrés (moins efficaces), café/thé en excès (diurétiques)";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Conseils canicule', 'Bébé et chaleur', 'Symptômes déshydratation'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : FRAIS SANS CLIMATISATION ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(sans clim|sans climatisation|pas de clim|sans air conditionné|rester frais|fraîcheur|frais.*maison|maison.*frais)/iu', $message)) {
+            $reply = "### ❄️ Rester au Frais Sans Climatisation\n\n";
+            $reply .= "**🌞 Le jour :**\n";
+            $reply .= "- Fermez **volets, rideaux et stores** (surtout face sud et ouest) — bloque jusqu'à 70% de la chaleur solaire\n";
+            $reply .= "- Gardez les portes intérieures fermées entre les pièces chaudes et fraîches\n";
+            $reply .= "- Éteignez ou réduisez les appareils qui dégagent de la chaleur (four, lave-linge, PC)\n\n";
+            $reply .= "**🌙 La nuit :**\n";
+            $reply .= "- Ouvrez fenêtres en opposition pour créer un **courant d'air traversant**\n";
+            $reply .= "- Ventilateur dirigé vers la fenêtre ouverte (aspire l'air frais nocturne)\n\n";
+            $reply .= "**💦 Techniques de rafraîchissement :**\n";
+            $reply .= "- Brumisateur d'eau fraîche sur le visage et poignets\n";
+            $reply .= "- Linge humide sur la nuque, les poignets et les chevilles (zones de refroidissement rapide)\n";
+            $reply .= "- Bassine d'eau froide pour les pieds\n";
+            $reply .= "- Ventilateur avec bol d'eau glacée devant (effet clim DIY)\n\n";
+            $reply .= "**📍 Si rien ne suffit :**\n";
+            $reply .= "Rendez-vous dans un **point fraîcheur** public (centre commercial, médiathèque, piscine) — consultez la carte HeatAlert.";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Points fraîcheur proches', 'Conseils canicule', 'Différence alerte jaune orange rouge'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : CANICULE GÉNÉRALE / QUE FAIRE ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(que.*faire.*canicule|canicule.*faire|pendant.*canicule|conseils.*canicule|chaleur.*que faire|quoi faire.*chaud|faire.*chaud)/iu', $message) ||
+            (str_contains($lower, 'canicule') && !str_contains($lower, 'alerte') && !str_contains($lower, 'niveau')) ||
+            (str_contains($lower, 'chaud') && (str_contains($lower, 'que faire') || str_contains($lower, 'quoi faire') || str_contains($lower, 'comment')))) {
+
+            $reply = "### 🌡️ Que Faire Pendant une Canicule ?\n\n";
+            $reply .= "Voici les **6 actions prioritaires** à mettre en place dès maintenant :\n\n";
+            $reply .= "1. 💧 **Hydratez-vous** : 2 à 3 litres d'eau par jour, sans attendre la soif\n";
+            $reply .= "2. 🏠 **Protégez votre logement** : volets fermés le jour, fenêtres ouvertes la nuit\n";
+            $reply .= "3. ☀️ **Évitez les sorties** entre 11h et 17h — restez à l'ombre ou en intérieur frais\n";
+            $reply .= "4. 👴👶 **Surveillez les personnes fragiles** : âgées, nourrissons, malades — contact au minimum 2x/jour\n";
+            $reply .= "5. ❄️ **Utilisez un point fraîcheur** si votre logement est trop chaud (T° > 30°C)\n";
+            $reply .= "6. 📱 **Restez informé** via les alertes HeatAlert pour votre zone\n\n";
+            $reply .= "🚫 **À ne pas faire :**\n";
+            $reply .= "- Boire de l'alcool (aggrave la déshydratation)\n";
+            $reply .= "- Faire du sport en plein soleil\n";
+            $reply .= "- Laisser enfants ou animaux dans une voiture\n\n";
+            $reply .= "🆘 **Urgences :** 190 (SAMU) · 198 (Protection Civile)";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Rester frais sans climatisation', 'Points fraîcheur', 'Différence alertes jaune orange rouge'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : "il fait chaud" (message très court) ──
+        // ══════════════════════════════════════════════════════
+        if (in_array(trim($lower), ['il fait chaud', 'j\'ai chaud', "j'ai chaud", 'tres chaud', 'très chaud', 'chaud', 'il fait très chaud', 'canicule'])) {
+            return [
+                'reply' => "🌡️ Je comprends ! Voici 3 réflexes immédiats :\n\n1. 💧 **Buvez de l'eau** maintenant — et toutes les 30 min\n2. 🏠 **Fermez volets et rideaux** côté soleil\n3. ❄️ **Mouuillez un linge et posez-le sur la nuque** — effet rafraîchissant immédiat\n\nSi vous vous sentez mal : **190 (SAMU)** ou **198 (Protection Civile)**.",
+                'chart' => null,
+                'suggestions' => ['Que faire pendant une canicule ?', 'Points fraîcheur', 'Rester frais sans climatisation'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : NIVEAUX D'ALERTE ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(différence.*alerte|alerte.*jaune|alerte.*orange|alerte.*rouge|niveau.*alerte|signification.*alerte|niveaux d.alerte)/iu', $message)) {
+            $reply = "### ⚠️ Les 4 Niveaux d'Alerte Météo HeatAlert\n\n";
+            $reply .= "🟢 **VERT — Vigilance normale**\n";
+            $reply .= "Conditions météo ordinaires. Pas de mesures particulières.\n\n";
+            $reply .= "🟡 **JAUNE — Chaleur notable**\n";
+            $reply .= "Chaleur sensible. Conseils d'hydratation et de prudence. Attention aux personnes fragiles.\n\n";
+            $reply .= "🟠 **ORANGE — Vigilance élevée**\n";
+            $reply .= "Chaleur intense. Éviter les efforts en plein air. Surveiller les vulnérables plusieurs fois/jour. Utiliser les points fraîcheur.\n\n";
+            $reply .= "🔴 **ROUGE — Danger extrême**\n";
+            $reply .= "Canicule sévère. Rester confiné au maximum. Ne sortir qu'en urgence. Appeler 190/198 au moindre malaise. Déclencher le plan d'urgence personnel.";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Alertes en cours sur la plateforme', 'Que faire en alerte rouge', 'Conseils personnes âgées'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : ALERTES EN COURS (RAG) ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(alerte.*en cours|alertes.*actives|alerte.*moment|y a.t.il.*alerte|existe.*alerte|combien.*alerte|alertes.*demain|prévues.*demain|demain.*alerte)/iu', $message)) {
+            $totalAlertes = $stats['alertes_actives_total'];
+            $niveaux = $stats['alertes_par_niveau'];
+
+            if ($totalAlertes === 0) {
+                $reply = "### ✅ Situation Météo — Aucune Alerte Active\n\n";
+                $reply .= "**Bonne nouvelle** : la plateforme HeatAlert ne recense **aucune alerte canicule active** sur le territoire tunisien en ce moment.\n\n";
+                $reply .= "📊 Zones surveillées : **{$stats['zones_total']}** gouvernorats et délégations\n";
+                $reply .= "📅 Dernière mise à jour : {$knowledge['date']}\n\n";
+                $reply .= "💡 *Concernant les prévisions pour demain, les alertes sont mises à jour en temps réel sur la plateforme. Consultez la section Alertes pour les prévisions à J+1.*";
+            } else {
+                $reply = "### ⚠️ Alertes Météo Actuellement Actives\n\n";
+                $reply .= "La plateforme HeatAlert recense actuellement **{$totalAlertes} alerte(s) active(s)** :\n\n";
+                if ($niveaux['rouge'] > 0) $reply .= "- 🔴 **Niveau Rouge** (Danger extrême) : **{$niveaux['rouge']}** zone(s)\n";
+                if ($niveaux['orange'] > 0) $reply .= "- 🟠 **Niveau Orange** (Vigilance élevée) : **{$niveaux['orange']}** zone(s)\n";
+                if ($niveaux['jaune'] > 0) $reply .= "- 🟡 **Niveau Jaune** (Chaleur notable) : **{$niveaux['jaune']}** zone(s)\n";
+                if ($niveaux['vert'] > 0) $reply .= "- 🟢 **Niveau Vert** (Normal) : **{$niveaux['vert']}** zone(s)\n";
+                $reply .= "\n📅 Mise à jour : {$knowledge['date']}\n\n";
+                $reply .= "💡 *Indiquez votre ville ou gouvernorat pour obtenir les détails de l'alerte dans votre zone spécifique.*";
+            }
+
+            $chart = [
+                'type' => 'doughnut',
+                'title' => 'Répartition des Alertes Actives par Niveau',
+                'labels' => ['🔴 Rouge', '🟠 Orange', '🟡 Jaune', '🟢 Vert'],
+                'datasets' => [[
+                    'label' => 'Alertes',
+                    'data' => [$niveaux['rouge'], $niveaux['orange'], $niveaux['jaune'], $niveaux['vert']],
+                    'backgroundColor' => ['#dc2626', '#ea580c', '#eab308', '#16a34a'],
+                ]],
+            ];
+
+            return [
+                'reply' => $reply,
+                'chart' => $chart,
+                'suggestions' => ['Que faire en alerte rouge ?', 'Points fraîcheur proches', 'Conseils personnes fragiles'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : CONSEILS POUR NIVEAU D'ALERTE SPÉCIFIQUE ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(conseil.*rouge|conseil.*orange|conseil.*canicule.*rouge|que faire.*rouge|alerte rouge.*quoi)/iu', $message)) {
+            return [
+                'reply' => "### 🔴 Conseils pour une Alerte de Niveau Rouge\n\nEn alerte rouge, la canicule est **extrêmement dangereuse**. Les actions suivantes sont impératives :\n\n1. 🏠 **Restez confiné** dans la pièce la plus fraîche du logement\n2. 💧 **Buvez 3L d'eau par jour** minimum, sans attendre la soif\n3. 🌬️ **Fermez tout le jour, ouvrez tout la nuit** (volets + fenêtres)\n4. 👴👶 **Vérifiez vos proches vulnérables** (2x/jour minimum)\n5. 🏥 **Connaître le point fraîcheur le plus proche** (mairie, bibliothèque, centre commercial)\n6. 📵 **Annulez les activités extérieures non essentielles**\n7. ❄️ **N'utilisez pas le four ni le lave-linge** en journée (dégagent de la chaleur)\n\n🆘 Au moindre malaise : **190 (SAMU)** ou **198 (Protection Civile)**",
+                'chart' => null,
+                'suggestions' => ['Points fraîcheur proches', 'Symptômes coup de chaleur', 'Que faire sans climatisation'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : COUPURES / COURANT ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(coupure|courant|électricité|electricite|délestage|panne.*electricité|panne.*courant|kopure|kopure de coran|courant.*heure)/iu', $message)) {
+            $totalCoupures = $stats['coupures_actives_total'];
+
+            $reply = "### ⚡ Coupures de Courant — Que Faire ?\n\n";
+
+            if ($totalCoupures > 0) {
+                $reply .= "📡 **Info HeatAlert :** **{$totalCoupures}** coupure(s) actuellement signalée(s) ou planifiée(s).\n\n";
+            } else {
+                $reply .= "✅ **Info HeatAlert :** Aucune coupure majeure signalée sur la plateforme en ce moment.\n\n";
+            }
+
+            $reply .= "**🥶 Conservation des aliments :**\n";
+            $reply .= "- Frigo : **ne pas ouvrir** — froid conservé 4 à 6 heures\n";
+            $reply .= "- Congélateur : **ne pas ouvrir** — froid conservé 24 à 48 heures\n";
+            $reply .= "- En cas de doute sur la fraîcheur après reprise : jeter sans hésiter\n\n";
+            $reply .= "**💊 Médicaments sensibles (insuline, vaccins) :**\n";
+            $reply .= "- Glacière isotherme + pack de glace enveloppé dans un linge\n";
+            $reply .= "- Ne jamais mettre en contact direct la glace avec les médicaments\n\n";
+            $reply .= "**🔌 Appareils électriques :**\n";
+            $reply .= "- Débrancher les appareils sensibles (surtension à la reprise)\n";
+            $reply .= "- Appareils médicaux : onduleur/batterie → 190 si problème\n\n";
+            $reply .= "📲 *Signalez votre coupure sur HeatAlert pour alerter les équipes.*";
+
+            return [
+                'reply' => $reply,
+                'chart' => null,
+                'suggestions' => ['Signaler une coupure', 'Médicaments et coupure', 'Points fraîcheur'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : MULTI-LANGUE : ANGLAIS ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/\b(what.*do.*heatwave|during.*heatwave|heatwave.*tips|how.*stay cool|heat.*tips|heatwave)/i', $message)) {
+            return [
+                'reply' => "### 🌡️ What to Do During a Heatwave\n\nHere are the **6 essential actions** to stay safe:\n\n1. 💧 **Hydrate**: drink 2-3 liters of water daily — don't wait until thirsty\n2. 🏠 **Protect your home**: close shutters/blinds during the day, open windows at night\n3. ☀️ **Avoid outdoor activities** between 11am and 5pm\n4. 👴👶 **Check on vulnerable people**: elderly, infants, chronically ill — at least twice a day\n5. ❄️ **Use cooling centers** (libraries, shopping centers, public pools)\n6. 📱 **Stay informed** through HeatAlert alerts for your area\n\n**Never**: drink alcohol, leave children or pets in a car, take a cold shower if feeling heatstroke symptoms.\n\n🆘 **Emergency numbers (Tunisia):** 190 (SAMU) · 198 (Civil Protection)",
+                'chart' => null,
+                'suggestions' => ['Heatwave symptoms', 'Cooling centers near me', 'Current weather'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
+        // ── CAS : MULTI-LANGUE : ARABE ──
+        // ══════════════════════════════════════════════════════
+        if (preg_match('/[\x{0600}-\x{06FF}]/u', $message)) {
+            return [
+                'reply' => "### 🌡️ ماذا أفعل أثناء موجة الحر؟\n\nإليك **6 إجراءات أساسية** للوقاية:\n\n1. 💧 **شرب الماء**: من 2 إلى 3 لترات يومياً، دون انتظار العطش\n2. 🏠 **حماية المنزل**: أغلق المصاريع نهاراً وافتح النوافذ ليلاً\n3. ☀️ **تجنب الخروج** بين الساعة 11 صباحاً و5 مساءً\n4. 👴👶 **تفقد الأشخاص الضعفاء**: المسنين، الرضع، المرضى — مرتين يومياً على الأقل\n5. ❄️ **استخدام نقاط الاسترخاء والتبريد** (مكتبات، مراكز تجارية، مسابح عامة)\n6. 📱 **متابعة تنبيهات HeatAlert** لمنطقتك\n\n🆘 **أرقام الطوارئ (تونس):** 190 (SAMU) · 198 (الحماية المدنية)",
+                'chart' => null,
+                'suggestions' => ['نصائح الوقاية من الحر', 'أقرب نقطة تبريد', 'التنبيهات الجارية'],
+            ];
+        }
+
+        // ══════════════════════════════════════════════════════
         // ── CAS 1 : UNE LOCALITÉ SPÉCIFIQUE (TUNISIE OU VILLE MONDIALE) ──
+        // ══════════════════════════════════════════════════════
         if ($targetLocation) {
             $locName = $targetLocation['name'];
             $locAdmin = $targetLocation['admin1'];
