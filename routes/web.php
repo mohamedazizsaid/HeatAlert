@@ -14,6 +14,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Module4NotificationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,6 +22,11 @@ use Illuminate\Support\Facades\Route;
 | Web Routes — HeatAlert
 |--------------------------------------------------------------------------
 */
+
+// ─── Chatbot IA HeatAlert (Gemini Flash + Knowledge Dynamique + Charts)
+Route::post('/chatbot/ask', [ChatbotController::class, 'ask'])->name('chatbot.ask');
+Route::get('/chatbot/stats', [ChatbotController::class, 'quickStats'])->name('chatbot.stats');
+
 
 // ─── Page d'accueil publique (splash screen + présentation)
 Route::get('/', [HomeController::class, 'index'])->name('home');

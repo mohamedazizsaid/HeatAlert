@@ -237,5 +237,8 @@
     </script>
 
     @stack('scripts')
+
+    <!-- Widget Chatbot IA HeatAlert (Gemini Flash + Dynamic Data + Charts) -->
+    @include('layouts.front.components.chatbot')
   </body>
 </html>

@@ -41,4 +41,9 @@ return [
         'cache_ttl' => (int) env('NASA_FIRMS_CACHE_TTL', 900), // 15 minutes
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY', ''),
+        'model'   => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+    ],
+
 ];

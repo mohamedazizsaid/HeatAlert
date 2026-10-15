@@ -777,6 +777,18 @@
 
   @stack('scripts')
 
+  <style>
+    /* Évite le chevauchement avec la bulle de chatbot HeatBot */
+    .scroll-top {
+      bottom: 105px !important;
+      right: 28px !important;
+      z-index: 9999 !important;
+    }
+  </style>
+
+  <!-- Widget Chatbot IA HeatAlert (Gemini Flash + Dynamic Data + Charts) -->
+  @include('layouts.front.components.chatbot')
+
 </body>
 
 </html>
