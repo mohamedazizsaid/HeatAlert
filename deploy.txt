@@ -1,0 +1,17 @@
+🚀 Guide pas-à-pas pour déployer sur Render
+Étape 1 : Créer le Web Service sur Render
+Rendez-vous sur votre dashboard Render.
+Cliquez sur New + > Web Service.
+Liez votre dépôt GitHub HeatAlert.
+Render détectera automatiquement le Dockerfile (Environment: Docker).
+Choisissez votre région (ex: Frankfurt ou Oregon).
+Étape 2 : Récupérer le "Deploy Hook"
+Dans la page de votre Web Service sur Render, allez dans l'onglet Settings.
+Descendez jusqu'à la section Deploy Hook.
+Cliquez sur Create Deploy Hook et copiez l'URL (format: https://api.render.com/deploy/srv-xxxxxxx?key=yyyyyyy).
+Étape 3 : Ajouter le secret dans GitHub
+Sur votre dépôt GitHub, allez dans Settings > Secrets and variables > Actions.
+Cliquez sur New repository secret.
+Nom : RENDER_DEPLOY_HOOK_URL
+Valeur : collez l'URL du Deploy Hook copiée à l'étape précédente.
+Cliquez sur Add secret.
