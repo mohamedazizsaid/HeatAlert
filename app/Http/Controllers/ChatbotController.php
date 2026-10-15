@@ -7,6 +7,8 @@ use App\Models\ChatbotMessage;
 use App\Services\GeminiChatbotService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -41,6 +43,7 @@ class ChatbotController extends Controller
         $request->validate([
             'message'         => 'required|string|min:1|max:1500',
             'conversation_id' => 'nullable|integer',
+            'voice_lang'      => 'nullable|string|in:fr-FR,ar-TN,ar-SA',
             'history'         => 'nullable|array',
             'history.*.role'  => 'nullable|string|in:user,bot,model,assistant',
             'history.*.text'  => 'nullable|string|max:2000',
@@ -49,6 +52,7 @@ class ChatbotController extends Controller
 
         $message        = trim((string) $request->input('message'));
         $history        = (array) $request->input('history', []);
+        $voiceLang      = (string) $request->input('voice_lang', 'fr-FR');
         $user           = $request->user();
         $conversationId = $request->input('conversation_id');
         $sessionId      = $request->session()->getId();
@@ -81,7 +85,7 @@ class ChatbotController extends Controller
         ]);
 
         try {
-            $response = $this->chatbotService->chat($message, $history, $user);
+            $response = $this->chatbotService->chat($message, $history, $user, $voiceLang);
 
             // Enregistrer la réponse du bot dans l'historique
             ChatbotMessage::create([
@@ -262,6 +266,70 @@ class ChatbotController extends Controller
             ]);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Proxy TTS — Google Translate Text-to-Speech (gratuit, supporte l'arabe).
+     * Retourne un flux audio MP3 pour le texte fourni dans la langue demandée.
+     *
+     * Langues supportées : fr (Français), ar (Arabe), ar-SA, ar-EG, ar-TN (→ ar)
+     */
+    public function tts(Request $request)
+    {
+        $request->validate([
+            'text' => 'required|string|max:500',
+            'lang' => 'nullable|string|max:10',
+        ]);
+
+        $text = trim((string) $request->input('text', ''));
+        $lang = (string) $request->input('lang', 'fr');
+
+        if (empty($text)) {
+            return response('', 400);
+        }
+
+        // Normaliser la langue pour Google Translate TTS
+        // ar-TN et ar-SA → 'ar' (Google Translate ne supporte que 'ar')
+        $googleLang = match (true) {
+            str_starts_with($lang, 'ar') => 'ar',
+            str_starts_with($lang, 'fr') => 'fr',
+            default                      => 'fr',
+        };
+
+        // Google Translate TTS : max ~200 caractères par requête
+        $text = mb_substr($text, 0, 200);
+
+        $url = 'https://translate.google.com/translate_tts?' . http_build_query([
+            'ie'       => 'UTF-8',
+            'q'        => $text,
+            'tl'       => $googleLang,
+            'client'   => 'tw-ob',
+            'ttsspeed' => '0.9',
+        ]);
+
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer'    => 'https://translate.google.com/',
+                'Accept'     => 'audio/mpeg, audio/*, */*',
+            ])
+            ->timeout(10)
+            ->get($url);
+
+            if (!$response->successful()) {
+                Log::warning('HeatBot TTS: Google Translate returned status ' . $response->status());
+                return response('TTS unavailable', 503);
+            }
+
+            return response($response->body(), 200)
+                ->header('Content-Type', 'audio/mpeg')
+                ->header('Cache-Control', 'public, max-age=3600')
+                ->header('Access-Control-Allow-Origin', '*');
+
+        } catch (\Throwable $e) {
+            Log::error('HeatBot TTS proxy error: ' . $e->getMessage());
+            return response('TTS error', 500);
         }
     }
 }

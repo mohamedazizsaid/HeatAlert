@@ -1,7 +1,7 @@
 {{-- ══════════════════════════════════════════════════════════════════════
-     HEATBOT IA — ASSISTANT INTELLIGENT DE VIGILANCE & CLIMAT (GEMINI FLASH)
-     Widget Flottant en bas à droite avec rendu Markdown et Charts interactifs
-     Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
+HEATBOT IA — ASSISTANT INTELLIGENT DE VIGILANCE & CLIMAT (GEMINI FLASH)
+Widget Flottant en bas à droite avec rendu Markdown et Charts interactifs
+Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
 ══════════════════════════════════════════════════════════════════════ --}}
 
 <!-- Inclusion de Chart.js & Marked.js -->
@@ -66,9 +66,20 @@
   }
 
   @keyframes heatbotPulse {
-    0% { transform: scale(1); opacity: 0.9; }
-    50% { transform: scale(1.35); opacity: 0; }
-    100% { transform: scale(1.5); opacity: 0; }
+    0% {
+      transform: scale(1);
+      opacity: 0.9;
+    }
+
+    50% {
+      transform: scale(1.35);
+      opacity: 0;
+    }
+
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
   }
 
   /* Badge En Ligne / Statut */
@@ -109,8 +120,15 @@
   }
 
   @keyframes teaserSlideUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(15px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .heatbot-teaser-close {
@@ -283,8 +301,15 @@
   }
 
   @keyframes toastSlideDown {
-    from { opacity: 0; transform: translateY(-12px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .heatbot-confirm-toast-text {
@@ -317,6 +342,7 @@
     color: #475569;
     border: 1px solid #cbd5e1;
   }
+
   .heatbot-confirm-btn.cancel:hover {
     background: #e2e8f0;
   }
@@ -326,6 +352,7 @@
     color: #ffffff;
     box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
   }
+
   .heatbot-confirm-btn.confirm:hover {
     opacity: 0.95;
     transform: scale(1.02);
@@ -351,8 +378,15 @@
   }
 
   @keyframes toastFadeIn {
-    from { opacity: 0; transform: translate(-50%, -10px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
+    from {
+      opacity: 0;
+      transform: translate(-50%, -10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
   }
 
 
@@ -460,6 +494,7 @@
   .heatbot-history-list::-webkit-scrollbar {
     width: 5px;
   }
+
   .heatbot-history-list::-webkit-scrollbar-thumb {
     background: #334155;
     border-radius: 4px;
@@ -612,8 +647,15 @@
   }
 
   @keyframes msgFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .heatbot-msg-row.user {
@@ -703,13 +745,13 @@
   }
 
   /* ── RÈGLES STRICTES DE MISE EN PAGE VERTICALE DU MARKDOWN ── */
-  .heatbot-msg-bubble > * {
+  .heatbot-msg-bubble>* {
     display: block !important;
     width: 100% !important;
     margin-bottom: 8px !important;
   }
 
-  .heatbot-msg-bubble > *:last-child {
+  .heatbot-msg-bubble>*:last-child {
     margin-bottom: 0 !important;
   }
 
@@ -785,11 +827,13 @@
     text-decoration: none !important;
     margin: 2px 0 !important;
   }
+
   .heatbot-emergency-badge.red {
     background: #fee2e2 !important;
     color: #dc2626 !important;
     border: 1px solid #fca5a5 !important;
   }
+
   .heatbot-emergency-badge.blue {
     background: #dbeafe !important;
     color: #2563eb !important;
@@ -849,13 +893,31 @@
     animation: heatbotBounce 1.4s infinite ease-in-out both;
   }
 
-  .heatbot-dot:nth-child(1) { animation-delay: -0.32s; }
-  .heatbot-dot:nth-child(2) { animation-delay: -0.16s; }
-  .heatbot-dot:nth-child(3) { animation-delay: 0s; }
+  .heatbot-dot:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+
+  .heatbot-dot:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+
+  .heatbot-dot:nth-child(3) {
+    animation-delay: 0s;
+  }
 
   @keyframes heatbotBounce {
-    0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
-    40% { transform: scale(1); opacity: 1; }
+
+    0%,
+    80%,
+    100% {
+      transform: scale(0);
+      opacity: 0.4;
+    }
+
+    40% {
+      transform: scale(1);
+      opacity: 1;
+    }
   }
 
   /* Suggestions / Badges d'action rapide */
@@ -1023,9 +1085,11 @@
     0% {
       box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.65);
     }
+
     70% {
       box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
     }
+
     100% {
       box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
     }
@@ -1062,8 +1126,15 @@
   }
 
   @keyframes heatbotPulseDot {
-    from { opacity: 0.4; transform: scale(0.85); }
-    to { opacity: 1; transform: scale(1.2); }
+    from {
+      opacity: 0.4;
+      transform: scale(0.85);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1.2);
+    }
   }
 
   .heatbot-stop-mic-btn {
@@ -1116,8 +1187,13 @@
   }
 
   @keyframes speakSoundwave {
-    from { transform: scale(1); }
-    to { transform: scale(1.22); }
+    from {
+      transform: scale(1);
+    }
+
+    to {
+      transform: scale(1.22);
+    }
   }
 
   /* Zone d'Input / Footer */
@@ -1261,7 +1337,8 @@
       <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">Besoin d'aide ou de stats ?</div>
       <div style="font-size: 11px; color: #64748b;">Je surveille feux, météo & fraîcheur en direct.</div>
     </div>
-    <button type="button" class="heatbot-teaser-close" onclick="event.stopPropagation(); closeHeatBotTeaser();">✕</button>
+    <button type="button" class="heatbot-teaser-close"
+      onclick="event.stopPropagation(); closeHeatBotTeaser();">✕</button>
   </div>
 
   <!-- Fenêtre de Chatbot -->
@@ -1285,10 +1362,12 @@
       </div>
       <div class="heatbot-header-actions">
 
-        <button type="button" id="heatbotHistoryToggleBtn" class="heatbot-icon-btn" title="Historique de mes discussions" onclick="toggleHeatBotHistoryPanel()">
+        <button type="button" id="heatbotHistoryToggleBtn" class="heatbot-icon-btn"
+          title="Historique de mes discussions" onclick="toggleHeatBotHistoryPanel()">
           <i class="bi bi-clock-history"></i>
         </button>
-        <button type="button" id="heatbotFullscreenBtn" class="heatbot-icon-btn" title="Plein écran" onclick="toggleHeatBotFullscreen()">
+        <button type="button" id="heatbotFullscreenBtn" class="heatbot-icon-btn" title="Plein écran"
+          onclick="toggleHeatBotFullscreen()">
           <i id="heatbotFullscreenIcon" class="bi bi-arrows-angle-expand"></i>
         </button>
         <button type="button" class="heatbot-icon-btn" title="Fermer" onclick="closeHeatBot()">
@@ -1304,7 +1383,8 @@
           <i class="bi bi-clock-history text-warning me-2"></i>
           <span>Historique de vos discussions</span>
         </div>
-        <button type="button" class="heatbot-icon-btn" title="Fermer l'historique" onclick="toggleHeatBotHistoryPanel()">
+        <button type="button" class="heatbot-icon-btn" title="Fermer l'historique"
+          onclick="toggleHeatBotHistoryPanel()">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -1351,22 +1431,28 @@
     <!-- Barre de suggestions dynamiques -->
     <div class="heatbot-suggestions-bar">
       <div id="heatbotSuggestionsBar" class="heatbot-suggestions-bar-inner">
-        <button type="button" class="heatbot-chip" onclick="sendHeatBotSuggestion('📊 Donne-moi les statistiques globales de la plateforme')">
+        <button type="button" class="heatbot-chip"
+          onclick="sendHeatBotSuggestion('📊 Donne-moi les statistiques globales de la plateforme')">
           📊 Statistiques
         </button>
-        <button type="button" class="heatbot-chip" onclick="sendHeatBotSuggestion('🔥 Quels sont les feux récents détectés par la NASA ?')">
+        <button type="button" class="heatbot-chip"
+          onclick="sendHeatBotSuggestion('🔥 Quels sont les feux récents détectés par la NASA ?')">
           🔥 Feux NASA FIRMS
         </button>
-        <button type="button" class="heatbot-chip" onclick="sendHeatBotSuggestion('🌤️ Quelles sont les alertes météo en cours ?')">
+        <button type="button" class="heatbot-chip"
+          onclick="sendHeatBotSuggestion('🌤️ Quelles sont les alertes météo en cours ?')">
           🌤️ Alertes Météo
         </button>
-        <button type="button" class="heatbot-chip" onclick="sendHeatBotSuggestion('❄️ Où trouver un point fraîcheur ou une salle climatisée ?')">
+        <button type="button" class="heatbot-chip"
+          onclick="sendHeatBotSuggestion('❄️ Où trouver un point fraîcheur ou une salle climatisée ?')">
           ❄️ Points Fraîcheur
         </button>
-        <button type="button" class="heatbot-chip" onclick="sendHeatBotSuggestion('💡 Quels sont les conseils prioritaires contre la canicule ?')">
+        <button type="button" class="heatbot-chip"
+          onclick="sendHeatBotSuggestion('💡 Quels sont les conseils prioritaires contre la canicule ?')">
           💡 Conseils Canicule
         </button>
-        <button type="button" class="heatbot-chip" onclick="sendHeatBotSuggestion('⚡ Y a-t-il des coupures d\'électricité signalées ?')">
+        <button type="button" class="heatbot-chip"
+          onclick="sendHeatBotSuggestion('⚡ Y a-t-il des coupures d\'électricité signalées ?')">
           ⚡ Signalements Coupures
         </button>
       </div>
@@ -1379,12 +1465,17 @@
       <div class="heatbot-voice-bar">
         <div class="heatbot-voice-lang-group">
           <span class="heatbot-voice-label"><i class="bi bi-translate me-1"></i>Langue vocale :</span>
-          <button type="button" class="heatbot-lang-chip active" id="heatbotLangFR" title="Français" onclick="setHeatBotVoiceLang('fr-FR')">🇫🇷 FR</button>
-          <button type="button" class="heatbot-lang-chip" id="heatbotLangTN" title="Dialecte Tunisien" onclick="setHeatBotVoiceLang('ar-TN')">🇹🇳 تونسي</button>
-          <button type="button" class="heatbot-lang-chip" id="heatbotLangAR" title="Arabe Classique" onclick="setHeatBotVoiceLang('ar-SA')">🇸🇦 عربي</button>
+          <button type="button" class="heatbot-lang-chip active" id="heatbotLangFR" title="Français"
+            onclick="setHeatBotVoiceLang('fr-FR')">🇫🇷 FR</button>
+          <button type="button" class="heatbot-lang-chip" id="heatbotLangTN" title="Dialecte Tunisien"
+            onclick="setHeatBotVoiceLang('ar-TN')">🇹🇳 تونسي</button>
+          <button type="button" class="heatbot-lang-chip" id="heatbotLangAR" title="Arabe Classique"
+            onclick="setHeatBotVoiceLang('ar-SA')">🇸🇦 عربي</button>
         </div>
         <div class="heatbot-voice-speech-toggle">
-          <button type="button" id="heatbotAutoSpeechBtn" class="heatbot-auto-speech-btn" title="Activer / Désactiver la lecture automatique des réponses à voix haute" onclick="toggleHeatBotAutoSpeech()">
+          <button type="button" id="heatbotAutoSpeechBtn" class="heatbot-auto-speech-btn"
+            title="Activer / Désactiver la lecture automatique des réponses à voix haute"
+            onclick="toggleHeatBotAutoSpeech()">
             <i id="heatbotAutoSpeechIcon" class="bi bi-volume-up"></i>
             <span>Lecture auto</span>
           </button>
@@ -1401,13 +1492,14 @@
       </div>
 
       <div class="heatbot-input-area-inner">
-        <button type="button" id="heatbotMicBtn" class="heatbot-mic-btn" title="Parler à HeatBot (Saisie Vocale)" onclick="toggleHeatBotSpeechRecognition()">
+        <button type="button" id="heatbotMicBtn" class="heatbot-mic-btn" title="Parler à HeatBot (Saisie Vocale)"
+          onclick="toggleHeatBotSpeechRecognition()">
           <i id="heatbotMicIcon" class="bi bi-mic-fill"></i>
         </button>
-        <textarea id="heatbotInput" class="heatbot-textarea"
-                  placeholder="Posez votre question ou dictez au micro..."
-                  rows="1" onkeydown="handleHeatBotKeyDown(event)"></textarea>
-        <button type="button" id="heatbotSendBtn" class="heatbot-send-btn" title="Envoyer le message" onclick="submitHeatBotMessage()">
+        <textarea id="heatbotInput" class="heatbot-textarea" placeholder="Posez votre question" rows="1"
+          onkeydown="handleHeatBotKeyDown(event)"></textarea>
+        <button type="button" id="heatbotSendBtn" class="heatbot-send-btn" title="Envoyer le message"
+          onclick="submitHeatBotMessage()">
           <i class="bi bi-send-fill"></i>
         </button>
       </div>
@@ -1416,7 +1508,8 @@
   </div>
 
   <!-- Bouton Flottant (Launcher) -->
-  <button type="button" id="heatbotLauncherBtn" class="heatbot-launcher-btn" aria-label="Ouvrir HeatBot" onclick="toggleHeatBot()">
+  <button type="button" id="heatbotLauncherBtn" class="heatbot-launcher-btn" aria-label="Ouvrir HeatBot"
+    onclick="toggleHeatBot()">
     <div class="heatbot-pulse-ring"></div>
     <i id="heatbotLauncherIcon" class="bi bi-chat-dots-fill"></i>
     <div class="heatbot-online-badge"></div>
@@ -1555,7 +1648,7 @@
 
   function resizeAllCharts() {
     Object.values(heatbotState.chartInstances).forEach(chart => {
-      try { chart.resize(); } catch(e){}
+      try { chart.resize(); } catch (e) { }
     });
   }
 
@@ -1896,6 +1989,7 @@
         body: JSON.stringify({
           message: message,
           conversation_id: heatbotState.activeConversationId,
+          voice_lang: heatbotState.voiceLang || 'fr-FR',
           history: heatbotState.history.slice(-8).map(h => ({
             role: h.role,
             text: h.content,
@@ -2034,9 +2128,9 @@
     // Précharger les voix disponibles dans le navigateur
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = () => {
-        try { window.speechSynthesis.getVoices(); } catch(e){}
+        try { window.speechSynthesis.getVoices(); } catch (e) { }
       };
-      try { window.speechSynthesis.getVoices(); } catch(e){}
+      try { window.speechSynthesis.getVoices(); } catch (e) { }
     }
   }
 
@@ -2126,7 +2220,7 @@
 
     try {
       heatbotRecognition.start();
-    } catch(err) {
+    } catch (err) {
       console.warn('SpeechRecognition start failed (already running):', err);
     }
   }
@@ -2135,7 +2229,7 @@
     if (heatbotRecognition && heatbotState.isRecording) {
       try {
         heatbotRecognition.stop();
-      } catch(e){}
+      } catch (e) { }
     }
     heatbotState.isRecording = false;
     updateMicUI(false);
@@ -2241,35 +2335,50 @@
     const voices = window.speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return null;
 
-    const normalize = s => s.toLowerCase().replace('_', '-');
+    const normalize = s => (s || '').toLowerCase().replace(/_/g, '-');
     const tl = normalize(targetLang);
-    const family = tl.split('-')[0];
+    const family = tl.split('-')[0]; // 'ar' or 'fr'
 
-    // Priorité 1 : correspondance exacte
-    let v = voices.find(v => normalize(v.lang) === tl);
+    // Priorité 1 : correspondance exacte (ex: ar-TN = ar-TN)
+    let v = voices.find(vx => normalize(vx.lang) === tl);
 
-    // Priorité 2 : même région (ex: ar-SA -> ar-EG -> ar-*)
+    // Priorité 2 : pour l'arabe, essayer les variantes régionales dans l'ordre
     if (!v && isArabic) {
-      // Préférer des voix arabes à débit naturel connues
-      const preferredAr = ['ar-SA', 'ar-EG', 'ar-MA', 'ar-DZ', 'ar-TN'];
+      const preferredAr = ['ar-SA', 'ar-EG', 'ar-MA', 'ar-DZ', 'ar-TN', 'ar-AE', 'ar-KW'];
       for (const pref of preferredAr) {
-        v = voices.find(v2 => normalize(v2.lang) === normalize(pref));
+        v = voices.find(vx => normalize(vx.lang) === normalize(pref));
         if (v) break;
       }
     }
 
-    // Priorité 3 : même famille linguistique
-    if (!v) v = voices.find(v => normalize(v.lang).startsWith(family));
+    // Priorité 3 : même famille linguistique (ar-* ou fr-*)
+    if (!v) v = voices.find(vx => normalize(vx.lang).startsWith(family + '-'));
 
-    // Priorité 4 : voix premium connues (Google / Microsoft)
+    // Priorité 4 : recherche dans le nom (Google / Microsoft voices)
     if (!v && isArabic) {
-      v = voices.find(v => v.name.toLowerCase().includes('arabic') || normalize(v.lang).includes('ar'));
+      v = voices.find(vx =>
+        vx.name.toLowerCase().includes('arabic') ||
+        vx.name.toLowerCase().includes('arab') ||
+        normalize(vx.lang).startsWith('ar')
+      );
     }
     if (!v && !isArabic) {
-      v = voices.find(v => v.name.toLowerCase().includes('french') || normalize(v.lang).includes('fr'));
+      v = voices.find(vx =>
+        vx.name.toLowerCase().includes('french') ||
+        vx.name.toLowerCase().includes('français') ||
+        normalize(vx.lang).startsWith('fr')
+      );
     }
 
     return v || null;
+  }
+
+  /**
+   * Retourne la liste complète des voix disponibles,
+   * en relançant le chargement si nécessaire (contournement Chrome).
+   */
+  function getAvailableVoices() {
+    return window.speechSynthesis.getVoices();
   }
 
   /**
@@ -2337,6 +2446,10 @@
       clean = clean.replace(/[\u064B-\u065F\u0670]/g, '');
       // Corriger les espaces autour de la ponctuation arabe
       clean = clean.replace(/([.،؟!])\s*/g, '$1 ');
+      // ⚠️ CRITIQUE : Supprimer les mots latins (français, anglais…)
+      // qui feraient basculer le moteur TTS vers une voix française.
+      // On conserve uniquement le texte arabe + chiffres + ponctuation.
+      clean = clean.replace(/[a-zA-Z\u00C0-\u00F6\u00F8-\u00FF]+/g, ' ');
     }
 
     // ── 9. Pour le Tunisien (ar-TN), translittérer les mots Derja courants
@@ -2448,9 +2561,9 @@
     // ✅ La langue TTS suit TOUJOURS le choix de l'utilisateur (voiceLang),
     //    jamais le contenu du texte. isArabic sert uniquement à la priorité
     //    de sélection de voix au sein de la même famille linguistique.
-    const voiceLang  = heatbotState.voiceLang || 'fr-FR';
+    const voiceLang = heatbotState.voiceLang || 'fr-FR';
     const targetLang = voiceLang; // fr-FR, ar-TN, ar-SA → respecté sans exception
-    const isArabic   = voiceLang.startsWith('ar'); // pour selectBestVoice
+    const isArabic = voiceLang.startsWith('ar'); // pour selectBestVoice
 
     const cleanText = prepareTextForSpeech(rawText, voiceLang);
     if (!cleanText || cleanText.length < 2) return;
@@ -2466,6 +2579,18 @@
 
     // Attendre que les voix soient chargées, puis lire
     function doSpeak() {
+      if (heatbotState._ttsAborted) return;
+
+      // Sélectionner la voix UNE SEULE FOIS avant la boucle de chunks
+      const bestVoice = selectBestVoice(targetLang, isArabic);
+
+      // Avertissement si aucune voix arabe trouvée
+      if (isArabic && !bestVoice) {
+        console.warn('[HeatBot TTS] Aucune voix arabe trouvée sur ce système.');
+        console.info('[HeatBot TTS] Voix disponibles:', window.speechSynthesis.getVoices().map(v => v.lang + ' — ' + v.name).join(' | '));
+        showHeatBotNotification('⚠️ Aucune voix arabe installée. Allez dans Paramètres Windows → Langue → Arabe pour installer les voix.');
+      }
+
       const chunks = splitIntoSpeechChunks(cleanText, 230);
       let chunkIndex = 0;
 
@@ -2486,17 +2611,19 @@
         }
 
         const utterance = new SpeechSynthesisUtterance(chunk);
+        // ⚠️ Forcer la langue sur chaque utterance — empêche le navigateur
+        //    de détecter automatiquement la langue depuis le contenu du texte
         utterance.lang   = targetLang;
         utterance.rate   = params.rate;
         utterance.pitch  = params.pitch;
         utterance.volume = params.volume;
 
-        const bestVoice = selectBestVoice(targetLang, isArabic);
+        // Assigner la voix sélectionnée (arabe ou française selon le choix)
         if (bestVoice) utterance.voice = bestVoice;
 
-        utterance.onend   = speakNextChunk;
+        utterance.onend = speakNextChunk;
         utterance.onerror = (e) => {
-          if (e.error !== 'interrupted') console.warn('TTS chunk error:', e.error);
+          if (e.error !== 'interrupted') console.warn('[HeatBot TTS] Chunk error:', e.error, '| lang:', targetLang);
           speakNextChunk();
         };
 
@@ -2507,13 +2634,21 @@
       speakNextChunk();
     }
 
-    // Si les voix ne sont pas encore chargées, attendre
+    // Si les voix ne sont pas encore chargées, attendre (comportement asynchrone Chrome)
     const voices = window.speechSynthesis.getVoices();
     if (!voices || voices.length === 0) {
+      // Tentative 1 : écouter l'événement
       window.speechSynthesis.onvoiceschanged = () => {
         window.speechSynthesis.onvoiceschanged = null;
         doSpeak();
       };
+      // Tentative 2 : fallback après 500ms si l'événement ne se déclenche pas
+      setTimeout(() => {
+        if (!heatbotState._ttsAborted && !heatbotState.isSpeaking) {
+          window.speechSynthesis.onvoiceschanged = null;
+          doSpeak();
+        }
+      }, 500);
     } else {
       doSpeak();
     }
@@ -2535,9 +2670,9 @@
       btn.innerHTML = '<i class="bi bi-volume-up"></i> <span style="font-size:11px;">Écouter</span>';
     } else {
       stopSpeaking();
-      const body   = btn.closest('.heatbot-msg-body');
+      const body = btn.closest('.heatbot-msg-body');
       const bubble = body ? body.querySelector('.heatbot-msg-bubble') : null;
-      const text   = bubble ? bubble.innerText : '';
+      const text = bubble ? bubble.innerText : '';
 
       if (!text || text.trim().length < 2) return;
 
@@ -2557,6 +2692,31 @@
       btn.innerHTML = '<i class="bi bi-volume-up"></i> <span style="font-size:11px;">Écouter</span>';
     });
   }
+
+  /**
+   * Fonction de diagnostic : affiche toutes les voix TTS disponibles dans la console.
+   * Appelez window.listHeatBotTTSVoices() depuis la console F12 pour diagnostiquer.
+   */
+  window.listHeatBotTTSVoices = function() {
+    const voices = window.speechSynthesis.getVoices();
+    const arabicVoices = voices.filter(v => v.lang.startsWith('ar'));
+    const frenchVoices = voices.filter(v => v.lang.startsWith('fr'));
+
+    console.group('🔊 [HeatBot TTS] Voix disponibles sur ce système');
+    console.log('Total voix:', voices.length);
+    console.log('Voix arabes (' + arabicVoices.length + '):', arabicVoices.map(v => v.lang + ' — ' + v.name));
+    console.log('Voix françaises (' + frenchVoices.length + '):', frenchVoices.map(v => v.lang + ' — ' + v.name));
+    console.log('Toutes les voix:', voices.map(v => v.lang + ' — ' + v.name + (v.localService ? ' [local]' : ' [réseau]')));
+    console.groupEnd();
+
+    if (arabicVoices.length === 0) {
+      showHeatBotNotification('⚠️ 0 voix arabe trouvée ! Installez le pack de langue Arabe dans Windows → Paramètres → Langue.');
+      console.warn('💡 Solution : Paramètres Windows → Heure et langue → Langue et région → Ajouter une langue → Arabe → Cochez "Synthèse vocale"');
+    } else {
+      showHeatBotNotification('✅ ' + arabicVoices.length + ' voix arabe(s) trouvée(s) : ' + arabicVoices[0].name);
+    }
+    return arabicVoices;
+  };
 
   // ── Instanciation graphique Chart.js ──
   function renderChartOnCanvas(canvasId, config) {
@@ -2744,7 +2904,7 @@
       } else {
         sessionStorage.removeItem('heatbot_active_conv_id');
       }
-    } catch(e){}
+    } catch (e) { }
   }
 
   function loadHeatBotSession() {
@@ -2757,7 +2917,7 @@
       if (activeId) {
         heatbotState.activeConversationId = parseInt(activeId, 10);
       }
-    } catch(e) {
+    } catch (e) {
       heatbotState.history = [];
     }
   }

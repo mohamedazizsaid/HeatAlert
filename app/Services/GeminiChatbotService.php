@@ -25,13 +25,13 @@ class GeminiChatbotService
 
     public function __construct(NasaFirmsService $firmsService)
     {
-        $this->apiKey          = (string) config('services.gemini.api_key', '');
-        $this->model           = (string) config('services.gemini.model', 'gemini-1.5-flash');
-        $this->groqApiKey      = (string) config('services.groq.api_key', '');
-        $this->groqModel       = (string) config('services.groq.model', 'llama-3.3-70b-versatile');
-        $this->openrouterApiKey= (string) config('services.openrouter.api_key', '');
+        $this->apiKey = (string) config('services.gemini.api_key', '');
+        $this->model = (string) config('services.gemini.model', 'gemini-1.5-flash');
+        $this->groqApiKey = (string) config('services.groq.api_key', '');
+        $this->groqModel = (string) config('services.groq.model', 'llama-3.3-70b-versatile');
+        $this->openrouterApiKey = (string) config('services.openrouter.api_key', '');
         $this->openrouterModel = (string) config('services.openrouter.model', 'meta-llama/llama-3.3-70b-instruct:free');
-        $this->firmsService    = $firmsService;
+        $this->firmsService = $firmsService;
     }
 
     /**
@@ -41,9 +41,10 @@ class GeminiChatbotService
      * @param string $message
      * @param array $history
      * @param User|null $user
+     * @param string $voiceLang  Langue choisie par l'utilisateur : fr-FR, ar-TN, ar-SA
      * @return array{reply: string, chart: ?array, suggestions: array}
      */
-    public function chat(string $message, array $history = [], ?User $user = null): array
+    public function chat(string $message, array $history = [], ?User $user = null, string $voiceLang = 'fr-FR'): array
     {
         // 1. Détection de zone ou ville spécifique (locale tunisienne ou mondiale)
         $targetLocation = $this->detectTargetLocation($message);
@@ -54,7 +55,7 @@ class GeminiChatbotService
         // ── NIVEAU 1 : Appel à Google Gemini Flash si configuré ──
         if (!empty(trim($this->apiKey))) {
             try {
-                return $this->callGeminiApi($message, $history, $knowledge, $user, $targetLocation);
+                return $this->callGeminiApi($message, $history, $knowledge, $user, $targetLocation, $voiceLang);
             } catch (\Throwable $e) {
                 Log::warning('Gemini API limit or error, switching to Fallback LLM', [
                     'error' => $e->getMessage(),
@@ -65,7 +66,7 @@ class GeminiChatbotService
         // ── NIVEAU 2 : Modèle Fallback 100% Free performant (Groq Llama 3.3 70B / OpenRouter Free) ──
         if ($this->hasFallbackLlmConfigured()) {
             try {
-                return $this->callFallbackLlmApi($message, $history, $knowledge, $user, $targetLocation);
+                return $this->callFallbackLlmApi($message, $history, $knowledge, $user, $targetLocation, $voiceLang);
             } catch (\Throwable $e) {
                 Log::warning('Fallback LLM call failed, switching to local knowledge engine', [
                     'error' => $e->getMessage(),
@@ -74,7 +75,7 @@ class GeminiChatbotService
         }
 
         // ── NIVEAU 3 : Moteur Local Autonome Zéro Échec (Open-Meteo + Données BDD + Graphiques) ──
-        return $this->generateLocalResponse($message, $knowledge, $user, $targetLocation);
+        return $this->generateLocalResponse($message, $knowledge, $user, $targetLocation, $voiceLang);
     }
 
 
@@ -355,9 +356,9 @@ class GeminiChatbotService
     /**
      * Appelle l'API Google Gemini Flash avec directives strictes et support Google Search Grounding.
      */
-    protected function callGeminiApi(string $message, array $history, array $knowledge, ?User $user, ?array $targetLocation): array
+    protected function callGeminiApi(string $message, array $history, array $knowledge, ?User $user, ?array $targetLocation, string $voiceLang = 'fr-FR'): array
     {
-        $systemPrompt = $this->buildSystemPrompt($knowledge, $user, $targetLocation);
+        $systemPrompt = $this->buildSystemPrompt($knowledge, $user, $targetLocation, $voiceLang);
 
         $contents = [];
 
@@ -617,10 +618,27 @@ class GeminiChatbotService
     /**
      * Construit le prompt système pour Gemini.
      */
-    protected function buildSystemPrompt(array $knowledge, ?User $user, ?array $targetLocation = null): string
+    protected function buildSystemPrompt(array $knowledge, ?User $user, ?array $targetLocation = null, string $voiceLang = 'fr-FR'): string
     {
         $jsonKnowledge = json_encode($knowledge, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         $userName = $user?->name ? $user->name : 'visiteur';
+
+        // ── Directive de langue obligatoire ──
+        $langDirective = match ($voiceLang) {
+            'ar-TN' => <<<LANG
+# LANGUE DE RÉPONSE OBLIGATOIRE : DIALECTE TUNISIEN (DERJA)
+Tu dois ABSOLUMENT répondre en dialecte tunisien (Derja). Utilise le registre parlé tunisien naturel et familier, avec des mots comme : "barsha" (beaucoup), "famma" (il y a), "bhi" (bien), "sahit" (exactement), "maazal" (encore), "kifesh" (comment), "win" (où). 
+Si un terme technique n'existe pas en Derja, utilise l'arabe standard ou le français pour ce mot uniquement, mais la structure et les phrases doivent rester en tunisien. Ne réponds JAMAIS en français complet.
+LANG,
+            'ar-SA' => <<<LANG
+# LANGUE DE RÉPONSE OBLIGATOIRE : ARABE STANDARD (فصحى)
+يجب عليك الإجابة باللغة العربية الفصحى الحديثة حصراً. استخدم أسلوباً واضحاً ومبسطاً مناسباً لعموم الناس. لا تستخدم الفرنسية إطلاقاً.
+LANG,
+            default => <<<LANG
+# LANGUE DE RÉPONSE OBLIGATOIRE : FRANÇAIS
+Tu dois répondre en français standard. Si l'utilisateur écrit en une autre langue, réponds quand même en français.
+LANG,
+        };
 
         $locationDirective = '';
         if ($targetLocation) {
@@ -638,6 +656,8 @@ LOC;
         }
 
         return <<<EOT
+{$langDirective}
+
 # IDENTITÉ
 Tu es « HeatBot », l'assistant IA de la plateforme HeatAlert, une application d'aide aux habitants pour anticiper les canicules et les coupures de courant, principalement en Tunisie. Tu parles à : {$userName}.
 
@@ -679,7 +699,7 @@ Si la question n'a aucun lien avec ce qui précède (recettes, sport, politique,
 - Ne communique aucune donnée personnelle d'utilisateurs ni d'informations techniques (base de données, clés API, code).
 
 # STYLE
-- Réponds dans la langue de l'utilisateur (français, anglais, arabe, dialecte tunisien ou mélange), en comprenant les fautes et le langage familier.
+- IMPORTANT : respecte scrupuleusement la directive de langue définie au début de ce prompt. Ne change JAMAIS de langue de réponse.
 - Ton chaleureux, rassurant et professionnel ; phrases courtes. Pas de longs paragraphes.
 - Structure : une réponse directe d'abord, puis des puces ou une courte liste d'actions concrètes. Reste concis (8 à 12 lignes maximum, sauf si l'utilisateur demande du détail).
 - Utilise quelques emojis pertinents (🌡️ ⚠️ 💧 ❄️ 🔥 ⚡), sans en abuser.
@@ -708,7 +728,7 @@ EOT;
      * Moteur de réponse autonome local (Fallback zéro échec).
      * Couvre toutes les catégories : canicule, RAG, profils, urgences, hors-sujet, sécurité, multi-langue, contexte.
      */
-    public function generateLocalResponse(string $message, array $knowledge, ?User $user = null, ?array $targetLocation = null): array
+    public function generateLocalResponse(string $message, array $knowledge, ?User $user = null, ?array $targetLocation = null, string $voiceLang = 'fr-FR'): array
     {
         $lower = mb_strtolower($message);
         $stats = $knowledge['stats'];
@@ -719,12 +739,32 @@ EOT;
         // ── SÉCURITÉ SYSTÈME : Tentatives de jailbreak / injection ──
         // ══════════════════════════════════════════════════════════
         $jailbreakPatterns = [
-            'ignore tes instructions', 'ignore ton', 'oublie tes', 'oublie ton', 'sans restrictions',
-            'tu es maintenant', 'prompt système', 'prompt system', 'system prompt', 'tes règles internes',
-            'fais semblant', 'donne-moi la liste des utilisateurs', 'liste des utilisateurs',
-            'supprime les alertes', 'supprime toutes', 'modifie la base', 'accès à la base',
-            'ignore previous', 'ignore your instructions', 'act as', 'pretend you are',
-            'données personnelles', 'clé api', 'api key', 'mot de passe', 'password',
+            'ignore tes instructions',
+            'ignore ton',
+            'oublie tes',
+            'oublie ton',
+            'sans restrictions',
+            'tu es maintenant',
+            'prompt système',
+            'prompt system',
+            'system prompt',
+            'tes règles internes',
+            'fais semblant',
+            'donne-moi la liste des utilisateurs',
+            'liste des utilisateurs',
+            'supprime les alertes',
+            'supprime toutes',
+            'modifie la base',
+            'accès à la base',
+            'ignore previous',
+            'ignore your instructions',
+            'act as',
+            'pretend you are',
+            'données personnelles',
+            'clé api',
+            'api key',
+            'mot de passe',
+            'password',
         ];
         foreach ($jailbreakPatterns as $pattern) {
             if (str_contains($lower, $pattern)) {
@@ -740,12 +780,28 @@ EOT;
         // ── HORS PÉRIMÈTRE : Sujets sans rapport ──
         // ══════════════════════════════════════════
         $outOfScopePatterns = [
-            'recette' => true, 'pizza' => true, 'gâteau' => true, 'cuisine' => true,
-            'match de foot' => true, 'football' => true, 'score' => true, 'ligue' => true,
-            'script python' => true, 'programme java' => true, 'code informatique' => true,
-            'sens de la vie' => true, 'philosophie' => true, 'politique' => true,
-            'film' => true, 'série tv' => true, 'musique' => true, 'chanson' => true,
-            'jeu vidéo' => true, 'crypto' => true, 'bitcoin' => true, 'bourse' => true,
+            'recette' => true,
+            'pizza' => true,
+            'gâteau' => true,
+            'cuisine' => true,
+            'match de foot' => true,
+            'football' => true,
+            'score' => true,
+            'ligue' => true,
+            'script python' => true,
+            'programme java' => true,
+            'code informatique' => true,
+            'sens de la vie' => true,
+            'philosophie' => true,
+            'politique' => true,
+            'film' => true,
+            'série tv' => true,
+            'musique' => true,
+            'chanson' => true,
+            'jeu vidéo' => true,
+            'crypto' => true,
+            'bitcoin' => true,
+            'bourse' => true,
         ];
         // Exceptions liées à la chaleur
         $heatRelated = str_contains($lower, 'chaleur') || str_contains($lower, 'chaud') ||
@@ -770,10 +826,29 @@ EOT;
         // ── CAS URGENCES MÉDICALES (PRIORITÉ HAUTE) ──
         // ══════════════════════════════════════════════════════════
         $urgenceTerms = [
-            'étourdi', 'malaise', 'perte de conscience', 'inconscient', 'confusion', 'confus',
-            'peau rouge', 'brûlante', 'ne répond pas', 'ne bouge plus', 'voisin', 'voisine',
-            'coup de chaleur', 'insolation', 'enfant fièvre', 'bébé fièvre', 'fièvre élevée',
-            'étourdissement', 'vertiges', 'vomissement', 'nausée', 'syncope', 'très chaud je',
+            'étourdi',
+            'malaise',
+            'perte de conscience',
+            'inconscient',
+            'confusion',
+            'confus',
+            'peau rouge',
+            'brûlante',
+            'ne répond pas',
+            'ne bouge plus',
+            'voisin',
+            'voisine',
+            'coup de chaleur',
+            'insolation',
+            'enfant fièvre',
+            'bébé fièvre',
+            'fièvre élevée',
+            'étourdissement',
+            'vertiges',
+            'vomissement',
+            'nausée',
+            'syncope',
+            'très chaud je',
         ];
         foreach ($urgenceTerms as $term) {
             if (str_contains($lower, $term)) {
@@ -814,9 +889,11 @@ EOT;
         // ══════════════════════════════════════════════════════
         // ── CAS SANTÉ : Symptômes coup de chaleur ──
         // ══════════════════════════════════════════════════════
-        if (str_contains($lower, 'symptôme') || str_contains($lower, 'symptome') ||
+        if (
+            str_contains($lower, 'symptôme') || str_contains($lower, 'symptome') ||
             str_contains($lower, 'coup de chaleur') || str_contains($lower, 'insolation') ||
-            (str_contains($lower, 'reconnaître') && str_contains($lower, 'chaleur'))) {
+            (str_contains($lower, 'reconnaître') && str_contains($lower, 'chaleur'))
+        ) {
 
             $reply = "### 🌡️ Symptômes du Coup de Chaleur — Reconnaître et Agir\n\n";
             $reply .= "**⚠️ Épuisement par la chaleur (stade 1) :**\n";
@@ -977,8 +1054,10 @@ EOT;
         // ══════════════════════════════════════════════════════
         // ── CAS : FAUSSES CROYANCES ──
         // ══════════════════════════════════════════════════════
-        if (preg_match('/\b(alcool.*rafraîchit|boire.*alcool.*chaud|alcool.*frais|bière.*chaleur)/iu', $message) ||
-            (str_contains($lower, 'alcool') && (str_contains($lower, 'rafraîch') || str_contains($lower, 'aide') || str_contains($lower, 'frais')))) {
+        if (
+            preg_match('/\b(alcool.*rafraîchit|boire.*alcool.*chaud|alcool.*frais|bière.*chaleur)/iu', $message) ||
+            (str_contains($lower, 'alcool') && (str_contains($lower, 'rafraîch') || str_contains($lower, 'aide') || str_contains($lower, 'frais')))
+        ) {
             return [
                 'reply' => "### ❌ Idée Reçue Dangereuse : L'Alcool ne Rafraîchit PAS\n\nL'alcool donne une **impression de fraîcheur** mais c'est trompeur :\n\n- 🌡️ Il **dilate les vaisseaux sanguins**, ce qui fait monter la température corporelle\n- 💧 Il provoque une **déshydratation accélérée** (effet diurétique)\n- 😵 En période de canicule, la consommation d'alcool **multiplie le risque de coup de chaleur**\n\n**✅ Ce qu'il faut boire :**\n- Eau fraîche (pas glacée) : 2 à 3 litres par jour\n- Eau aromatisée, tisanes froides, jus de fruits dilués\n- Éviter aussi les boissons sucrées et la caféine",
                 'chart' => null,
@@ -986,8 +1065,10 @@ EOT;
             ];
         }
 
-        if (preg_match('/\b(fermer.*fenêtre.*nuit|fenêtre.*fermé.*nuit|fermer tout)/iu', $message) ||
-            (str_contains($lower, 'fenêtre') && str_contains($lower, 'nuit'))) {
+        if (
+            preg_match('/\b(fermer.*fenêtre.*nuit|fenêtre.*fermé.*nuit|fermer tout)/iu', $message) ||
+            (str_contains($lower, 'fenêtre') && str_contains($lower, 'nuit'))
+        ) {
             return [
                 'reply' => "### ❌ Idée Reçue : Il ne faut PAS fermer les fenêtres la nuit\n\n**La règle d'or de la ventilation en canicule :**\n\n- 🌞 **Le jour** : fermer fenêtres ET volets (pour bloquer la chaleur et le rayonnement solaire)\n- 🌙 **La nuit** : **ouvrir largement** quand la température extérieure descend sous la température intérieure\n\n**Pourquoi ?**\nL'air nocturne est plus frais. L'aération nocturne permet de \"purger\" la chaleur accumulée dans les murs et les meubles pendant la journée.\n\n💡 *Si vous habitez dans un quartier peu sûr, ouvrez au moins les petites fenêtres ou disposez d'un ventilateur aspirant l'air nocturne.*",
                 'chart' => null,
@@ -1052,8 +1133,10 @@ EOT;
         // ══════════════════════════════════════════════════════
         // ── CAS : ARABE & DIALECTE TUNISIEN (DERJA) ────────
         // ══════════════════════════════════════════════════════
-        if (preg_match('/(سخانة|حرارة|شمس|موجة حر|شنوة نعمل|شنو نعمل|كيفاش|عسلامة|سلام|شنوة الطقس|فما ضو|قصان ضو|ماء)/u', $lower) ||
-            preg_match('/\b(skhana|chmous|chnawa naamel|kifech|aslema|chrab|dhow|9ass)\b/iu', $lower)) {
+        if (
+            preg_match('/(سخانة|حرارة|شمس|موجة حر|شنوة نعمل|شنو نعمل|كيفاش|عسلامة|سلام|شنوة الطقس|فما ضو|قصان ضو|ماء)/u', $lower) ||
+            preg_match('/\b(skhana|chmous|chnawa naamel|kifech|aslema|chrab|dhow|9ass)\b/iu', $lower)
+        ) {
 
             if (preg_match('/(ضو|قصان|كهرباء|dhow|9ass)/u', $lower)) {
                 $reply = "### ⚡ انقطاع الكهرباء في تونس (HeatAlert)\n\n";
@@ -1094,10 +1177,12 @@ EOT;
         // ══════════════════════════════════════════════════════
         // ── CAS : CANICULE GÉNÉRALE / QUE FAIRE ──
         // ══════════════════════════════════════════════════════
-        if (!preg_match('/\b(appareil|equipement|équipement|machine|serveur|ordinateur|pc|batterie|moteur|surchauff)\b/iu', $lower) &&
+        if (
+            !preg_match('/\b(appareil|equipement|équipement|machine|serveur|ordinateur|pc|batterie|moteur|surchauff)\b/iu', $lower) &&
             (preg_match('/\b(que.*faire.*canicule|canicule.*faire|pendant.*canicule|conseils.*canicule|chaleur.*que faire|quoi faire.*chaud|faire.*chaud)/iu', $message) ||
-            (str_contains($lower, 'canicule') && !str_contains($lower, 'alerte') && !str_contains($lower, 'niveau')) ||
-            (str_contains($lower, 'chaud') && (str_contains($lower, 'que faire') || str_contains($lower, 'quoi faire') || str_contains($lower, 'comment'))))) {
+                (str_contains($lower, 'canicule') && !str_contains($lower, 'alerte') && !str_contains($lower, 'niveau')) ||
+                (str_contains($lower, 'chaud') && (str_contains($lower, 'que faire') || str_contains($lower, 'quoi faire') || str_contains($lower, 'comment'))))
+        ) {
 
             $reply = "### 🌡️ Que Faire Pendant une Canicule ?\n\n";
             $reply .= "Voici les **6 actions prioritaires** à mettre en place dès maintenant :\n\n";
@@ -1168,10 +1253,14 @@ EOT;
             } else {
                 $reply = "### ⚠️ Alertes Météo Actuellement Actives\n\n";
                 $reply .= "La plateforme HeatAlert recense actuellement **{$totalAlertes} alerte(s) active(s)** :\n\n";
-                if ($niveaux['rouge'] > 0) $reply .= "- 🔴 **Niveau Rouge** (Danger extrême) : **{$niveaux['rouge']}** zone(s)\n";
-                if ($niveaux['orange'] > 0) $reply .= "- 🟠 **Niveau Orange** (Vigilance élevée) : **{$niveaux['orange']}** zone(s)\n";
-                if ($niveaux['jaune'] > 0) $reply .= "- 🟡 **Niveau Jaune** (Chaleur notable) : **{$niveaux['jaune']}** zone(s)\n";
-                if ($niveaux['vert'] > 0) $reply .= "- 🟢 **Niveau Vert** (Normal) : **{$niveaux['vert']}** zone(s)\n";
+                if ($niveaux['rouge'] > 0)
+                    $reply .= "- 🔴 **Niveau Rouge** (Danger extrême) : **{$niveaux['rouge']}** zone(s)\n";
+                if ($niveaux['orange'] > 0)
+                    $reply .= "- 🟠 **Niveau Orange** (Vigilance élevée) : **{$niveaux['orange']}** zone(s)\n";
+                if ($niveaux['jaune'] > 0)
+                    $reply .= "- 🟡 **Niveau Jaune** (Chaleur notable) : **{$niveaux['jaune']}** zone(s)\n";
+                if ($niveaux['vert'] > 0)
+                    $reply .= "- 🟢 **Niveau Vert** (Normal) : **{$niveaux['vert']}** zone(s)\n";
                 $reply .= "\n📅 Mise à jour : {$knowledge['date']}\n\n";
                 $reply .= "💡 *Indiquez votre ville ou gouvernorat pour obtenir les détails de l'alerte dans votre zone spécifique.*";
             }
@@ -1180,11 +1269,13 @@ EOT;
                 'type' => 'doughnut',
                 'title' => 'Répartition des Alertes Actives par Niveau',
                 'labels' => ['🔴 Rouge', '🟠 Orange', '🟡 Jaune', '🟢 Vert'],
-                'datasets' => [[
-                    'label' => 'Alertes',
-                    'data' => [$niveaux['rouge'], $niveaux['orange'], $niveaux['jaune'], $niveaux['vert']],
-                    'backgroundColor' => ['#dc2626', '#ea580c', '#eab308', '#16a34a'],
-                ]],
+                'datasets' => [
+                    [
+                        'label' => 'Alertes',
+                        'data' => [$niveaux['rouge'], $niveaux['orange'], $niveaux['jaune'], $niveaux['vert']],
+                        'backgroundColor' => ['#dc2626', '#ea580c', '#eab308', '#16a34a'],
+                    ]
+                ],
             ];
 
             return [
@@ -1650,9 +1741,9 @@ EOT;
     /**
      * Appelle le LLM de secours gratuit et ultra-rapide (Groq Llama 3.3 70B ou OpenRouter Free).
      */
-    protected function callFallbackLlmApi(string $message, array $history, array $knowledge, ?User $user, ?array $targetLocation): array
+    protected function callFallbackLlmApi(string $message, array $history, array $knowledge, ?User $user, ?array $targetLocation, string $voiceLang = 'fr-FR'): array
     {
-        $systemPrompt = $this->buildSystemPrompt($knowledge, $user, $targetLocation);
+        $systemPrompt = $this->buildSystemPrompt($knowledge, $user, $targetLocation, $voiceLang);
 
         $messages = [
             ['role' => 'system', 'content' => $systemPrompt],
@@ -1695,7 +1786,7 @@ EOT;
                 ->withToken(trim($this->openrouterApiKey))
                 ->withHeaders([
                     'HTTP-Referer' => config('app.url', 'http://localhost'),
-                    'X-Title'      => 'HeatAlert AI',
+                    'X-Title' => 'HeatAlert AI',
                 ])
                 ->post('https://openrouter.ai/api/v1/chat/completions', [
                     'model' => $this->openrouterModel ?: 'meta-llama/llama-3.3-70b-instruct:free',

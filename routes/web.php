@@ -31,6 +31,7 @@ Route::get('/chatbot/conversations/{id}', [ChatbotController::class, 'getConvers
 Route::post('/chatbot/conversations/new', [ChatbotController::class, 'newConversation'])->name('chatbot.conversations.new');
 Route::delete('/chatbot/conversations/{id}', [ChatbotController::class, 'deleteConversation'])->name('chatbot.conversations.delete');
 Route::delete('/chatbot/conversations', [ChatbotController::class, 'clearAllConversations'])->name('chatbot.conversations.clear');
+Route::get('/chatbot/tts', [ChatbotController::class, 'tts'])->name('chatbot.tts');
 
 
 // ─── Page d'accueil publique (splash screen + présentation)
