@@ -1052,9 +1052,10 @@ EOT;
         // ══════════════════════════════════════════════════════
         // ── CAS : CANICULE GÉNÉRALE / QUE FAIRE ──
         // ══════════════════════════════════════════════════════
-        if (preg_match('/\b(que.*faire.*canicule|canicule.*faire|pendant.*canicule|conseils.*canicule|chaleur.*que faire|quoi faire.*chaud|faire.*chaud)/iu', $message) ||
+        if (!preg_match('/\b(appareil|equipement|équipement|machine|serveur|ordinateur|pc|batterie|moteur|surchauff)\b/iu', $lower) &&
+            (preg_match('/\b(que.*faire.*canicule|canicule.*faire|pendant.*canicule|conseils.*canicule|chaleur.*que faire|quoi faire.*chaud|faire.*chaud)/iu', $message) ||
             (str_contains($lower, 'canicule') && !str_contains($lower, 'alerte') && !str_contains($lower, 'niveau')) ||
-            (str_contains($lower, 'chaud') && (str_contains($lower, 'que faire') || str_contains($lower, 'quoi faire') || str_contains($lower, 'comment')))) {
+            (str_contains($lower, 'chaud') && (str_contains($lower, 'que faire') || str_contains($lower, 'quoi faire') || str_contains($lower, 'comment'))))) {
 
             $reply = "### 🌡️ Que Faire Pendant une Canicule ?\n\n";
             $reply .= "Voici les **6 actions prioritaires** à mettre en place dès maintenant :\n\n";

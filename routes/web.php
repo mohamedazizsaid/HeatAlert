@@ -23,9 +23,14 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// ─── Chatbot IA HeatAlert (Gemini Flash + Knowledge Dynamique + Charts)
+// ─── Chatbot IA HeatAlert (Gemini Flash + Knowledge Dynamique + Charts & Historique)
 Route::post('/chatbot/ask', [ChatbotController::class, 'ask'])->name('chatbot.ask');
 Route::get('/chatbot/stats', [ChatbotController::class, 'quickStats'])->name('chatbot.stats');
+Route::get('/chatbot/conversations', [ChatbotController::class, 'conversations'])->name('chatbot.conversations');
+Route::get('/chatbot/conversations/{id}', [ChatbotController::class, 'getConversation'])->name('chatbot.conversations.show');
+Route::post('/chatbot/conversations/new', [ChatbotController::class, 'newConversation'])->name('chatbot.conversations.new');
+Route::delete('/chatbot/conversations/{id}', [ChatbotController::class, 'deleteConversation'])->name('chatbot.conversations.delete');
+Route::delete('/chatbot/conversations', [ChatbotController::class, 'clearAllConversations'])->name('chatbot.conversations.clear');
 
 
 // ─── Page d'accueil publique (splash screen + présentation)
