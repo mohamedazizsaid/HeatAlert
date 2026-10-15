@@ -60,4 +60,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Module4Notification::class);
     }
+
+    public function chatbotConversations(): HasMany
+    {
+        return $this->hasMany(ChatbotConversation::class)->orderBy('updated_at', 'desc');
+    }
 }
