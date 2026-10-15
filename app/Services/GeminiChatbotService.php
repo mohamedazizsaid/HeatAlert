@@ -17,17 +17,26 @@ class GeminiChatbotService
 {
     protected string $apiKey;
     protected string $model;
+    protected string $groqApiKey;
+    protected string $groqModel;
+    protected string $openrouterApiKey;
+    protected string $openrouterModel;
     protected NasaFirmsService $firmsService;
 
     public function __construct(NasaFirmsService $firmsService)
     {
-        $this->apiKey = (string) config('services.gemini.api_key', '');
-        $this->model = (string) config('services.gemini.model', 'gemini-1.5-flash');
-        $this->firmsService = $firmsService;
+        $this->apiKey          = (string) config('services.gemini.api_key', '');
+        $this->model           = (string) config('services.gemini.model', 'gemini-1.5-flash');
+        $this->groqApiKey      = (string) config('services.groq.api_key', '');
+        $this->groqModel       = (string) config('services.groq.model', 'llama-3.3-70b-versatile');
+        $this->openrouterApiKey= (string) config('services.openrouter.api_key', '');
+        $this->openrouterModel = (string) config('services.openrouter.model', 'meta-llama/llama-3.3-70b-instruct:free');
+        $this->firmsService    = $firmsService;
     }
 
     /**
      * Traite un message utilisateur avec l'historique et le contexte dynamique de la plateforme.
+     * Cascade de résilience : Gemini Flash -> LLM Fallback (Groq / OpenRouter Free) -> Moteur Local Autonome.
      *
      * @param string $message
      * @param array $history
@@ -42,20 +51,32 @@ class GeminiChatbotService
         // 2. Collecte du knowledge global et du knowledge ciblé
         $knowledge = $this->gatherPlatformKnowledge($user, $message, $targetLocation);
 
-        // Si la clé API Gemini n'est pas renseignée, basculer sur le moteur local intelligent
-        if (empty(trim($this->apiKey))) {
-            return $this->generateLocalResponse($message, $knowledge, $user, $targetLocation);
+        // ── NIVEAU 1 : Appel à Google Gemini Flash si configuré ──
+        if (!empty(trim($this->apiKey))) {
+            try {
+                return $this->callGeminiApi($message, $history, $knowledge, $user, $targetLocation);
+            } catch (\Throwable $e) {
+                Log::warning('Gemini API limit or error, switching to Fallback LLM', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        try {
-            return $this->callGeminiApi($message, $history, $knowledge, $user, $targetLocation);
-        } catch (\Throwable $e) {
-            Log::warning('Gemini API call failed, falling back to local engine', [
-                'error' => $e->getMessage(),
-            ]);
-            return $this->generateLocalResponse($message, $knowledge, $user, $targetLocation);
+        // ── NIVEAU 2 : Modèle Fallback 100% Free performant (Groq Llama 3.3 70B / OpenRouter Free) ──
+        if ($this->hasFallbackLlmConfigured()) {
+            try {
+                return $this->callFallbackLlmApi($message, $history, $knowledge, $user, $targetLocation);
+            } catch (\Throwable $e) {
+                Log::warning('Fallback LLM call failed, switching to local knowledge engine', [
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
+
+        // ── NIVEAU 3 : Moteur Local Autonome Zéro Échec (Open-Meteo + Données BDD + Graphiques) ──
+        return $this->generateLocalResponse($message, $knowledge, $user, $targetLocation);
     }
+
 
     /**
      * Détecte si l'utilisateur interroge une zone, ville ou région spécifique (Tunisie ou Monde).
@@ -1068,4 +1089,84 @@ EOT;
             '🌤️ Météo de Hammamet',
         ];
     }
+
+    /**
+     * Vérifie si un modèle LLM de secours gratuit est configuré (Groq ou OpenRouter).
+     */
+    public function hasFallbackLlmConfigured(): bool
+    {
+        return !empty(trim($this->groqApiKey)) || !empty(trim($this->openrouterApiKey));
+    }
+
+    /**
+     * Appelle le LLM de secours gratuit et ultra-rapide (Groq Llama 3.3 70B ou OpenRouter Free).
+     */
+    protected function callFallbackLlmApi(string $message, array $history, array $knowledge, ?User $user, ?array $targetLocation): array
+    {
+        $systemPrompt = $this->buildSystemPrompt($knowledge, $user, $targetLocation);
+
+        $messages = [
+            ['role' => 'system', 'content' => $systemPrompt],
+        ];
+
+        $recentHistory = array_slice($history, -6);
+        foreach ($recentHistory as $turn) {
+            $role = in_array($turn['role'] ?? '', ['bot', 'model', 'assistant']) ? 'assistant' : 'user';
+            $text = trim((string) ($turn['text'] ?? $turn['content'] ?? ''));
+            if (!empty($text)) {
+                $messages[] = ['role' => $role, 'content' => $text];
+            }
+        }
+
+        $messages[] = ['role' => 'user', 'content' => $message];
+
+        $rawReply = null;
+
+        // 1. Priorité Fallback : Groq (Llama 3.3 70B - Vitesse et intelligence de pointe 100% Free)
+        if (!empty(trim($this->groqApiKey))) {
+            $response = Http::timeout(18)
+                ->withToken(trim($this->groqApiKey))
+                ->post('https://api.groq.com/openai/v1/chat/completions', [
+                    'model' => $this->groqModel ?: 'llama-3.3-70b-versatile',
+                    'messages' => $messages,
+                    'temperature' => 0.4,
+                    'max_tokens' => 1200,
+                ]);
+
+            if ($response->successful()) {
+                $rawReply = $response->json('choices.0.message.content');
+            } else {
+                Log::warning('Groq API error: ' . $response->body());
+            }
+        }
+
+        // 2. Alternative Fallback : OpenRouter Free Tier (Llama 3.3 70B Free / DeepSeek Free)
+        if (empty($rawReply) && !empty(trim($this->openrouterApiKey))) {
+            $response = Http::timeout(18)
+                ->withToken(trim($this->openrouterApiKey))
+                ->withHeaders([
+                    'HTTP-Referer' => config('app.url', 'http://localhost'),
+                    'X-Title'      => 'HeatAlert AI',
+                ])
+                ->post('https://openrouter.ai/api/v1/chat/completions', [
+                    'model' => $this->openrouterModel ?: 'meta-llama/llama-3.3-70b-instruct:free',
+                    'messages' => $messages,
+                    'temperature' => 0.4,
+                    'max_tokens' => 1200,
+                ]);
+
+            if ($response->successful()) {
+                $rawReply = $response->json('choices.0.message.content');
+            } else {
+                Log::warning('OpenRouter API error: ' . $response->body());
+            }
+        }
+
+        if (empty($rawReply)) {
+            throw new \Exception('Empty reply from Fallback LLM provider');
+        }
+
+        return $this->parseReplyAndChart($rawReply, $knowledge, $targetLocation);
+    }
 }
+
