@@ -124,3 +124,30 @@ CREATE TABLE avis_points (
     CONSTRAINT avis_points_user_id_foreign FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     CONSTRAINT avis_points_point_id_foreign FOREIGN KEY (point_fraicheur_id) REFERENCES points_fraicheur (id) ON DELETE CASCADE
 ) ENGINE = InnoDB;
+
+-- 8. CHATBOT_CONVERSATIONS (Discussions avec le Chatbot HeatBot IA)
+CREATE TABLE chatbot_conversations (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    user_id BIGINT UNSIGNED NULL,
+    session_id VARCHAR(128) NULL,
+    title VARCHAR(255) NOT NULL DEFAULT 'Nouvelle discussion',
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY chatbot_conversations_session_id_index (session_id),
+    CONSTRAINT chatbot_conversations_user_id_foreign FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
+-- 9. CHATBOT_MESSAGES (Messages de chaque discussion)
+CREATE TABLE chatbot_messages (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    chatbot_conversation_id BIGINT UNSIGNED NOT NULL,
+    role VARCHAR(20) NOT NULL COMMENT 'user ou bot',
+    content LONGTEXT NOT NULL,
+    chart_data JSON NULL,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    CONSTRAINT chatbot_messages_conversation_foreign FOREIGN KEY (chatbot_conversation_id) REFERENCES chatbot_conversations (id) ON DELETE CASCADE
+) ENGINE = InnoDB;
+
