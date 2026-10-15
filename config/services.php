@@ -56,4 +56,11 @@ return [
         'model'   => env('OPENROUTER_MODEL', 'meta-llama/llama-3.3-70b-instruct:free'),
     ],
 
+    // Azure Cognitive Services TTS (ar-TN-ReemNeural / ar-TN-HediNeural)
+    // Gratuit jusqu'à 500 000 caractères/mois
+    'azure_tts' => [
+        'key'    => env('AZURE_TTS_KEY', ''),
+        'region' => env('AZURE_TTS_REGION', 'eastus'),
+    ],
+
 ];

@@ -46,6 +46,14 @@ class GeminiChatbotService
      */
     public function chat(string $message, array $history = [], ?User $user = null, string $voiceLang = 'fr-FR'): array
     {
+        // 0. Détection automatique de la langue du message :
+        //    Si l'utilisateur écrit en arabe mais que la langue sélectionnée est fr-FR,
+        //    on bascule automatiquement vers ar-SA pour garantir une réponse 100% arabe.
+        $detectedLang = $this->detectMessageLanguage($message);
+        if ($detectedLang === 'ar' && str_starts_with($voiceLang, 'fr')) {
+            $voiceLang = 'ar-SA';
+        }
+
         // 1. Détection de zone ou ville spécifique (locale tunisienne ou mondiale)
         $targetLocation = $this->detectTargetLocation($message);
 
@@ -76,6 +84,23 @@ class GeminiChatbotService
 
         // ── NIVEAU 3 : Moteur Local Autonome Zéro Échec (Open-Meteo + Données BDD + Graphiques) ──
         return $this->generateLocalResponse($message, $knowledge, $user, $targetLocation, $voiceLang);
+    }
+
+    /**
+     * Détecte la langue dominante d'un message.
+     * Retourne 'ar' si le message contient des caractères arabes,
+     * 'fr' sinon (par défaut).
+     */
+    protected function detectMessageLanguage(string $message): string
+    {
+        // Compter les caractères arabes (Unicode U+0600 à U+06FF + U+0750-U+077F)
+        $arabicCount = preg_match_all('/[\x{0600}-\x{06FF}\x{0750}-\x{077F}]/u', $message);
+        $totalChars  = mb_strlen(trim($message));
+
+        if ($totalChars === 0) return 'fr';
+
+        // Si plus de 20% des caractères sont arabes, considérer comme arabe
+        return ($arabicCount / $totalChars) >= 0.20 ? 'ar' : 'fr';
     }
 
 
@@ -366,9 +391,17 @@ class GeminiChatbotService
             'role' => 'user',
             'parts' => [['text' => "Voici ton contexte système et tes instructions prioritaires :\n" . $systemPrompt]],
         ];
+
+        // Message de confirmation dans la langue cible pour conditionner le modèle
+        $confirmationMsg = match ($voiceLang) {
+            'ar-TN' => 'مفهوم! أنا HeatBot نجاوب بالدارجة التونسية بالكامل. ما نكتبش ولا كلمة بالفرنسية.',
+            'ar-SA' => 'مفهوم! أنا HeatBot وسأجيب باللغة العربية الفصحى فقط. لن أكتب أي كلمة بالفرنسية.',
+            default  => "Compris ! Je suis HeatBot. Je réponds en français immédiatement avec les données météo réelles. Je ne dis JAMAIS de consulter une autre page.",
+        };
+
         $contents[] = [
             'role' => 'model',
-            'parts' => [['text' => "Compris ! Je suis HeatBot. Si l'utilisateur me pose une question sur une ville mondiale ou une zone tunisienne, je réponds immédiatement avec les données météorologiques réelles, les indices UV, les risques de canicule et les graphiques. Je ne dis JAMAIS de consulter une autre page."]],
+            'parts' => [['text' => $confirmationMsg]],
         ];
 
         $recentHistory = array_slice($history, -6);
@@ -625,16 +658,17 @@ class GeminiChatbotService
 
         // ── Directive de langue obligatoire ──
         $langDirective = match ($voiceLang) {
-            'ar-TN' => <<<LANG
-# LANGUE DE RÉPONSE OBLIGATOIRE : DIALECTE TUNISIEN (DERJA)
-Tu dois ABSOLUMENT répondre en dialecte tunisien (Derja). Utilise le registre parlé tunisien naturel et familier, avec des mots comme : "barsha" (beaucoup), "famma" (il y a), "bhi" (bien), "sahit" (exactement), "maazal" (encore), "kifesh" (comment), "win" (où). 
-Si un terme technique n'existe pas en Derja, utilise l'arabe standard ou le français pour ce mot uniquement, mais la structure et les phrases doivent rester en tunisien. Ne réponds JAMAIS en français complet.
+            'ar-TN' => <<<'LANG'
+# لغة الإجابة الإلزامية: العربية التونسية (الدارجة)
+يجب أن تجيب حصراً بالدارجة التونسية الطبيعية. استخدم كلمات مثل: برشا (كثيراً), فمة (يوجد), كيفاش (كيف), وين (أين), باهي (جيد).
+قاعدة صارمة: لا تكتب ولا كلمة واحدة بالفرنسية أو بالحروف اللاتينية. إذا كان هناك مصطلح تقني لا يوجد له مقابل تونسي, استخدم العربية الفصحى له فقط.
 LANG,
-            'ar-SA' => <<<LANG
-# LANGUE DE RÉPONSE OBLIGATOIRE : ARABE STANDARD (فصحى)
-يجب عليك الإجابة باللغة العربية الفصحى الحديثة حصراً. استخدم أسلوباً واضحاً ومبسطاً مناسباً لعموم الناس. لا تستخدم الفرنسية إطلاقاً.
+            'ar-SA' => <<<'LANG'
+# لغة الإجابة الإلزامية: العربية الفصحى
+يجب عليك الإجابة باللغة العربية الفصحى الحديثة حصراً. لا تكتب ولا كلمة واحدة بالفرنسية أو بالحروف اللاتينية.
+استخدم أسلوباً واضحاً ومبسطاً مناسباً لعموم الناس. المصطلحات: التنبيه الجوي, نقطة التبريد, انقطاع التيار, بلاغ العطل.
 LANG,
-            default => <<<LANG
+            default => <<<'LANG'
 # LANGUE DE RÉPONSE OBLIGATOIRE : FRANÇAIS
 Tu dois répondre en français standard. Si l'utilisateur écrit en une autre langue, réponds quand même en français.
 LANG,

@@ -270,10 +270,13 @@ class ChatbotController extends Controller
     }
 
     /**
-     * Proxy TTS — Google Translate Text-to-Speech (gratuit, supporte l'arabe).
-     * Retourne un flux audio MP3 pour le texte fourni dans la langue demandée.
+     * Proxy TTS multi-moteur :
+     *  - ar-TN → Azure Cognitive Services (ar-TN-ReemNeural) — voix tunisienne native
+     *  - ar-SA → Azure Cognitive Services (ar-SA-ZariyahNeural) si configuré, sinon Google Translate ar
+     *  - fr    → Google Translate TTS (fr)
      *
-     * Langues supportées : fr (Français), ar (Arabe), ar-SA, ar-EG, ar-TN (→ ar)
+     * Azure Free : 500 000 caractères/mois
+     * Pour activer Azure : définir AZURE_TTS_KEY et AZURE_TTS_REGION dans .env
      */
     public function tts(Request $request)
     {
@@ -289,15 +292,82 @@ class ChatbotController extends Controller
             return response('', 400);
         }
 
-        // Normaliser la langue pour Google Translate TTS
-        // ar-TN et ar-SA → 'ar' (Google Translate ne supporte que 'ar')
+        $azureKey    = (string) config('services.azure_tts.key', '');
+        $azureRegion = (string) config('services.azure_tts.region', 'eastus');
+        $hasAzure    = !empty(trim($azureKey));
+
+        // ── ROUTE : ar-TN → Azure (voix tunisienne) ──
+        if ($lang === 'ar-TN' && $hasAzure) {
+            return $this->azureTts($text, 'ar-TN', 'ar-TN-ReemNeural', $azureKey, $azureRegion);
+        }
+
+        // ── ROUTE : ar-SA → Azure (voix arabe Gulf) si disponible ──
+        if ($lang === 'ar-SA' && $hasAzure) {
+            return $this->azureTts($text, 'ar-SA', 'ar-SA-ZariyahNeural', $azureKey, $azureRegion);
+        }
+
+        // ── ROUTE : fr ou fallback → Google Translate TTS ──
+        return $this->googleTranslateTts($text, $lang);
+    }
+
+    /**
+     * Appel à Azure Cognitive Services TTS (REST).
+     * Retourne un flux audio MP3 en streaming.
+     */
+    protected function azureTts(string $text, string $locale, string $voiceName, string $apiKey, string $region): \Illuminate\Http\Response
+    {
+        // Azure TTS : max ~800 caractères par appel (REST)
+        $text = mb_substr($text, 0, 500);
+
+        // SSML minimal — Azure accepte du texte brut ou du SSML
+        $ssml = '<speak version="1.0" xml:lang="' . $locale . '">'
+              . '<voice name="' . $voiceName . '">'
+              . '<prosody rate="0%">' . htmlspecialchars($text, ENT_XML1, 'UTF-8') . '</prosody>'
+              . '</voice></speak>';
+
+        $endpoint = "https://{$region}.tts.speech.microsoft.com/cognitiveservices/v1";
+
+        try {
+            $response = Http::withHeaders([
+                'Ocp-Apim-Subscription-Key' => $apiKey,
+                'Content-Type'              => 'application/ssml+xml',
+                'X-Microsoft-OutputFormat'  => 'audio-16khz-128kbitrate-mono-mp3',
+                'User-Agent'                => 'HeatAlert/1.0',
+            ])
+            ->timeout(15)
+            ->withBody($ssml, 'application/ssml+xml')
+            ->post($endpoint);
+
+            if ($response->successful()) {
+                return response($response->body(), 200)
+                    ->header('Content-Type', 'audio/mpeg')
+                    ->header('Cache-Control', 'public, max-age=3600')
+                    ->header('Access-Control-Allow-Origin', '*');
+            }
+
+            Log::warning('HeatBot Azure TTS: status ' . $response->status() . ' — fallback Google Translate');
+        } catch (\Throwable $e) {
+            Log::error('HeatBot Azure TTS error: ' . $e->getMessage() . ' — fallback Google Translate');
+        }
+
+        // Fallback sur Google Translate si Azure échoue
+        $googleLang = str_starts_with($locale, 'ar') ? 'ar' : 'fr';
+        return $this->googleTranslateTts($text, $googleLang);
+    }
+
+    /**
+     * Google Translate TTS (gratuit, sans clé).
+     * Supporte 'ar' et 'fr'. Max ~200 caractères par requête.
+     */
+    protected function googleTranslateTts(string $text, string $lang): \Illuminate\Http\Response
+    {
+        // Normaliser : ar-TN, ar-SA → 'ar' | fr-FR → 'fr'
         $googleLang = match (true) {
             str_starts_with($lang, 'ar') => 'ar',
             str_starts_with($lang, 'fr') => 'fr',
             default                      => 'fr',
         };
 
-        // Google Translate TTS : max ~200 caractères par requête
         $text = mb_substr($text, 0, 200);
 
         $url = 'https://translate.google.com/translate_tts?' . http_build_query([
@@ -328,7 +398,7 @@ class ChatbotController extends Controller
                 ->header('Access-Control-Allow-Origin', '*');
 
         } catch (\Throwable $e) {
-            Log::error('HeatBot TTS proxy error: ' . $e->getMessage());
+            Log::error('HeatBot Google Translate TTS error: ' . $e->getMessage());
             return response('TTS error', 500);
         }
     }

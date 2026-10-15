@@ -1528,6 +1528,7 @@ Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
     showConversationBase: "{{ url('/chatbot/conversations') }}",
     deleteConversationBase: "{{ url('/chatbot/conversations') }}",
     clearConversations: "{{ route('chatbot.conversations.clear') }}",
+    tts: "{{ route('chatbot.tts') }}",
     csrf: "{{ csrf_token() }}",
   };
 
@@ -2546,118 +2547,118 @@ Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
   }
 
   /**
-   * Moteur TTS principal : lit le texte de manière naturelle et humaine.
-   * Utilise la lecture par chunks enchaînés pour une fluidité maximale.
+   * 🎧 MOTEUR TTS PRINCIPAL — Google Translate TTS via proxy Laravel.
+   * Lit le texte à voix haute en arabe, tunisien ou français.
+   * Fonctionne sans installation de voix sur Windows.
+   * Fallback sur Web Speech API si le proxy échoue.
    */
   function speakText(rawText, onEndCallback) {
-    if (!('speechSynthesis' in window)) {
-      showHeatBotNotification("La synthèse vocale n'est pas supportée sur ce navigateur.");
-      return;
-    }
+    if (!rawText || rawText.trim().length < 2) return;
 
+    // Couper toute lecture en cours
     window.speechSynthesis.cancel();
     heatbotState._ttsAborted = false;
+    if (heatbotState._currentAudio) {
+      heatbotState._currentAudio.pause();
+      heatbotState._currentAudio = null;
+    }
 
-    // ✅ La langue TTS suit TOUJOURS le choix de l'utilisateur (voiceLang),
-    //    jamais le contenu du texte. isArabic sert uniquement à la priorité
-    //    de sélection de voix au sein de la même famille linguistique.
-    const voiceLang = heatbotState.voiceLang || 'fr-FR';
-    const targetLang = voiceLang; // fr-FR, ar-TN, ar-SA → respecté sans exception
-    const isArabic = voiceLang.startsWith('ar'); // pour selectBestVoice
+    const voiceLangSetting = heatbotState.voiceLang || 'fr-FR';
 
+    // ── Auto-détection : si le texte contient des caractères arabes,
+    //    forcer TTS arabe même si la langue UI est fr-FR ──
+    const arabicCharCount = (rawText.match(/[\u0600-\u06FF\u0750-\u077F]/g) || []).length;
+    const totalChars      = rawText.replace(/\s/g, '').length;
+    const textIsArabic    = totalChars > 0 && (arabicCharCount / totalChars) >= 0.20;
+
+    const isArabic  = voiceLangSetting.startsWith('ar') || textIsArabic;
+    // Si le texte est arabe mais UI dit fr, basculer en ar-SA pour le TTS
+    const voiceLang = isArabic
+      ? (voiceLangSetting.startsWith('ar') ? voiceLangSetting : 'ar-SA')
+      : voiceLangSetting;
+
+    // Nettoyer le texte (supprimer markdown, emojis, HTML…)
     const cleanText = prepareTextForSpeech(rawText, voiceLang);
     if (!cleanText || cleanText.length < 2) return;
 
-    // ── Paramètres vocaux par langue ──
-    const voiceParams = {
-      'fr-FR': { rate: 0.92, pitch: 1.05, volume: 1.0 },
-      'ar-SA': { rate: 0.90, pitch: 1.00, volume: 1.0 },
-      'ar-TN': { rate: 0.88, pitch: 0.98, volume: 1.0 },
-      'ar-EG': { rate: 0.90, pitch: 1.00, volume: 1.0 },
-    };
-    const params = voiceParams[targetLang] || { rate: 0.92, pitch: 1.0, volume: 1.0 };
+    // Langue pour Google Translate TTS (supporte 'ar' et 'fr')
+    // Pour Azure, on envoie le code complet : ar-TN, ar-SA, fr-FR
+    const ttsLang = voiceLang; // le proxy Laravel route selon ce code
 
-    // Attendre que les voix soient chargées, puis lire
-    function doSpeak() {
-      if (heatbotState._ttsAborted) return;
+    // Découper en segments de 190 caractères max (limite Google Translate)
+    const chunks = splitIntoSpeechChunks(cleanText, 190);
 
-      // Sélectionner la voix UNE SEULE FOIS avant la boucle de chunks
-      const bestVoice = selectBestVoice(targetLang, isArabic);
+    heatbotState.isSpeaking = true;
+    let chunkIndex = 0;
 
-      // Avertissement si aucune voix arabe trouvée
-      if (isArabic && !bestVoice) {
-        console.warn('[HeatBot TTS] Aucune voix arabe trouvée sur ce système.');
-        console.info('[HeatBot TTS] Voix disponibles:', window.speechSynthesis.getVoices().map(v => v.lang + ' — ' + v.name).join(' | '));
-        showHeatBotNotification('⚠️ Aucune voix arabe installée. Allez dans Paramètres Windows → Langue → Arabe pour installer les voix.');
+    function playNextChunk() {
+      if (heatbotState._ttsAborted || chunkIndex >= chunks.length) {
+        heatbotState.isSpeaking = false;
+        heatbotState._currentAudio = null;
+        if (!heatbotState._ttsAborted) {
+          resetAllSpeakButtons();
+          if (typeof onEndCallback === 'function') onEndCallback();
+        }
+        return;
       }
 
-      const chunks = splitIntoSpeechChunks(cleanText, 230);
-      let chunkIndex = 0;
-
-      function speakNextChunk() {
-        if (heatbotState._ttsAborted || chunkIndex >= chunks.length) {
-          heatbotState.isSpeaking = false;
-          if (!heatbotState._ttsAborted) {
-            resetAllSpeakButtons();
-            if (typeof onEndCallback === 'function') onEndCallback();
-          }
-          return;
-        }
-
-        const chunk = chunks[chunkIndex++];
-        if (!chunk || chunk.trim().length < 2) {
-          speakNextChunk();
-          return;
-        }
-
-        const utterance = new SpeechSynthesisUtterance(chunk);
-        // ⚠️ Forcer la langue sur chaque utterance — empêche le navigateur
-        //    de détecter automatiquement la langue depuis le contenu du texte
-        utterance.lang   = targetLang;
-        utterance.rate   = params.rate;
-        utterance.pitch  = params.pitch;
-        utterance.volume = params.volume;
-
-        // Assigner la voix sélectionnée (arabe ou française selon le choix)
-        if (bestVoice) utterance.voice = bestVoice;
-
-        utterance.onend = speakNextChunk;
-        utterance.onerror = (e) => {
-          if (e.error !== 'interrupted') console.warn('[HeatBot TTS] Chunk error:', e.error, '| lang:', targetLang);
-          speakNextChunk();
-        };
-
-        window.speechSynthesis.speak(utterance);
+      const chunk = chunks[chunkIndex++];
+      if (!chunk || chunk.trim().length < 2) {
+        playNextChunk();
+        return;
       }
 
-      heatbotState.isSpeaking = true;
-      speakNextChunk();
-    }
+      // Construire l'URL du proxy TTS Laravel (Google Translate ou Azure)
+      // Le paramètre 'lang' transporte le locale complet pour qu'Azure puisse
+      // router vers ar-TN-ReemNeural pour le tunisien.
+      const ttsUrl = HEATBOT_ROUTES.tts
+        + '?text=' + encodeURIComponent(chunk)
+        + '&lang=' + encodeURIComponent(ttsLang)
+        + '&_=' + Date.now(); // Cache-bust
 
-    // Si les voix ne sont pas encore chargées, attendre (comportement asynchrone Chrome)
-    const voices = window.speechSynthesis.getVoices();
-    if (!voices || voices.length === 0) {
-      // Tentative 1 : écouter l'événement
-      window.speechSynthesis.onvoiceschanged = () => {
-        window.speechSynthesis.onvoiceschanged = null;
-        doSpeak();
+      const audio = new Audio(ttsUrl);
+      heatbotState._currentAudio = audio;
+
+      audio.onended = () => {
+        if (!heatbotState._ttsAborted) playNextChunk();
       };
-      // Tentative 2 : fallback après 500ms si l'événement ne se déclenche pas
-      setTimeout(() => {
-        if (!heatbotState._ttsAborted && !heatbotState.isSpeaking) {
-          window.speechSynthesis.onvoiceschanged = null;
-          doSpeak();
+
+      audio.onerror = () => {
+        console.warn('[HeatBot TTS] Proxy indisponible, fallback Web Speech API.');
+        if ('speechSynthesis' in window) {
+          const utt = new SpeechSynthesisUtterance(chunk);
+          // Utiliser le locale complet pour une meilleure correspondance de voix
+          utt.lang  = voiceLang; // ar-TN, ar-SA, ou fr-FR
+          utt.rate  = 0.9;
+          utt.onend = () => { if (!heatbotState._ttsAborted) playNextChunk(); };
+          window.speechSynthesis.speak(utt);
+        } else {
+          playNextChunk();
         }
-      }, 500);
-    } else {
-      doSpeak();
+      };
+
+      audio.play().catch(err => {
+        console.warn('[HeatBot TTS] Autoplay bloqué:', err.message);
+        setTimeout(playNextChunk, 100);
+      });
     }
+
+    playNextChunk();
   }
 
+
+
   function stopSpeaking() {
+    heatbotState._ttsAborted = true;
+    // Arrêter Web Speech API
     if ('speechSynthesis' in window) {
-      heatbotState._ttsAborted = true;
       window.speechSynthesis.cancel();
+    }
+    // Arrêter l'audio HTML5 (Google Translate TTS)
+    if (heatbotState._currentAudio) {
+      heatbotState._currentAudio.pause();
+      heatbotState._currentAudio.src = '';
+      heatbotState._currentAudio = null;
     }
     heatbotState.isSpeaking = false;
     resetAllSpeakButtons();
