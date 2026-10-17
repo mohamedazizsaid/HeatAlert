@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -106,12 +107,17 @@ class TwoFactorController extends Controller
      */
     public function disable(Request $request): RedirectResponse
     {
-        $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'password' => ['required', 'current_password'],
         ], [
             'password.required'         => 'Veuillez saisir votre mot de passe.',
             'password.current_password' => 'Le mot de passe est incorrect.',
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('profile.edit')
+                ->withErrors($validator, 'disable2fa');
+        }
 
         /** @var User $user */
         $user = $request->user();
@@ -175,7 +181,7 @@ class TwoFactorController extends Controller
 
         // Authentification réussie
         session()->forget('2fa_user_id');
-        auth()->login($user, session()->pull('2fa_remember', false));
+        Auth::login($user, session()->pull('2fa_remember', false));
         $request->session()->regenerate();
 
         return redirect()->intended(
