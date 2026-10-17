@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EmailVerificationCodeMail;
 use App\Models\Zone;
 use App\Services\AuthService;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -26,8 +27,11 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Traite l'inscription d'un nouvel utilisateur.
-     * Le rôle est automatiquement ROLE_USER.
+     * Traite l'inscription :
+     * 1. Crée le compte
+     * 2. Génère un code de vérification email et l'envoie
+     * 3. Connecte l'utilisateur (sans email_verified_at)
+     * 4. Redirige vers la page de vérification du code
      */
     public function store(Request $request): RedirectResponse
     {
@@ -42,9 +46,13 @@ class RegisteredUserController extends Controller
 
         $user = $this->authService->createUser($request->all());
 
-        event(new Registered($user));
+        // Générer et envoyer le code de vérification email
+        $user->generateEmailVerificationCode();
+        Mail::to($user->email)->send(new EmailVerificationCodeMail($user));
+
+        // Connecter l'utilisateur (email non encore vérifié)
         Auth::login($user);
 
-        return redirect($this->authService->getRedirectRouteForUser($user));
+        return redirect()->route('verification.code.show');
     }
 }
