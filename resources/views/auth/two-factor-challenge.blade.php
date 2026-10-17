@@ -477,7 +477,7 @@
           <span>Google Authenticator · Authy · Microsoft</span>
         </div>
 
-        @if($errors->any())
+        @if(isset($errors) && $errors->any())
           <div class="alert-error">
             <i class="fa-solid fa-circle-exclamation text-danger flex-shrink-0"></i>
             <span>{{ $errors->first() }}</span>
@@ -491,7 +491,7 @@
           <div class="otp-inputs" id="otp-inputs">
             @for($i = 0; $i < 6; $i++)
               <input type="text"
-                     class="otp-digit @if($errors->any()) error @endif"
+                     class="otp-digit @if(isset($errors) && $errors->any()) error @endif"
                      maxlength="1"
                      inputmode="numeric"
                      pattern="[0-9]"
@@ -575,7 +575,7 @@
   }
 
   // Nettoyage en cas d'erreur renvoyée
-  @if($errors->any())
+  @if(isset($errors) && $errors->any())
     digits.forEach(d => { d.value = ''; });
     if (digits[0]) digits[0].focus();
   @endif
