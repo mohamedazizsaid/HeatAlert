@@ -37,16 +37,16 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
-Route::middleware('auth')->group(function () {
-    // ── Vérification email par code (après inscription) ──
-    Route::get('verify-code', [EmailVerificationCodeController::class, 'show'])
-        ->name('verification.code.show');
-    Route::post('verify-code', [EmailVerificationCodeController::class, 'verify'])
-        ->name('verification.code.verify');
-    Route::post('verify-code/resend', [EmailVerificationCodeController::class, 'resend'])
-        ->middleware('throttle:6,1')
-        ->name('verification.code.resend');
+// ── Vérification email par code (inscription & validation) ──
+Route::get('verify-code', [EmailVerificationCodeController::class, 'show'])
+    ->name('verification.code.show');
+Route::post('verify-code', [EmailVerificationCodeController::class, 'verify'])
+    ->name('verification.code.verify');
+Route::post('verify-code/resend', [EmailVerificationCodeController::class, 'resend'])
+    ->middleware('throttle:6,1')
+    ->name('verification.code.resend');
 
+Route::middleware('auth')->group(function () {
     // ── 2FA TOTP — Gestion dans le profil ──
     Route::get('2fa/setup', [TwoFactorController::class, 'setup'])->name('2fa.setup');
     Route::post('2fa/enable', [TwoFactorController::class, 'enable'])->name('2fa.enable');

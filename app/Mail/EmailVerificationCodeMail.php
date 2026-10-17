@@ -16,10 +16,15 @@ class EmailVerificationCodeMail extends Mailable
     public string $code;
     public string $prenom;
 
-    public function __construct(User $user)
+    public function __construct(string|User $target, ?string $prenom = null)
     {
-        $this->code   = $user->email_verification_code;
-        $this->prenom = $user->prenom;
+        if ($target instanceof User) {
+            $this->code   = (string) $target->email_verification_code;
+            $this->prenom = (string) $target->prenom;
+        } else {
+            $this->code   = (string) $target;
+            $this->prenom = (string) ($prenom ?? 'Utilisateur');
+        }
     }
 
     public function envelope(): Envelope

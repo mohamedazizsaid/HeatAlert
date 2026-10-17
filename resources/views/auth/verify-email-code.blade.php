@@ -172,7 +172,7 @@
     <h1 class="verify-title">Vérifiez votre email</h1>
     <p class="verify-sub">
       Un code à <strong>6 chiffres</strong> a été envoyé à<br>
-      <strong>{{ auth()->user()->email }}</strong>
+      <strong>{{ $email ?? session('pending_registration.data.email') ?? (auth()->user() ? auth()->user()->email : '') }}</strong>
     </p>
 
     {{-- Barre de temps restant (15 min = 900s) --}}
@@ -181,7 +181,7 @@
     </div>
 
     {{-- Alertes --}}
-    @if($errors->any())
+    @if(isset($errors) && $errors->any())
       <div class="alert-error">
         <i class="fa-solid fa-circle-exclamation"></i>
         {{ $errors->first() }}
@@ -203,7 +203,7 @@
       <div class="otp-inputs" id="otp-inputs">
         @for($i = 0; $i < 6; $i++)
           <input type="text"
-                 class="otp-digit @if($errors->any()) error @endif"
+                 class="otp-digit @if(isset($errors) && $errors->any()) error @endif"
                  maxlength="1"
                  inputmode="numeric"
                  pattern="[0-9]"
@@ -228,11 +228,17 @@
       </form>
     </div>
 
-    <a href="{{ route('logout') }}" class="back-link"
-       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-      <i class="fa-solid fa-arrow-left"></i> Se déconnecter
-    </a>
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
+    @if(auth()->check())
+      <a href="{{ route('logout') }}" class="back-link"
+         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+        <i class="fa-solid fa-arrow-left"></i> Se déconnecter
+      </a>
+      <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
+    @else
+      <a href="{{ route('register') }}" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Recommencer l'inscription
+      </a>
+    @endif
 
   </div>
 </div>
@@ -304,9 +310,9 @@
   }, 1000);
 
   // ── Si erreur, secouer les inputs
-  @if($errors->any())
+  @if(isset($errors) && $errors->any())
     digits.forEach(d => { d.classList.add('error'); d.value = ''; });
-    digits[0].focus();
+    if (digits[0]) digits[0].focus();
   @endif
 </script>
 </body>

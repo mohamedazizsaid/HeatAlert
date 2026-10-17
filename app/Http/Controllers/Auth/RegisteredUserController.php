@@ -27,11 +27,12 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Traite l'inscription :
-     * 1. Crée le compte
-     * 2. Génère un code de vérification email et l'envoie
-     * 3. Connecte l'utilisateur (sans email_verified_at)
-     * 4. Redirige vers la page de vérification du code
+     * Traite la pré-inscription :
+     * 1. Valide les données
+     * 2. Stocke temporairement les informations en session (pas encore en BDD)
+     * 3. Génère et envoie le code de vérification par email
+     * 4. Redirige vers la page de saisie du code
+     * L'utilisateur n'est créé en base de données qu'après validation du code !
      */
     public function store(Request $request): RedirectResponse
     {
@@ -44,14 +45,18 @@ class RegisteredUserController extends Controller
             'password'  => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = $this->authService->createUser($request->all());
+        // Générer le code à 6 chiffres
+        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        // Générer et envoyer le code de vérification email
-        $user->generateEmailVerificationCode();
-        Mail::to($user->email)->send(new EmailVerificationCodeMail($user));
+        // Stocker en session en attente de vérification (15 minutes de validité)
+        $request->session()->put('pending_registration', [
+            'data'       => $request->only(['nom', 'prenom', 'email', 'telephone', 'zone_id', 'password']),
+            'code'       => $code,
+            'expires_at' => now()->addMinutes(15),
+        ]);
 
-        // Connecter l'utilisateur (email non encore vérifié)
-        Auth::login($user);
+        // Envoyer le code à l'adresse email
+        Mail::to($request->email)->send(new EmailVerificationCodeMail($code, $request->prenom));
 
         return redirect()->route('verification.code.show');
     }

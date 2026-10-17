@@ -17,7 +17,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'nom', 'prenom', 'email', 'password', 'telephone',
-        'role', 'date_inscription', 'zone_id',
+        'role', 'date_inscription', 'zone_id', 'email_verified_at',
         // Vérification email à l'inscription
         'email_verification_code',
         'email_verification_expires_at',
