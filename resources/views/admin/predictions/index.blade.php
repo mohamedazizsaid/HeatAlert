@@ -188,16 +188,27 @@
             </div>
           @endif
 
-          <div class="d-flex justify-content-end gap-2 pt-2 border-top" style="border-color:#eef2f7 !important;">
-            <a href="{{ route('admin.zones.show', $zone) }}" class="m-btn m-btn--ghost" style="height:34px;padding:0 12px;font-size:12px;">
+          <div class="d-flex justify-content-end align-items-center gap-2 pt-2 border-top" style="border-color:#eef2f7 !important;">
+            @if($prediction && ($prediction->probability >= 0.70 || $prediction->risk_level === 'high') && $prediction->estimated_outage_start)
+              <a href="{{ route('admin.coupures.create', [
+                  'zone_id'    => $zone->id,
+                  'date_debut' => $prediction->estimated_outage_start->format('Y-m-d\TH:i'),
+                  'date_fin'   => $prediction->estimated_outage_end ? $prediction->estimated_outage_end->format('Y-m-d\TH:i') : '',
+                  'type'       => str_contains(strtolower($prediction->estimated_outage_cause ?? ''), 'surcharge') ? 'surcharge' : 'delestage',
+                  'cause'      => 'Surcharge thermique suite prédiction météo (' . number_format($prediction->probability * 100, 1) . '% de risque)',
+              ]) }}" class="m-btn btn-danger text-white fw-semibold" style="height:34px;padding:0 12px;font-size:12px;background:#dc2626;border-color:#dc2626;white-space:nowrap;" title="Planifier cette coupure préventive (Délestage STEG)">
+                <i class="fa-solid fa-bolt me-1"></i>Planifier coupure
+              </a>
+            @endif
+            <a href="{{ route('admin.zones.show', $zone) }}" class="m-btn m-btn--ghost" style="height:34px;padding:0 12px;font-size:12px;white-space:nowrap;">
               <i class="fa-solid fa-eye me-1"></i>Voir la zone
             </a>
             @if($zone->latitude !== null && $zone->longitude !== null)
-              <button type="button" class="m-btn m-btn--primary js-predict-zone" style="height:34px;padding:0 12px;font-size:12px;" data-url="{{ route('admin.zones.prediction', $zone) }}">
+              <button type="button" class="m-btn m-btn--primary js-predict-zone" style="height:34px;padding:0 12px;font-size:12px;white-space:nowrap;" data-url="{{ route('admin.zones.prediction', $zone) }}">
                 <i class="fa-solid fa-rotate me-1"></i> {{ $prediction ? 'Actualiser' : 'Prédire' }}
               </button>
             @else
-              <span class="m-btn m-btn--ghost disabled" style="height:34px;padding:0 12px;font-size:12px;opacity:.6;" title="Coordonnées manquantes">
+              <span class="m-btn m-btn--ghost disabled" style="height:34px;padding:0 12px;font-size:12px;opacity:.6;white-space:nowrap;" title="Coordonnées manquantes">
                 <i class="fa-solid fa-location-crosshairs me-1"></i>Coordonnées requises
               </span>
             @endif
