@@ -43,13 +43,14 @@
             <li><a href="{{ route('admin.alertes.create') }}"><i class="fa-solid fa-plus"></i>Ajouter une alerte</a></li>
           </ul>
         </li>
-        <li class="{{ request()->routeIs('admin.coupures.*') ? 'active has-sub' : 'has-sub' }}">
+        <li class="{{ request()->routeIs('admin.coupures.*') || request()->routeIs('admin.steg.*') ? 'active has-sub' : 'has-sub' }}">
           <a class="js-arrow" href="#">
             <i class="fa-solid fa-bolt"></i>Coupures
           </a>
           <ul class="navbar-mobile-sub__list list-unstyled js-sub-list">
             <li><a href="{{ route('admin.coupures.index') }}"><i class="fa-solid fa-list"></i>Liste des coupures</a></li>
             <li><a href="{{ route('admin.coupures.create') }}"><i class="fa-solid fa-plus"></i>Ajouter une coupure</a></li>
+            <li><a href="{{ route('admin.steg.index') }}"><i class="fa-solid fa-plug-circle-bolt text-warning"></i>Sync STEG</a></li>
           </ul>
         </li>
         <li class="{{ request()->routeIs('admin.signalements.*') ? 'active' : '' }}">
@@ -176,16 +177,19 @@
         </li>
 
         {{-- Coupures électriques --}}
-        <li class="{{ request()->routeIs('admin.coupures.*') ? 'active has-sub' : 'has-sub' }}">
-          <a class="js-arrow {{ request()->routeIs('admin.coupures.*') ? 'open' : '' }}" href="#">
+        <li class="{{ request()->routeIs('admin.coupures.*') || request()->routeIs('admin.steg.*') ? 'active has-sub' : 'has-sub' }}">
+          <a class="js-arrow {{ request()->routeIs('admin.coupures.*') || request()->routeIs('admin.steg.*') ? 'open' : '' }}" href="#">
             <i class="fa-solid fa-bolt"></i>Coupures
           </a>
-          <ul class="list-unstyled navbar__sub-list js-sub-list" {{ request()->routeIs('admin.coupures.*') ? 'style=display:block' : '' }}>
+          <ul class="list-unstyled navbar__sub-list js-sub-list" {{ request()->routeIs('admin.coupures.*') || request()->routeIs('admin.steg.*') ? 'style=display:block' : '' }}>
             <li class="{{ request()->routeIs('admin.coupures.index') ? 'active' : '' }}">
               <a href="{{ route('admin.coupures.index') }}">Liste des coupures</a>
             </li>
             <li class="{{ request()->routeIs('admin.coupures.create') ? 'active' : '' }}">
               <a href="{{ route('admin.coupures.create') }}">Ajouter une coupure</a>
+            </li>
+            <li class="{{ request()->routeIs('admin.steg.*') ? 'active' : '' }}">
+              <a href="{{ route('admin.steg.index') }}"><i class="fa-solid fa-plug-circle-bolt text-warning me-1"></i>Sync STEG Officielle</a>
             </li>
           </ul>
         </li>

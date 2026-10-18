@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CoupureController;
 use App\Http\Controllers\Admin\PointFraicheurController;
 use App\Http\Controllers\Admin\PredictionCoupureController;
 use App\Http\Controllers\Admin\SignalementCoupureController;
+use App\Http\Controllers\Admin\StegController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
 use App\Http\Controllers\FrontPointFraicheurController;
@@ -154,6 +155,10 @@ Route::middleware(['auth', 'admin'])
         Route::get('avis-points', [PointFraicheurController::class, 'avisIndex'])->name('avis_points.index');
         Route::put('avis-points/{avisPoint}', [PointFraicheurController::class, 'avisUpdate'])->name('avis_points.update');
         Route::delete('avis-points/{avisPoint}', [PointFraicheurController::class, 'avisDestroy'])->name('avis_points.destroy');
+
+        // Intégration STEG — Synchronisation des coupures officielles
+        Route::get('steg', [StegController::class, 'index'])->name('steg.index');
+        Route::post('steg/sync', [StegController::class, 'sync'])->name('steg.sync');
     });
 
 // ─── Routes d'authentification (Breeze)

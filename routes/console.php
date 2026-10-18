@@ -15,3 +15,9 @@ Schedule::command('predictions:auto-check --threshold=0.70 --notify --auto-draft
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/predictions-auto-check.log'));
 
+// Synchronisation des coupures officielles STEG toutes les 2 heures
+// Importe automatiquement les interruptions programmées publiées sur steg.com.tn
+Schedule::command('steg:sync-coupures')
+    ->everyTwoHours()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/steg-sync.log'));

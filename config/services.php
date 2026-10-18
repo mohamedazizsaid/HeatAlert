@@ -69,4 +69,9 @@ return [
         'token' => env('HEATALERT_ML_TOKEN'),
     ],
 
+    // STEG — Société Tunisienne de l'Électricité et du Gaz
+    'steg' => [
+        'cache_ttl' => (int) env('STEG_CACHE_TTL', 7200), // 2 heures
+    ],
+
 ];
