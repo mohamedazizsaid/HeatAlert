@@ -59,8 +59,33 @@ class PredictionCoupureController extends Controller
             'low'    => Zone::whereHas('latestPrediction', fn($q) => $q->where('risk_level', 'low'))->count(),
         ];
 
+        // Zones avec coordonnées pour la carte interactive de risque
+        $mapZones = Zone::query()
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->with('latestPrediction')
+            ->get()
+            ->map(function ($z) {
+                $p = $z->latestPrediction;
+                return [
+                    'id' => $z->id,
+                    'nom' => $z->nom,
+                    'ville' => $z->ville,
+                    'gouvernorat' => $z->gouvernorat,
+                    'lat' => (float) $z->latitude,
+                    'lng' => (float) $z->longitude,
+                    'probability' => $p ? (float) $p->probability : null,
+                    'risk_level' => $p ? $p->risk_level : 'none',
+                    'outage_start' => $p?->estimated_outage_start?->format('d/m à H:i'),
+                    'outage_end' => $p?->estimated_outage_end?->format('H:i'),
+                    'cause' => $p?->estimated_outage_cause,
+                    'url' => route('admin.zones.show', $z),
+                ];
+            });
+
         return view('admin.predictions.index', [
             'zones' => $zones,
+            'mapZones' => $mapZones,
             'staleAfterMinutes' => 24 * 60,
             'currentRisk' => $riskFilter,
             'counts' => $counts,

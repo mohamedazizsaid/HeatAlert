@@ -2,6 +2,43 @@
 
 @section('title', 'Prédictions de coupures')
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+  @keyframes radarPulse {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.9;
+    }
+    70% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(2.2);
+      opacity: 0;
+    }
+  }
+  .radar-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    animation: radarPulse 1.8s infinite ease-out;
+  }
+  .leaflet-popup-content-wrapper {
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+    padding: 0;
+    overflow: hidden;
+  }
+  .leaflet-popup-content {
+    margin: 0;
+    line-height: 1.4;
+  }
+</style>
+@endpush
+
 @section('content')
 <div class="page-header">
   <div>
@@ -108,6 +145,36 @@
       @endif
     </div>
   </div>
+</div>
+
+{{-- Carte Interactive de Vigilance Électrique (Leaflet Heat & Risk Map) --}}
+<div class="m-card mb-4 overflow-hidden" style="border-radius:16px;background:#ffffff;box-shadow:0 3px 12px rgba(0,0,0,0.04);">
+  <div class="p-3 border-bottom d-flex flex-wrap align-items-center justify-content-between gap-2" style="background:#f8fafc;">
+    <div class="d-flex align-items-center gap-2">
+      <div style="width:36px;height:36px;border-radius:10px;background:#fee2e2;color:#dc2626;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
+        <i class="fa-solid fa-map-location-dot"></i>
+      </div>
+      <div>
+        <h2 class="h6 fw-bold mb-0 text-dark">Cartographie Nationale du Risque de Coupure</h2>
+        <span class="text-muted small">Surveillance thermique et probabilités calculées par IA</span>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-3 small">
+      <span class="d-flex align-items-center gap-1">
+        <span class="d-inline-block rounded-circle" style="width:12px;height:12px;background:#dc2626;box-shadow:0 0 0 3px rgba(220,38,38,0.25);"></span>
+        <strong class="text-danger">Risque Élevé (&ge; 70%)</strong>
+      </span>
+      <span class="d-flex align-items-center gap-1">
+        <span class="d-inline-block rounded-circle" style="width:12px;height:12px;background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.25);"></span>
+        <strong class="text-warning">Risque Modéré</strong>
+      </span>
+      <span class="d-flex align-items-center gap-1">
+        <span class="d-inline-block rounded-circle" style="width:12px;height:12px;background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,0.25);"></span>
+        <strong class="text-success">Risque Faible</strong>
+      </span>
+    </div>
+  </div>
+  <div id="predictionsRiskMap" style="height: 380px; width: 100%; background: #e2e8f0; position: relative;"></div>
 </div>
 
 <div class="row g-4">
@@ -547,6 +614,115 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
+
+  // Initialisation Carte Leaflet du Risque Coupure
+  const mapElement = document.getElementById('predictionsRiskMap');
+  if (mapElement && typeof L !== 'undefined') {
+    const mapZones = @json($mapZones ?? []);
+    
+    // Centrage sur la Tunisie
+    const map = L.map('predictionsRiskMap', {
+      center: [34.0, 9.5],
+      zoom: 6.5,
+      scrollWheelZoom: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors',
+    }).addTo(map);
+
+    const bounds = [];
+
+    mapZones.forEach(function (zone) {
+      if (!zone.lat || !zone.lng) return;
+      bounds.push([zone.lat, zone.lng]);
+
+      const prob = zone.probability !== null ? Math.round(zone.probability * 1000) / 10 : null;
+      let color = '#64748b'; // Inconnu
+      let fillColor = '#94a3b8';
+      let riskLabel = 'Donnée manquante';
+      let isCritical = false;
+
+      if (prob !== null) {
+        if (prob >= 70 || zone.risk_level === 'high') {
+          color = '#dc2626';
+          fillColor = '#ef4444';
+          riskLabel = 'Risque Élevé';
+          isCritical = true;
+        } else if (prob >= 40 || zone.risk_level === 'medium') {
+          color = '#d97706';
+          fillColor = '#f59e0b';
+          riskLabel = 'Risque Modéré';
+        } else {
+          color = '#059669';
+          fillColor = '#10b981';
+          riskLabel = 'Risque Faible';
+        }
+      }
+
+      // Marqueur interactif Leaflet
+      const markerHtml = `
+        <div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
+          ${isCritical ? `<div class="radar-ring" style="background:${color};opacity:0.4;"></div>` : ''}
+          <div style="width:22px;height:22px;border-radius:50%;background:${fillColor};border:2.5px solid #ffffff;box-shadow:0 3px 8px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:#ffffff;font-size:10px;font-weight:bold;">
+            <i class="fa-solid fa-bolt" style="font-size:9px;"></i>
+          </div>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({
+        html: markerHtml,
+        className: 'custom-prediction-marker',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14],
+      });
+
+      const marker = L.marker([zone.lat, zone.lng], { icon: customIcon }).addTo(map);
+
+      // Cercle de zone thermique coloré
+      L.circle([zone.lat, zone.lng], {
+        radius: isCritical ? 25000 : 15000,
+        color: color,
+        weight: isCritical ? 2 : 1.5,
+        fillColor: fillColor,
+        fillOpacity: isCritical ? 0.25 : 0.12,
+      }).addTo(map);
+
+      // Contenu du Popup
+      const popupHtml = `
+        <div style="min-width:210px;font-family:Inter,sans-serif;">
+          <div style="padding:10px 14px;background:${isCritical ? '#fee2e2' : '#f8fafc'};border-bottom:1px solid #e2e8f0;">
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${color};display:inline-block;margin-bottom:2px;">
+              <i class="fa-solid fa-bolt me-1"></i>${riskLabel} ${prob !== null ? '(' + prob + '%)' : ''}
+            </span>
+            <h4 style="margin:0;font-size:14px;font-weight:800;color:#0f172a;">${zone.nom}</h4>
+            <span style="font-size:11px;color:#64748b;">${zone.ville} (${zone.gouvernorat})</span>
+          </div>
+          <div style="padding:10px 14px;font-size:12px;color:#334155;">
+            ${zone.outage_start ? `
+              <div style="margin-bottom:6px;">
+                <span style="color:#64748b;">Créneau estimé :</span><br>
+                <strong style="color:${color};">${zone.outage_start} → ${zone.outage_end}</strong>
+              </div>
+            ` : ''}
+            ${zone.cause ? `<div style="font-size:11px;color:#64748b;font-style:italic;margin-bottom:8px;">${zone.cause}</div>` : ''}
+            <a href="${zone.url}" style="display:inline-block;font-size:11px;font-weight:600;color:#0284c7;text-decoration:none;">
+              Consulter la zone →
+            </a>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml);
+    });
+
+    if (bounds.length > 0) {
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+  }
 });
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 @endpush

@@ -293,6 +293,30 @@ class FrontController extends Controller
             $zonePrediction = $userZone?->latestPrediction;
         }
 
+        // Cartographie nationale du risque de coupure pour les citoyens
+        $mapZones = Zone::query()
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->with('latestPrediction')
+            ->get()
+            ->map(function ($z) {
+                $p = $z->latestPrediction;
+                return [
+                    'id' => $z->id,
+                    'nom' => $z->nom,
+                    'ville' => $z->ville,
+                    'gouvernorat' => $z->gouvernorat,
+                    'lat' => (float) $z->latitude,
+                    'lng' => (float) $z->longitude,
+                    'probability' => $p ? (float) $p->probability : null,
+                    'risk_level' => $p ? $p->risk_level : 'none',
+                    'outage_start' => $p?->estimated_outage_start?->format('d/m à H:i'),
+                    'outage_end' => $p?->estimated_outage_end?->format('H:i'),
+                    'cause' => $p?->estimated_outage_cause,
+                    'url' => route('front.zones.show', $z),
+                ];
+            });
+
         return view('front.coupures.index', [
             'coupures' => $coupures,
             'types' => Coupure::TYPES,
@@ -300,6 +324,7 @@ class FrontController extends Controller
             'calendrierEvents' => $calendrierEvents,
             'userZone' => $userZone,
             'zonePrediction' => $zonePrediction,
+            'mapZones' => $mapZones,
         ]);
     }
 
