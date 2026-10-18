@@ -112,6 +112,8 @@ Route::middleware(['auth', 'admin'])
             ->name('zones.prediction');
         Route::get('predictions', [PredictionCoupureController::class, 'index'])
             ->name('predictions.index');
+        Route::post('predictions/predict-all', [PredictionCoupureController::class, 'storeAll'])
+            ->name('predictions.predict_all');
 
         // Gestion des Alertes Météo
         Route::resource('alertes', AlerteMeteoController::class);

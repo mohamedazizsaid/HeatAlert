@@ -8,10 +8,11 @@
     <h1><i class="fa-solid fa-wand-magic-sparkles me-2 text-primary"></i>Prédictions de coupures</h1>
     <p class="subtitle">Dernier résultat disponible par zone, avec sa période de validité.</p>
   </div>
-  <div class="page-header__actions">
-    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
-      <i class="fa-solid fa-flask me-1"></i>Prototype expérimental
-    </span>
+  <div class="page-header__actions d-flex align-items-center gap-2">
+    <button type="button" id="btn-predict-all" class="btn btn-primary fw-semibold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#predictAllConfirmModal">
+      <i class="fa-solid fa-arrows-rotate"></i>
+      <span>Prédire pour toutes les zones</span>
+    </button>
   </div>
 </div>
 
@@ -220,6 +221,48 @@
 @endif
 @endsection
 
+{{-- Modal de Confirmation Global placé hors du conteneur pour éviter les conflits de z-index/backdrop --}}
+<div class="modal fade" id="predictAllConfirmModal" tabindex="-1" aria-labelledby="predictAllConfirmModalLabel" aria-hidden="true" style="z-index: 1065;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 position-relative">
+        <div class="d-flex align-items-center gap-3">
+          <div style="width: 50px; height: 50px; border-radius: 14px; background: rgba(14, 165, 233, 0.12); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0" id="predictAllConfirmModalLabel" style="font-size: 1.15rem;">Prédiction Globale</h5>
+            <span class="text-primary small fw-semibold"><i class="fa-solid fa-cloud-bolt me-1"></i>Actualisation automatique</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer" style="margin-top: -12px; margin-right: -4px;"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <p class="mb-3 text-secondary" style="font-size: 0.95rem;">
+          Voulez-vous lancer le calcul de prédiction de coupures pour <strong>toutes les zones actives</strong> du réseau ?
+        </p>
+        <div class="p-3 rounded-3 bg-light border border-light-subtle d-flex align-items-center gap-2">
+          <i class="fa-solid fa-circle-nodes text-primary flex-shrink-0"></i>
+          <span class="fw-bold text-dark text-truncate" style="font-size: 0.92rem;">
+            Toutes les zones de surveillance ({{ $zones->total() }} zones)
+          </span>
+        </div>
+        <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">
+          <i class="fa-solid fa-info-circle me-1"></i>Cette opération interroge le modèle ML et la météo en temps réel pour chaque zone.
+        </small>
+      </div>
+      <div class="modal-footer border-0 px-4 pb-4 pt-1 d-flex gap-2">
+        <button type="button" class="m-btn m-btn--ghost flex-grow-1 text-center py-2" data-bs-dismiss="modal">
+          <i class="fa-solid fa-xmark me-2"></i>Annuler
+        </button>
+        <button type="button" id="btn-confirm-predict-all" class="btn btn-primary flex-grow-1 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm" style="border-radius: 8px;" data-url="{{ route('admin.predictions.predict_all') }}">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Lancer les prédictions
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -257,6 +300,56 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+
+  // Prédiction globale pour toutes les zones via la Modal Bootstrap
+  const confirmPredictAllBtn = document.getElementById('btn-confirm-predict-all');
+  const modalEl = document.getElementById('predictAllConfirmModal');
+
+  if (confirmPredictAllBtn) {
+    confirmPredictAllBtn.addEventListener('click', async function () {
+      const originalHtml = confirmPredictAllBtn.innerHTML;
+      confirmPredictAllBtn.disabled = true;
+      confirmPredictAllBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Calcul en cours…';
+      errorBox.classList.add('d-none');
+
+      try {
+        const response = await fetch(confirmPredictAllBtn.dataset.url, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrf,
+          },
+          body: JSON.stringify({}),
+        });
+        const body = await response.json();
+        if (!response.ok || !body.success) {
+          throw new Error(body.message || 'Erreur lors du calcul global.');
+        }
+
+        // Fermer la modal avant de recharger
+        if (modalEl && typeof bootstrap !== 'undefined') {
+          const bsModal = bootstrap.Modal.getInstance(modalEl);
+          if (bsModal) bsModal.hide();
+        }
+
+        window.location.reload();
+      } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.classList.remove('d-none');
+        confirmPredictAllBtn.disabled = false;
+        confirmPredictAllBtn.innerHTML = originalHtml;
+
+        // Fermer la modal pour laisser voir l'erreur
+        if (modalEl && typeof bootstrap !== 'undefined') {
+          const bsModal = bootstrap.Modal.getInstance(modalEl);
+          if (bsModal) bsModal.hide();
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  }
 });
 </script>
 @endpush

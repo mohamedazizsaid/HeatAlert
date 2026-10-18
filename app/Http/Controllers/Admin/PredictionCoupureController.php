@@ -65,8 +65,11 @@ class PredictionCoupureController extends Controller
                 'input_snapshot' => $prediction['input_snapshot'],
             ]);
 
+            session()->flash('success', "Prédiction actualisée avec succès pour {$zone->nom}.");
+
             return response()->json([
                 'success' => true,
+                'message' => "Prédiction actualisée avec succès pour {$zone->nom}.",
                 'prediction' => $stored->load('zone'),
             ], 201);
         } catch (RuntimeException $exception) {
@@ -75,5 +78,69 @@ class PredictionCoupureController extends Controller
                 'message' => $exception->getMessage(),
             ], 503);
         }
+    }
+
+    /**
+     * Lance ou actualise la prédiction ML pour toutes les zones actives ayant des coordonnées.
+     */
+    public function storeAll(Request $request): JsonResponse
+    {
+        $zones = Zone::query()
+            ->where('actif', true)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        if ($zones->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucune zone active avec coordonnées GPS disponibles.',
+            ], 422);
+        }
+
+        $referenceAt = $request->filled('reference_at')
+            ? Carbon::parse($request->input('reference_at'))
+            : now();
+
+        $successCount = 0;
+        $errors = [];
+
+        foreach ($zones as $zone) {
+            try {
+                $prediction = $this->mlService->predictForZone($zone, $referenceAt);
+                $result = $prediction['response'];
+
+                PredictionCoupure::create([
+                    'zone_id' => $zone->id,
+                    'reference_at' => $referenceAt,
+                    'target_window_start' => $result['target_window_start'],
+                    'target_window_end' => $result['target_window_end_exclusive'],
+                    'estimated_outage_start' => $result['estimated_outage_start'] ?? null,
+                    'estimated_outage_end' => $result['estimated_outage_end'] ?? null,
+                    'estimated_outage_cause' => $result['estimated_outage_cause'] ?? null,
+                    'probability' => $result['probability'],
+                    'risk_level' => $result['risk_level'],
+                    'risk_thresholds_defined' => $result['risk_thresholds_defined'],
+                    'model_version' => $result['model_version'],
+                    'warnings' => $result['warnings'],
+                    'input_snapshot' => $prediction['input_snapshot'],
+                ]);
+
+                $successCount++;
+            } catch (\Throwable $e) {
+                $errors[] = $zone->nom . ' : ' . $e->getMessage();
+            }
+        }
+
+        $msg = "Prédictions actualisées avec succès pour {$successCount} sur {$zones->count()} zone(s).";
+        session()->flash('success', $msg);
+
+        return response()->json([
+            'success' => $successCount > 0,
+            'success_count' => $successCount,
+            'total_zones' => $zones->count(),
+            'message' => $msg,
+            'errors' => $errors,
+        ]);
     }
 }
