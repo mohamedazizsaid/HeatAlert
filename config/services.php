@@ -63,4 +63,10 @@ return [
         'region' => env('AZURE_TTS_REGION', 'eastus'),
     ],
 
+    'heatalert_ml' => [
+        'url' => env('HEATALERT_ML_URL', 'http://127.0.0.1:8001'),
+        'timeout' => (int) env('HEATALERT_ML_TIMEOUT', 5),
+        'token' => env('HEATALERT_ML_TOKEN'),
+    ],
+
 ];

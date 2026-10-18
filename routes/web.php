@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AlerteMeteoController;
 use App\Http\Controllers\Admin\ConseilController;
 use App\Http\Controllers\Admin\CoupureController;
 use App\Http\Controllers\Admin\PointFraicheurController;
+use App\Http\Controllers\Admin\PredictionCoupureController;
 use App\Http\Controllers\Admin\SignalementCoupureController;
 use App\Http\Controllers\Admin\ZoneController;
 use App\Http\Controllers\FrontController;
@@ -107,6 +108,8 @@ Route::middleware(['auth', 'admin'])
 
         // Gestion des Zones (avec recherche/filtre et page détails)
         Route::resource('zones', ZoneController::class);
+        Route::post('zones/{zone}/prediction', [PredictionCoupureController::class, 'store'])
+            ->name('zones.prediction');
 
         // Gestion des Alertes Météo
         Route::resource('alertes', AlerteMeteoController::class);
