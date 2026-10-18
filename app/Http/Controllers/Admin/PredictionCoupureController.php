@@ -170,4 +170,52 @@ class PredictionCoupureController extends Controller
             'errors' => $errors,
         ]);
     }
+
+    /**
+     * Envoie une notification préventive (in-app et e-mail) aux résidents d'une zone avec risque élevé.
+     */
+    public function notifyResidents(Request $request, Zone $zone): JsonResponse
+    {
+        $prediction = $zone->latestPrediction;
+
+        if (!$prediction) {
+            return response()->json([
+                'success' => false,
+                'message' => "Aucune prédiction disponible pour la zone {$zone->nom}.",
+            ], 404);
+        }
+
+        // Récupérer tous les utilisateurs résidents enregistrés dans cette zone
+        $residents = $zone->users()->get();
+
+        if ($residents->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => "Aucun citoyen résident n'est enregistré dans la zone {$zone->nom} pour le moment.",
+                'residents_count' => 0,
+            ], 422);
+        }
+
+        $notification = new \App\Notifications\OutageRiskZoneAlertNotification($zone, $prediction);
+        $notifiedCount = 0;
+
+        foreach ($residents as $resident) {
+            try {
+                $resident->notify($notification);
+                $notifiedCount++;
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Échec envoi notification citoyen #{$resident->id}: " . $e->getMessage());
+            }
+        }
+
+        $msg = "Alerte préventive envoyée avec succès à {$notifiedCount} résident(s) de la zone {$zone->nom} (in-app et e-mail).";
+        session()->flash('success', $msg);
+
+        return response()->json([
+            'success' => true,
+            'message' => $msg,
+            'residents_count' => $residents->count(),
+            'notified_count' => $notifiedCount,
+        ]);
+    }
 }

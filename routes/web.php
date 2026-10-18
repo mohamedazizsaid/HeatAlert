@@ -114,6 +114,8 @@ Route::middleware(['auth', 'admin'])
             ->name('predictions.index');
         Route::post('predictions/predict-all', [PredictionCoupureController::class, 'storeAll'])
             ->name('predictions.predict_all');
+        Route::post('predictions/{zone}/notify-residents', [PredictionCoupureController::class, 'notifyResidents'])
+            ->name('predictions.notify_residents');
 
         // Gestion des Alertes Météo
         Route::resource('alertes', AlerteMeteoController::class);

@@ -257,7 +257,17 @@
             </div>
           @endif
 
-          <div class="d-flex justify-content-end align-items-center gap-2 pt-2 border-top" style="border-color:#eef2f7 !important;">
+          <div class="d-flex justify-content-end align-items-center gap-1 gap-sm-2 pt-2 border-top overflow-x-auto" style="border-color:#eef2f7 !important;">
+            @if($prediction && ($prediction->probability >= 0.70 || $prediction->risk_level === 'high'))
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger fw-semibold js-notify-residents d-inline-flex align-items-center gap-1 text-nowrap"
+                      style="height:32px;padding:0 8px;font-size:11.5px;"
+                      data-url="{{ route('admin.predictions.notify_residents', $zone) }}"
+                      data-zone-name="{{ $zone->nom }}"
+                      title="Envoyer une notification push & email aux résidents">
+                <i class="fa-solid fa-bullhorn"></i>Alerter
+              </button>
+            @endif
             @if($prediction && ($prediction->probability >= 0.70 || $prediction->risk_level === 'high') && $prediction->estimated_outage_start)
               <a href="{{ route('admin.coupures.create', [
                   'zone_id'    => $zone->id,
@@ -265,20 +275,20 @@
                   'date_fin'   => $prediction->estimated_outage_end ? $prediction->estimated_outage_end->format('Y-m-d\TH:i') : '',
                   'type'       => str_contains(strtolower($prediction->estimated_outage_cause ?? ''), 'surcharge') ? 'surcharge' : 'delestage',
                   'cause'      => 'Surcharge thermique suite prédiction météo (' . number_format($prediction->probability * 100, 1) . '% de risque)',
-              ]) }}" class="m-btn btn-danger text-white fw-semibold" style="height:34px;padding:0 12px;font-size:12px;background:#dc2626;border-color:#dc2626;white-space:nowrap;" title="Planifier cette coupure préventive (Délestage STEG)">
-                <i class="fa-solid fa-bolt me-1"></i>Planifier coupure
+              ]) }}" class="m-btn btn-danger text-white fw-semibold d-inline-flex align-items-center gap-1 text-nowrap" style="height:32px;padding:0 8px;font-size:11.5px;background:#dc2626;border-color:#dc2626;" title="Planifier cette coupure préventive (Délestage STEG)">
+                <i class="fa-solid fa-bolt"></i>Planifier
               </a>
             @endif
-            <a href="{{ route('admin.zones.show', $zone) }}" class="m-btn m-btn--ghost" style="height:34px;padding:0 12px;font-size:12px;white-space:nowrap;">
-              <i class="fa-solid fa-eye me-1"></i>Voir la zone
+            <a href="{{ route('admin.zones.show', $zone) }}" class="m-btn m-btn--ghost d-inline-flex align-items-center gap-1 text-nowrap" style="height:32px;padding:0 8px;font-size:11.5px;">
+              <i class="fa-solid fa-eye"></i>Voir zone
             </a>
             @if($zone->latitude !== null && $zone->longitude !== null)
-              <button type="button" class="m-btn m-btn--primary js-predict-zone" style="height:34px;padding:0 12px;font-size:12px;white-space:nowrap;" data-url="{{ route('admin.zones.prediction', $zone) }}">
-                <i class="fa-solid fa-rotate me-1"></i> {{ $prediction ? 'Actualiser' : 'Prédire' }}
+              <button type="button" class="m-btn m-btn--primary js-predict-zone d-inline-flex align-items-center gap-1 text-nowrap" style="height:32px;padding:0 10px;font-size:11.5px;" data-url="{{ route('admin.zones.prediction', $zone) }}">
+                <i class="fa-solid fa-rotate"></i>{{ $prediction ? 'Actualiser' : 'Prédire' }}
               </button>
             @else
-              <span class="m-btn m-btn--ghost disabled" style="height:34px;padding:0 12px;font-size:12px;opacity:.6;white-space:nowrap;" title="Coordonnées manquantes">
-                <i class="fa-solid fa-location-crosshairs me-1"></i>Coordonnées requises
+              <span class="m-btn m-btn--ghost disabled text-nowrap" style="height:32px;padding:0 8px;font-size:11.5px;opacity:.6;" title="Coordonnées manquantes">
+                <i class="fa-solid fa-location-crosshairs me-1"></i>Requis
               </span>
             @endif
           </div>
@@ -337,6 +347,49 @@
         </button>
         <button type="button" id="btn-confirm-predict-all" class="btn btn-primary flex-grow-1 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm" style="border-radius: 8px;" data-url="{{ route('admin.predictions.predict_all') }}">
           <i class="fa-solid fa-wand-magic-sparkles"></i> Lancer les prédictions
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{-- Modal de Confirmation Alerte Citoyens --}}
+<div class="modal fade" id="notifyResidentsConfirmModal" tabindex="-1" aria-labelledby="notifyResidentsConfirmModalLabel" aria-hidden="true" style="z-index: 1065;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 position-relative">
+        <div class="d-flex align-items-center gap-3">
+          <div style="width: 50px; height: 50px; border-radius: 14px; background: rgba(220, 38, 38, 0.12); color: #dc2626; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+            <i class="fa-solid fa-bullhorn"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0" id="notifyResidentsConfirmModalLabel" style="font-size: 1.15rem;">Alerte Résidents</h5>
+            <span class="text-danger small fw-semibold"><i class="fa-solid fa-triangle-exclamation me-1"></i>Diffusion préventive</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer" style="margin-top: -12px; margin-right: -4px;"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <p class="mb-3 text-secondary" style="font-size: 0.95rem;">
+          Envoyer une alerte préventive (notification in-app et e-mail) à tous les citoyens résidant dans cette zone ?
+        </p>
+        <div class="p-3 rounded-3 bg-light border border-light-subtle d-flex align-items-center gap-2">
+          <i class="fa-solid fa-location-dot text-danger flex-shrink-0"></i>
+          <span class="fw-bold text-dark text-truncate" id="notify-modal-zone-name" style="font-size: 0.92rem;">
+            Zone ciblée
+          </span>
+        </div>
+        <small class="text-muted mt-2 d-block" style="font-size: 0.8rem;">
+          <i class="fa-solid fa-info-circle me-1"></i>Les citoyens recevront les consignes de précaution (recharge des téléphones, conservation du froid).
+        </small>
+      </div>
+      <div class="modal-footer border-0 px-4 pb-4 pt-1 d-flex gap-2">
+        <button type="button" class="m-btn m-btn--ghost flex-grow-1 text-center py-2" data-bs-dismiss="modal">
+          <i class="fa-solid fa-xmark me-2"></i>Annuler
+        </button>
+        <button type="button" id="btn-confirm-notify-residents" class="btn btn-danger flex-grow-1 text-center py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm" style="border-radius: 8px;">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Envoyer l'alerte</span>
         </button>
       </div>
     </div>
@@ -423,6 +476,70 @@ document.addEventListener('DOMContentLoaded', function () {
         // Fermer la modal pour laisser voir l'erreur
         if (modalEl && typeof bootstrap !== 'undefined') {
           const bsModal = bootstrap.Modal.getInstance(modalEl);
+          if (bsModal) bsModal.hide();
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  }
+
+  // Alerte Citoyens par Zone
+  const notifyModalEl = document.getElementById('notifyResidentsConfirmModal');
+  const notifyZoneNameEl = document.getElementById('notify-modal-zone-name');
+  const btnConfirmNotify = document.getElementById('btn-confirm-notify-residents');
+  let currentNotifyUrl = '';
+
+  document.querySelectorAll('.js-notify-residents').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      currentNotifyUrl = btn.dataset.url;
+      if (notifyZoneNameEl) {
+        notifyZoneNameEl.textContent = btn.dataset.zoneName || 'Zone sélectionnée';
+      }
+      if (notifyModalEl && typeof bootstrap !== 'undefined') {
+        const modal = new bootstrap.Modal(notifyModalEl);
+        modal.show();
+      }
+    });
+  });
+
+  if (btnConfirmNotify) {
+    btnConfirmNotify.addEventListener('click', async function() {
+      if (!currentNotifyUrl) return;
+      const originalHtml = btnConfirmNotify.innerHTML;
+      btnConfirmNotify.disabled = true;
+      btnConfirmNotify.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>Envoi en cours…';
+      errorBox.classList.add('d-none');
+
+      try {
+        const response = await fetch(currentNotifyUrl, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrf,
+          },
+          body: JSON.stringify({}),
+        });
+        const body = await response.json();
+        if (!response.ok || !body.success) {
+          throw new Error(body.message || 'Erreur lors de l’envoi des notifications.');
+        }
+
+        if (notifyModalEl && typeof bootstrap !== 'undefined') {
+          const bsModal = bootstrap.Modal.getInstance(notifyModalEl);
+          if (bsModal) bsModal.hide();
+        }
+
+        window.location.reload();
+      } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.classList.remove('d-none');
+        btnConfirmNotify.disabled = false;
+        btnConfirmNotify.innerHTML = originalHtml;
+
+        if (notifyModalEl && typeof bootstrap !== 'undefined') {
+          const bsModal = bootstrap.Modal.getInstance(notifyModalEl);
           if (bsModal) bsModal.hide();
         }
 
