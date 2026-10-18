@@ -286,11 +286,20 @@ class FrontController extends Controller
             ];
         })->values();
 
+        $userZone = null;
+        $zonePrediction = null;
+        if (auth()->check() && auth()->user()->zone_id) {
+            $userZone = Zone::with('latestPrediction')->find(auth()->user()->zone_id);
+            $zonePrediction = $userZone?->latestPrediction;
+        }
+
         return view('front.coupures.index', [
             'coupures' => $coupures,
             'types' => Coupure::TYPES,
             'statuts' => Coupure::STATUTS,
             'calendrierEvents' => $calendrierEvents,
+            'userZone' => $userZone,
+            'zonePrediction' => $zonePrediction,
         ]);
     }
 
