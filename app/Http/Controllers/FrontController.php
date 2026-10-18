@@ -113,7 +113,10 @@ class FrontController extends Controller
             'vert'   => $zone->alertes()->where('niveau', 'vert')->count(),
         ];
 
-        return view('front.zones.show', compact('zone', 'alertes', 'niveauxData'));
+        // Dernière prédiction ML disponible pour cette zone
+        $latestPrediction = $zone->latestPrediction;
+
+        return view('front.zones.show', compact('zone', 'alertes', 'niveauxData', 'latestPrediction'));
     }
 
     /**

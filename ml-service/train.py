@@ -9,7 +9,7 @@ from typing import Any
 import joblib
 import numpy as np
 import pandas as pd
-from sklearn.calibration import calibration_curve
+from sklearn.calibration import CalibratedClassifierCV, calibration_curve
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
@@ -47,8 +47,9 @@ NUMERIC_COLUMNS = [
     "nb_signalements_valides_7j",
 ]
 CATEGORICAL_COLUMNS = [
-    "zone_id",
-    "ville",
+    # "zone_id" intentionally excluded: it is an entity identifier, not a predictive feature.
+    # Including it would overfit to known zones and break predictions for unseen zones.
+    # "ville" intentionally excluded: too specific to known zones, causes the same issue.
     "gouvernorat",
     "alerte_type",
     "alerte_niveau",
@@ -337,23 +338,33 @@ def train_and_evaluate(
     )
 
     model_definitions = {
-        "logistic_regression": LogisticRegression(max_iter=2000, class_weight="balanced"),
         "random_forest": RandomForestClassifier(
-            n_estimators=300,
+            n_estimators=200,
+            max_depth=8,
+            min_samples_split=5,
             random_state=42,
-            class_weight="balanced",
+            class_weight="balanced_subsample",
             n_jobs=-1,
+        ),
+        "logistic_regression": LogisticRegression(
+            max_iter=2000,
+            C=0.5,
+            class_weight="balanced",
         ),
     }
     trained_models: dict[str, Pipeline] = {}
     for name, estimator in model_definitions.items():
+        # Pipeline avec modèle calibré pour obtenir de vraies probabilités fiables
         pipeline = Pipeline(
             steps=[
                 (
                     "preprocessor",
                     make_preprocessor(schema["numeric_features"], schema["categorical_features"]),
                 ),
-                ("model", estimator),
+                (
+                    "model",
+                    CalibratedClassifierCV(estimator=estimator, method="sigmoid", cv=3),
+                ),
             ]
         )
         pipeline.fit(x_train, y_train)
@@ -362,16 +373,15 @@ def train_and_evaluate(
         report["models"][name] = metrics_for_predictions(y_test, predictions, probabilities)
         trained_models[name] = pipeline
 
-    best_name = max(
+    best_name = min(
         trained_models,
         key=lambda name: (
-            report["models"][name]["pr_auc"],
-            report["models"][name]["f1"],
+            report["models"][name]["brier_score"] if report["models"][name]["brier_score"] is not None else 1.0
         ),
     )
     report["status"] = "trained_and_evaluated"
     report["selected_model"] = best_name
-    report["selection_rule"] = "PR-AUC puis F1 sur la période de test chronologique."
+    report["selection_rule"] = "Meilleur Brier Score (calibrage des probabilités réelles) sur le jeu de test."
     return report, trained_models[best_name]
 
 

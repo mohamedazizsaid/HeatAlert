@@ -29,6 +29,11 @@
             <li><a href="{{ route('admin.zones.create') }}"><i class="fa-solid fa-plus"></i>Ajouter une zone</a></li>
           </ul>
         </li>
+        <li class="{{ request()->routeIs('admin.predictions.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.predictions.index') }}">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>Prédictions ML
+          </a>
+        </li>
         <li class="{{ request()->routeIs('admin.alertes.*') ? 'active has-sub' : 'has-sub' }}">
           <a class="js-arrow" href="#">
             <i class="fa-solid fa-triangle-exclamation"></i>Alertes Météo
@@ -121,6 +126,12 @@
               <a href="{{ route('admin.zones.create') }}">Ajouter une zone</a>
             </li>
           </ul>
+        </li>
+
+        <li class="{{ request()->routeIs('admin.predictions.*') ? 'active' : '' }}">
+          <a href="{{ route('admin.predictions.index') }}">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>Prédictions ML
+          </a>
         </li>
 
         {{-- Alertes Météo --}}

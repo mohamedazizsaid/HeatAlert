@@ -243,7 +243,115 @@
           </div>
         </div>
 
-        <!-- Alertes pour cette zone -->
+        {{-- ─── Prévision de coupure électrique (ML) ─── --}}
+        @php
+          $prob = $latestPrediction?->probability;
+          $probPct = $prob !== null ? round($prob * 100, 1) : null;
+          $windowStart = $latestPrediction?->target_window_start;
+          $windowEnd   = $latestPrediction?->target_window_end;
+          $predColor   = $probPct === null ? '#64748b'
+                       : ($probPct >= 70 ? '#dc2626'
+                       : ($probPct >= 40 ? '#d97706' : '#16a34a'));
+          $predBg      = $probPct === null ? '#f1f5f9'
+                       : ($probPct >= 70 ? '#fee2e2'
+                       : ($probPct >= 40 ? '#fef3c7' : '#dcfce7'));
+          $predIcon    = $probPct === null ? 'bi-question-circle'
+                       : ($probPct >= 70 ? 'bi-exclamation-triangle-fill'
+                       : ($probPct >= 40 ? 'bi-exclamation-circle-fill' : 'bi-check-circle-fill'));
+          $predLabel   = $probPct === null ? 'Aucune prévision disponible'
+                       : ($probPct >= 70 ? 'Risque élevé de coupure'
+                       : ($probPct >= 40 ? 'Risque modéré de coupure' : 'Risque faible de coupure'));
+        @endphp
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+          <div class="card-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0" style="color: #1e3a5f;">
+              <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Prévision de coupure — Prochaines 24 h
+            </h5>
+            @if($latestPrediction)
+              <span class="badge bg-light text-secondary border small">
+                Mise à jour {{ $latestPrediction->created_at?->diffForHumans() }}
+              </span>
+            @endif
+          </div>
+          <div class="card-body p-4">
+            @if($latestPrediction && $probPct !== null)
+              <div class="row g-3 align-items-center">
+                {{-- Probabilité --}}
+                <div class="col-sm-4 text-center">
+                  <div class="rounded-4 p-3" style="background: {{ $predBg }};">
+                    <div class="fw-bold" style="font-size: 2.8rem; color: {{ $predColor }}; line-height: 1;">
+                      {{ number_format($probPct, 1, ',', ' ') }}<span style="font-size: 1.2rem;">%</span>
+                    </div>
+                    <div class="small fw-semibold mt-1" style="color: {{ $predColor }};">
+                      <i class="bi {{ $predIcon }} me-1"></i>{{ $predLabel }}
+                    </div>
+                  </div>
+                </div>
+                {{-- Période & Créneau Estimé --}}
+                <div class="col-sm-8">
+                  <div class="rounded-4 p-3 border" style="background: #f8fafc;">
+                    @if($latestPrediction->estimated_outage_start && $latestPrediction->estimated_outage_end)
+                      {{-- Créneau horaire exact estimé de coupure --}}
+                      <div class="p-3 rounded-3 mb-3" style="background: #fff; border: 1.5px solid #fecaca; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08);">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                          <span class="badge bg-danger rounded-pill px-3 py-1 fw-bold text-uppercase" style="font-size: 11px;">
+                            <i class="bi bi-clock-history me-1"></i>Créneau Estimé de Coupure
+                          </span>
+                          @if($latestPrediction->estimated_outage_cause)
+                            <span class="small text-muted fst-italic">
+                              {{ $latestPrediction->estimated_outage_cause }}
+                            </span>
+                          @endif
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small">Début estimé :</span>
+                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fw-bold" style="font-size: .95rem;">
+                              <i class="bi bi-play-circle-fill me-1"></i>
+                              {{ $latestPrediction->estimated_outage_start->format('d/m/Y à H:i') }}
+                            </span>
+                          </div>
+                          <i class="bi bi-arrow-right text-danger"></i>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="text-muted small">Fin estimée :</span>
+                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 fw-bold" style="font-size: .95rem;">
+                              <i class="bi bi-stop-circle-fill me-1"></i>
+                              {{ $latestPrediction->estimated_outage_end->format('d/m/Y à H:i') }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    @endif
+
+                    <div class="small text-muted text-uppercase fw-bold mb-1" style="letter-spacing:.06em; font-size: .75rem;">
+                      <i class="bi bi-calendar-range me-1"></i>Fenêtre de surveillance (24 h)
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <span class="badge rounded-3 px-3 py-1 fw-semibold text-secondary" style="background:#e2e8f0;font-size:.85rem;">
+                        {{ $windowStart ? \Carbon\Carbon::parse($windowStart)->format('d/m/Y H:i') : '—' }}
+                      </span>
+                      <i class="bi bi-arrow-right text-muted small"></i>
+                      <span class="badge rounded-3 px-3 py-1 fw-semibold text-secondary" style="background:#e2e8f0;font-size:.85rem;">
+                        {{ $windowEnd ? \Carbon\Carbon::parse($windowEnd)->format('d/m/Y H:i') : '—' }}
+                      </span>
+                    </div>
+                    <div class="small text-muted mt-2" style="font-size: .8rem;">
+                      <i class="bi bi-info-circle me-1"></i>
+                      Prévision calculée selon les conditions de chaleur et la surcharge thermique attendue sur le réseau électrique.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            @else
+              <div class="text-center py-3 text-muted">
+                <i class="bi bi-lightning-charge fs-1 d-block mb-2 text-secondary"></i>
+                <p class="mb-0 small">Aucune prévision de coupure n'est encore disponible pour cette zone.</p>
+              </div>
+            @endif
+          </div>
+        </div>
+
+        {{-- ─── Alertes pour cette zone ─── --}}
         <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
           <h5 class="fw-bold mb-3" style="color: #1e3a5f;">
             <i class="bi bi-bell-fill text-danger me-2"></i>Bulletins Météo & Alertes de la Zone ({{ $alertes->total() }})

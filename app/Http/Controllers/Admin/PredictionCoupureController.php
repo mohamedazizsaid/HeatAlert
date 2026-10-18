@@ -9,11 +9,36 @@ use App\Models\Zone;
 use App\Services\HeatAlertMlService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 use RuntimeException;
 
 class PredictionCoupureController extends Controller
 {
     public function __construct(private HeatAlertMlService $mlService) {}
+
+    public function index(Request $request): View
+    {
+        $zones = Zone::query()
+            ->with('latestPrediction')
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->string('search')->toString();
+                $query->where(function ($zoneQuery) use ($search) {
+                    $zoneQuery->where('nom', 'like', "%{$search}%")
+                        ->orWhere('ville', 'like', "%{$search}%")
+                        ->orWhere('gouvernorat', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('gouvernorat')
+            ->orderBy('ville')
+            ->paginate(12)
+            ->withQueryString();
+
+        return view('admin.predictions.index', [
+            'zones' => $zones,
+            'staleAfterMinutes' => 24 * 60,
+        ]);
+    }
 
     public function store(StorePredictionCoupureRequest $request, Zone $zone): JsonResponse
     {
@@ -29,6 +54,9 @@ class PredictionCoupureController extends Controller
                 'reference_at' => $referenceAt,
                 'target_window_start' => $result['target_window_start'],
                 'target_window_end' => $result['target_window_end_exclusive'],
+                'estimated_outage_start' => $result['estimated_outage_start'] ?? null,
+                'estimated_outage_end' => $result['estimated_outage_end'] ?? null,
+                'estimated_outage_cause' => $result['estimated_outage_cause'] ?? null,
                 'probability' => $result['probability'],
                 'risk_level' => $result['risk_level'],
                 'risk_thresholds_defined' => $result['risk_thresholds_defined'],

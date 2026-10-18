@@ -13,6 +13,19 @@ class PredictionCoupureTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_predictions_page_lists_zones_and_empty_state(): void
+    {
+        $user = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $zone = Zone::factory()->create(['nom' => 'Zone Test ML']);
+
+        $response = $this->actingAs($user)->get(route('admin.predictions.index'));
+
+        $response->assertOk();
+        $response->assertSee('Prédictions de coupures');
+        $response->assertSee('Zone Test ML');
+        $response->assertSee('Aucune prédiction disponible');
+    }
+
     public function test_prediction_is_saved_from_fastapi_response(): void
     {
         config(['services.heatalert_ml.url' => 'http://ml.test']);
