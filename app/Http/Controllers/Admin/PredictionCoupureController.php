@@ -19,7 +19,9 @@ class PredictionCoupureController extends Controller
 
     public function index(Request $request): View
     {
-        $zones = Zone::query()
+        $riskFilter = $request->input('risk');
+
+        $zonesQuery = Zone::query()
             ->with('latestPrediction')
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search')->toString();
@@ -29,14 +31,39 @@ class PredictionCoupureController extends Controller
                         ->orWhere('gouvernorat', 'like', "%{$search}%");
                 });
             })
-            ->orderBy('gouvernorat')
-            ->orderBy('ville')
-            ->paginate(12)
-            ->withQueryString();
+            ->when($riskFilter && in_array($riskFilter, ['high', 'medium', 'low']), function ($query) use ($riskFilter) {
+                $query->whereHas('latestPrediction', function ($pq) use ($riskFilter) {
+                    $pq->where('risk_level', $riskFilter);
+                });
+            });
+
+        // Tri par risque critique en premier si demandé ou par défaut
+        if ($request->input('sort') === 'risk_desc') {
+            $zonesQuery->leftJoin('prediction_coupures', function ($join) {
+                $join->on('zones.id', '=', 'prediction_coupures.zone_id')
+                    ->whereRaw('prediction_coupures.id = (SELECT p2.id FROM prediction_coupures p2 WHERE p2.zone_id = zones.id ORDER BY p2.reference_at DESC, p2.id DESC LIMIT 1)');
+            })
+            ->select('zones.*')
+            ->orderByRaw('prediction_coupures.probability IS NULL, prediction_coupures.probability DESC');
+        } else {
+            $zonesQuery->orderBy('gouvernorat')->orderBy('ville');
+        }
+
+        $zones = $zonesQuery->paginate(12)->withQueryString();
+
+        // Compteurs rapides par niveau de risque
+        $counts = [
+            'all'    => Zone::count(),
+            'high'   => Zone::whereHas('latestPrediction', fn($q) => $q->where('risk_level', 'high'))->count(),
+            'medium' => Zone::whereHas('latestPrediction', fn($q) => $q->where('risk_level', 'medium'))->count(),
+            'low'    => Zone::whereHas('latestPrediction', fn($q) => $q->where('risk_level', 'low'))->count(),
+        ];
 
         return view('admin.predictions.index', [
             'zones' => $zones,
             'staleAfterMinutes' => 24 * 60,
+            'currentRisk' => $riskFilter,
+            'counts' => $counts,
         ]);
     }
 

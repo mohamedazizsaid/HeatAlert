@@ -19,7 +19,13 @@
 <div id="prediction-error" class="alert alert-danger d-none" role="alert"></div>
 
 <div class="m-card mb-4 p-3" style="border-radius:14px;background:#ffffff;box-shadow:0 2px 10px rgba(0,0,0,0.03);">
-  <form action="{{ route('admin.predictions.index') }}" method="GET">
+  <form action="{{ route('admin.predictions.index') }}" method="GET" class="mb-3">
+    @if(request('risk'))
+      <input type="hidden" name="risk" value="{{ request('risk') }}">
+    @endif
+    @if(request('sort'))
+      <input type="hidden" name="sort" value="{{ request('sort') }}">
+    @endif
     <div class="row g-2 align-items-center">
       <div class="col-lg-8 col-md-9">
         <div class="input-group" style="border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
@@ -30,15 +36,78 @@
           <button type="submit" class="btn px-3 fw-semibold text-white" style="background:#0ea5e9;border-color:#0ea5e9;">Rechercher</button>
         </div>
       </div>
-      <div class="col-lg-4 col-md-3 d-flex justify-content-md-end">
-        @if(request('search'))
-          <a href="{{ route('admin.predictions.index') }}" class="btn btn-outline-secondary w-100 w-md-auto">Réinitialiser</a>
+      <div class="col-lg-4 col-md-3 d-flex justify-content-md-end gap-2">
+        @if(request('search') || request('risk') || request('sort'))
+          <a href="{{ route('admin.predictions.index') }}" class="btn btn-outline-secondary w-100 w-md-auto">
+            <i class="fa-solid fa-rotate-left me-1"></i>Réinitialiser
+          </a>
         @else
-          <span class="text-muted small align-self-center">{{ $zones->total() }} zone(s)</span>
+          <span class="text-muted small align-self-center">{{ $zones->total() }} zone(s) affichée(s)</span>
         @endif
       </div>
     </div>
   </form>
+
+  {{-- Filtres rapides par niveau de risque --}}
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-2 border-top" style="border-color:#f1f5f9 !important;">
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <span class="small fw-bold text-muted text-uppercase me-1" style="font-size:0.75rem;letter-spacing:0.05em;">
+        <i class="fa-solid fa-filter me-1 text-primary"></i>Filtrer :
+      </span>
+
+      {{-- Toutes les zones --}}
+      <a href="{{ route('admin.predictions.index', array_merge(request()->except(['risk', 'page']))) }}"
+         class="btn btn-sm rounded-pill fw-semibold {{ !request('risk') ? 'btn-dark' : 'btn-outline-secondary' }}"
+         style="font-size:0.82rem;padding:4px 12px;">
+        Toutes les zones
+        <span class="badge rounded-pill bg-light text-dark ms-1">{{ $counts['all'] ?? $zones->total() }}</span>
+      </a>
+
+      {{-- Risque Élevé --}}
+      <a href="{{ route('admin.predictions.index', array_merge(request()->except(['page']), ['risk' => 'high'])) }}"
+         class="btn btn-sm rounded-pill fw-semibold {{ request('risk') === 'high' ? 'btn-danger text-white' : 'btn-outline-danger' }}"
+         style="font-size:0.82rem;padding:4px 12px;">
+        <i class="fa-solid fa-triangle-exclamation me-1"></i>🔴 Risque Élevé
+        <span class="badge rounded-pill {{ request('risk') === 'high' ? 'bg-white text-danger' : 'bg-danger text-white' }} ms-1">
+          {{ $counts['high'] ?? 0 }}
+        </span>
+      </a>
+
+      {{-- Risque Modéré --}}
+      <a href="{{ route('admin.predictions.index', array_merge(request()->except(['page']), ['risk' => 'medium'])) }}"
+         class="btn btn-sm rounded-pill fw-semibold {{ request('risk') === 'medium' ? 'btn-warning text-dark' : 'btn-outline-warning text-dark' }}"
+         style="font-size:0.82rem;padding:4px 12px;">
+        <i class="fa-solid fa-circle-exclamation me-1"></i>🟡 Risque Modéré
+        <span class="badge rounded-pill {{ request('risk') === 'medium' ? 'bg-dark text-warning' : 'bg-warning text-dark' }} ms-1">
+          {{ $counts['medium'] ?? 0 }}
+        </span>
+      </a>
+
+      {{-- Risque Faible --}}
+      <a href="{{ route('admin.predictions.index', array_merge(request()->except(['page']), ['risk' => 'low'])) }}"
+         class="btn btn-sm rounded-pill fw-semibold {{ request('risk') === 'low' ? 'btn-success text-white' : 'btn-outline-success' }}"
+         style="font-size:0.82rem;padding:4px 12px;">
+        <i class="fa-solid fa-circle-check me-1"></i>🟢 Risque Faible
+        <span class="badge rounded-pill {{ request('risk') === 'low' ? 'bg-white text-success' : 'bg-success text-white' }} ms-1">
+          {{ $counts['low'] ?? 0 }}
+        </span>
+      </a>
+    </div>
+
+    {{-- Tri rapide par score de risque --}}
+    <div class="d-flex align-items-center gap-1 ms-auto">
+      <span class="small text-muted me-1">Trier :</span>
+      @if(request('sort') === 'risk_desc')
+        <a href="{{ route('admin.predictions.index', array_merge(request()->except(['sort', 'page']))) }}" class="btn btn-sm btn-primary rounded-pill px-3 fw-semibold" style="font-size:0.8rem;">
+          <i class="fa-solid fa-arrow-down-wide-short me-1"></i>Risque décroissant (Actif)
+        </a>
+      @else
+        <a href="{{ route('admin.predictions.index', array_merge(request()->except(['page']), ['sort' => 'risk_desc'])) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3" style="font-size:0.8rem;">
+          <i class="fa-solid fa-arrow-down-wide-short me-1"></i>Trier par risque le + élevé
+        </a>
+      @endif
+    </div>
+  </div>
 </div>
 
 <div class="row g-4">
