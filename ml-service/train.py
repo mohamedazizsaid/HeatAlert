@@ -80,6 +80,17 @@ def parse_args() -> argparse.Namespace:
         default=0.2,
         help="Fraction of the latest rows reserved for testing.",
     )
+    parser.add_argument(
+        "--balance-train",
+        action="store_true",
+        help="Undersample real negative training rows; never changes the test set.",
+    )
+    parser.add_argument(
+        "--negative-ratio",
+        type=int,
+        default=3,
+        help="Maximum number of negative training rows per positive when balancing.",
+    )
     return parser.parse_args()
 
 
@@ -255,10 +266,16 @@ def metrics_for_predictions(
 
 
 def train_and_evaluate(
-    frame: pd.DataFrame, schema: dict[str, Any], test_size: float
+    frame: pd.DataFrame,
+    schema: dict[str, Any],
+    test_size: float,
+    balance_train: bool = False,
+    negative_ratio: int = 3,
 ) -> tuple[dict[str, Any], Pipeline | None]:
     if not 0 < test_size < 1:
         raise DatasetError("test_size doit être compris entre 0 et 1.")
+    if negative_ratio < 1:
+        raise DatasetError("negative_ratio doit être supérieur ou égal à 1.")
 
     split_index = int(len(frame) * (1 - test_size))
     if split_index <= 0 or split_index >= len(frame):
@@ -266,10 +283,25 @@ def train_and_evaluate(
 
     train = frame.iloc[:split_index].copy()
     test = frame.iloc[split_index:].copy()
+    original_y_train = train["target"]
+    if balance_train:
+        positive_train = train[train["target"] == 1]
+        negative_train = train[train["target"] == 0]
+        if not positive_train.empty and len(negative_train) > len(positive_train) * negative_ratio:
+            negative_train = negative_train.sample(
+                n=len(positive_train) * negative_ratio,
+                random_state=42,
+            )
+            fit_train = pd.concat([positive_train, negative_train], ignore_index=True)
+        else:
+            fit_train = train.copy()
+    else:
+        fit_train = train.copy()
+
     feature_columns = schema["numeric_features"] + schema["categorical_features"]
-    x_train = train[feature_columns]
+    x_train = fit_train[feature_columns]
     x_test = test[feature_columns]
-    y_train = train["target"]
+    y_train = fit_train["target"]
     y_test = test["target"]
 
     split_info = {
@@ -279,12 +311,16 @@ def train_and_evaluate(
         "train_date_max": train["reference_at"].max().isoformat(),
         "test_date_min": test["reference_at"].min().isoformat(),
         "test_date_max": test["reference_at"].max().isoformat(),
-        "train_target_distribution": y_train.value_counts().sort_index().astype(int).to_dict(),
+        "train_target_distribution": original_y_train.value_counts().sort_index().astype(int).to_dict(),
         "test_target_distribution": y_test.value_counts().sort_index().astype(int).to_dict(),
+        "balance_train": balance_train,
+        "negative_ratio": negative_ratio if balance_train else None,
+        "fit_train_rows": int(len(fit_train)),
+        "fit_train_target_distribution": y_train.value_counts().sort_index().astype(int).to_dict(),
     }
     report: dict[str, Any] = {"schema": schema, "split": split_info, "models": {}}
 
-    if y_train.nunique() < 2:
+    if original_y_train.nunique() < 2:
         report["status"] = "insufficient_training_classes"
         report["reason"] = "La partition d'entraînement ne contient qu'une seule classe."
         return report, None
@@ -293,9 +329,9 @@ def train_and_evaluate(
         report["reason"] = "La partition de test ne contient qu'une seule classe."
         return report, None
 
-    majority = int(y_train.mode().iloc[0])
+    majority = int(original_y_train.mode().iloc[0])
     baseline_predictions = np.full(len(y_test), majority, dtype=int)
-    baseline_probability = np.full(len(y_test), float(y_train.mean()))
+    baseline_probability = np.full(len(y_test), float(original_y_train.mean()))
     report["models"]["majority_baseline"] = metrics_for_predictions(
         y_test, baseline_predictions, baseline_probability
     )
@@ -348,7 +384,13 @@ def main() -> int:
 
     try:
         frame, schema = load_dataset(args.data)
-        report, trained_pipeline = train_and_evaluate(frame, schema, args.test_size)
+        report, trained_pipeline = train_and_evaluate(
+            frame,
+            schema,
+            args.test_size,
+            balance_train=args.balance_train,
+            negative_ratio=args.negative_ratio,
+        )
         report["test_size"] = args.test_size
         if trained_pipeline is not None and report["status"] == "trained_and_evaluated":
             joblib.dump(trained_pipeline, model_path)
