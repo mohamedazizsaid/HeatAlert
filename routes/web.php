@@ -35,6 +35,9 @@ Route::delete('/chatbot/conversations/{id}', [ChatbotController::class, 'deleteC
 Route::delete('/chatbot/conversations', [ChatbotController::class, 'clearAllConversations'])->name('chatbot.conversations.clear');
 Route::get('/chatbot/tts', [ChatbotController::class, 'tts'])->name('chatbot.tts');
 
+// ─── Alertes Vocales Synthétisées en Dialecte Tunisien (Derja & FR)
+Route::get('/voice/script/{zone}', [\App\Http\Controllers\VoiceAlertController::class, 'getScript'])->name('voice.script');
+Route::get('/voice/stream/{zone}', [\App\Http\Controllers\VoiceAlertController::class, 'streamAudio'])->name('voice.stream');
 
 // ─── Page d'accueil publique (splash screen + présentation)
 Route::get('/', [HomeController::class, 'index'])->name('home');

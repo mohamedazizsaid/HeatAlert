@@ -327,6 +327,16 @@
           <div class="d-flex justify-content-end align-items-center gap-1 gap-sm-2 pt-2 border-top overflow-x-auto" style="border-color:#eef2f7 !important;">
             @if($prediction && ($prediction->probability >= 0.70 || $prediction->risk_level === 'high'))
               <button type="button"
+                      class="btn btn-sm btn-outline-warning text-dark fw-semibold js-play-admin-voice d-inline-flex align-items-center gap-1 text-nowrap"
+                      style="height:32px;padding:0 8px;font-size:11.5px;background:#fef3c7;border-color:#fde68a;"
+                      data-zone-id="{{ $zone->id }}"
+                      data-zone-name="{{ $zone->nom }}"
+                      title="Écouter le bulletin vocal d'urgence IA en Derja (بالدارجة)">
+                <i class="fa-solid fa-volume-high text-warning-emphasis"></i><span class="d-none d-sm-inline">Vocal</span> 🇹🇳
+              </button>
+            @endif
+            @if($prediction && ($prediction->probability >= 0.70 || $prediction->risk_level === 'high'))
+              <button type="button"
                       class="btn btn-sm btn-outline-danger fw-semibold js-notify-residents d-inline-flex align-items-center gap-1 text-nowrap"
                       style="height:32px;padding:0 8px;font-size:11.5px;"
                       data-url="{{ route('admin.predictions.notify_residents', $zone) }}"
@@ -457,6 +467,59 @@
         <button type="button" id="btn-confirm-notify-residents" class="btn btn-danger flex-grow-1 text-center py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2 shadow-sm" style="border-radius: 8px;">
           <i class="fa-solid fa-paper-plane"></i>
           <span>Envoyer l'alerte</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{-- Modal Lecteur Bulletin Vocal Admin (Derja / FR) --}}
+<div class="modal fade" id="adminVoiceModal" tabindex="-1" aria-labelledby="adminVoiceModalLabel" aria-hidden="true" style="z-index: 1065;">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden;">
+      <div class="modal-header border-0 pb-0 pt-4 px-4 position-relative">
+        <div class="d-flex align-items-center gap-3">
+          <div style="width: 50px; height: 50px; border-radius: 14px; background: rgba(245, 158, 11, 0.15); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+            <i class="fa-solid fa-volume-high"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold text-dark mb-0" id="adminVoiceModalLabel" style="font-size: 1.15rem;">Bulletin Vocal IA (Derja / FR)</h5>
+            <span class="text-warning-emphasis small fw-semibold"><i class="fa-solid fa-microphone me-1"></i>Alerte Audio Synthétisée</span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer" style="margin-top: -12px; margin-right: -4px;"></button>
+      </div>
+
+      <div class="modal-body px-4 py-3">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <span class="fw-bold text-dark" id="adminVoiceZoneName">Zone</span>
+          <div class="btn-group btn-group-sm" role="group">
+            <button type="button" class="btn btn-outline-warning text-dark active js-admin-voice-lang" data-lang="ar-TN">🇹🇳 تونسي</button>
+            <button type="button" class="btn btn-outline-secondary js-admin-voice-lang" data-lang="fr">🇫🇷 FR</button>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-3 bg-light border mb-3">
+          <label class="small text-muted fw-semibold mb-1 d-block"><i class="fa-solid fa-file-lines me-1"></i>Script prononcé par l'IA :</label>
+          <div id="adminVoiceScriptText" class="small text-dark" style="max-height: 120px; overflow-y: auto; font-style: italic; line-height: 1.5;">
+            Chargement du script...
+          </div>
+        </div>
+
+        <div class="p-3 rounded-3 d-flex align-items-center justify-content-between gap-3" style="background: #fffbeb; border: 1px solid #fef3c7;">
+          <div class="d-flex align-items-center gap-2">
+            <button type="button" id="btnAdminPlayVoice" class="btn btn-warning rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width:42px;height:42px;flex-shrink:0;">
+              <i class="fa-solid fa-play" id="iconAdminPlayVoice"></i>
+            </button>
+            <span class="small fw-semibold text-dark" id="adminVoiceStatus">Prêt pour l'écoute</span>
+          </div>
+          <audio id="adminAudioVoice" preload="none" class="d-none"></audio>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 px-4 pb-4 pt-1">
+        <button type="button" class="m-btn m-btn--ghost w-100 text-center py-2" data-bs-dismiss="modal">
+          <i class="fa-solid fa-check me-1"></i>Fermer
         </button>
       </div>
     </div>
@@ -722,7 +785,124 @@ document.addEventListener('DOMContentLoaded', function () {
       map.fitBounds(bounds, { padding: [30, 30] });
     }
   }
+
+  // 🎙️ GESTION DU BULLETIN VOCAL ADMIN (DERJA & FR)
+  const adminVoiceModalEl   = document.getElementById('adminVoiceModal');
+  const adminVoiceModal     = adminVoiceModalEl ? new bootstrap.Modal(adminVoiceModalEl) : null;
+  const adminVoiceZoneName  = document.getElementById('adminVoiceZoneName');
+  const adminVoiceScriptText= document.getElementById('adminVoiceScriptText');
+  const adminVoiceStatus    = document.getElementById('adminVoiceStatus');
+  const btnAdminPlayVoice   = document.getElementById('btnAdminPlayVoice');
+  const iconAdminPlayVoice  = document.getElementById('iconAdminPlayVoice');
+  const adminAudioVoice     = document.getElementById('adminAudioVoice');
+  const adminLangButtons    = document.querySelectorAll('.js-admin-voice-lang');
+
+  let currentAdminZoneId = null;
+  let currentAdminLang   = 'ar-TN';
+
+  function loadAdminScriptAndAudio(autoPlay = false) {
+    if (!currentAdminZoneId) return;
+
+    adminVoiceScriptText.textContent = 'Chargement du script IA en cours...';
+    adminVoiceStatus.textContent = 'Chargement audio...';
+    btnAdminPlayVoice.disabled = true;
+
+    fetch(`/voice/script/${currentAdminZoneId}?lang=${currentAdminLang}`)
+      .then(r => r.json())
+      .then(data => {
+        btnAdminPlayVoice.disabled = false;
+        if (data.success) {
+          adminVoiceScriptText.textContent = data.script;
+          adminAudioVoice.src = `${data.audio_url}&t=${Date.now()}`;
+          adminVoiceStatus.textContent = 'Prêt pour l\'écoute';
+          if (autoPlay) {
+            playAdminAudio();
+          }
+        } else {
+          adminVoiceScriptText.textContent = 'Erreur: ' + (data.message || 'Impossible de charger le script.');
+        }
+      })
+      .catch(err => {
+        btnAdminPlayVoice.disabled = false;
+        adminVoiceScriptText.textContent = 'Erreur de connexion au service vocal.';
+      });
+  }
+
+  function playAdminAudio() {
+    if (!adminAudioVoice.src) {
+      loadAdminScriptAndAudio(true);
+      return;
+    }
+    adminAudioVoice.play().then(() => {
+      iconAdminPlayVoice.className = 'fa-solid fa-pause';
+      adminVoiceStatus.textContent = currentAdminLang === 'ar-TN' ? 'قاعد يقرا بالدارجة...' : 'Lecture en cours...';
+    }).catch(err => {
+      console.warn('Audio play error:', err);
+      iconAdminPlayVoice.className = 'fa-solid fa-play';
+      adminVoiceStatus.textContent = 'Cliquez pour écouter.';
+    });
+  }
+
+  function pauseAdminAudio() {
+    adminAudioVoice.pause();
+    iconAdminPlayVoice.className = 'fa-solid fa-play';
+    adminVoiceStatus.textContent = 'En pause';
+  }
+
+  document.querySelectorAll('.js-play-admin-voice').forEach(btn => {
+    btn.addEventListener('click', function() {
+      currentAdminZoneId = this.getAttribute('data-zone-id');
+      const zoneName = this.getAttribute('data-zone-name');
+      adminVoiceZoneName.textContent = `Alerte Vocale — ${zoneName}`;
+      adminAudioVoice.pause();
+      iconAdminPlayVoice.className = 'fa-solid fa-play';
+
+      if (adminVoiceModal) {
+        adminVoiceModal.show();
+      }
+      loadAdminScriptAndAudio(false);
+    });
+  });
+
+  if (btnAdminPlayVoice && adminAudioVoice) {
+    btnAdminPlayVoice.addEventListener('click', function() {
+      if (adminAudioVoice.paused || adminAudioVoice.ended) {
+        playAdminAudio();
+      } else {
+        pauseAdminAudio();
+      }
+    });
+
+    adminAudioVoice.addEventListener('ended', function() {
+      iconAdminPlayVoice.className = 'fa-solid fa-rotate-right';
+      adminVoiceStatus.textContent = 'Lecture terminée. Réécouter ?';
+    });
+
+    adminLangButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        adminLangButtons.forEach(b => {
+          b.classList.remove('active', 'btn-outline-warning', 'btn-outline-secondary');
+          b.classList.add('btn-outline-secondary');
+        });
+        this.classList.add('active', 'btn-outline-warning');
+        this.classList.remove('btn-outline-secondary');
+        currentAdminLang = this.getAttribute('data-lang');
+
+        adminAudioVoice.pause();
+        iconAdminPlayVoice.className = 'fa-solid fa-play';
+        loadAdminScriptAndAudio(false);
+      });
+    });
+
+    if (adminVoiceModalEl) {
+      adminVoiceModalEl.addEventListener('hidden.bs.modal', function() {
+        adminAudioVoice.pause();
+        iconAdminPlayVoice.className = 'fa-solid fa-play';
+      });
+    }
+  }
 });
+
 </script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 @endpush

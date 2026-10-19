@@ -108,7 +108,7 @@
                 <p class="mb-2 text-dark small" style="line-height: 1.5;">
                   Cette prévision est calculée en temps réel selon les fortes chaleurs et la demande électrique estimée sur le réseau de votre région.
                 </p>
-                <div class="d-flex flex-wrap gap-2 pt-1">
+                <div class="d-flex flex-wrap gap-2 pt-1 mb-3">
                   <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-xs small">
                     <i class="bi bi-phone-fill text-primary me-1"></i>Rechargez vos téléphones et batteries
                   </span>
@@ -119,6 +119,37 @@
                     <i class="bi bi-water text-primary me-1"></i>Prévoyez des réserves d'eau potable
                   </span>
                 </div>
+
+                {{-- 🎙️ LECTEUR AUDIO D'ALERTE VOCALE EN DIALECTE TUNISIEN (DERJA) --}}
+                <div class="p-3 rounded-4 bg-white border d-flex flex-wrap align-items-center justify-content-between gap-3 shadow-xs" style="border-color: {{ $borderCol }} !important;">
+                  <div class="d-flex align-items-center gap-3">
+                    <button type="button" id="btnPlayVoiceAlert" class="btn btn-danger rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width:48px;height:48px;flex-shrink:0;" title="Écouter le bulletin vocal">
+                      <i class="bi bi-play-fill fs-3" id="iconPlayVoice"></i>
+                    </button>
+                    <div>
+                      <div class="fw-bold text-dark d-flex align-items-center gap-2">
+                        <span id="voiceTitleText">🎙️ Écouter le Bulletin Vocal en Derja</span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill small" style="font-size:10px;">🇹🇳 بالدارجة</span>
+                      </div>
+                      <div class="small text-muted" id="voiceStatusText">
+                        Alerte audio synthétisée par IA pour cette zone.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="btn-group btn-group-sm" role="group">
+                      <button type="button" class="btn btn-outline-danger active js-voice-lang" data-lang="ar-TN">
+                        🇹🇳 تونسي
+                      </button>
+                      <button type="button" class="btn btn-outline-danger js-voice-lang" data-lang="fr">
+                        🇫🇷 Français
+                      </button>
+                    </div>
+                    <audio id="audioVoiceAlert" preload="none" class="d-none"></audio>
+                  </div>
+                </div>
+
               </div>
 
               <div class="col-lg-4 text-lg-end text-start">
@@ -386,6 +417,86 @@
       if (bounds.length > 0) {
         map.fitBounds(bounds, { padding: [30, 30] });
       }
+    }
+
+    // 🎙️ GESTION DU BULLETIN VOCAL D'ALERTE (DERJA & FR)
+    const btnPlayVoiceAlert = document.getElementById('btnPlayVoiceAlert');
+    const audioVoiceAlert   = document.getElementById('audioVoiceAlert');
+    const iconPlayVoice     = document.getElementById('iconPlayVoice');
+    const voiceStatusText   = document.getElementById('voiceStatusText');
+    const voiceTitleText    = document.getElementById('voiceTitleText');
+    const langButtons       = document.querySelectorAll('.js-voice-lang');
+
+    if (btnPlayVoiceAlert && audioVoiceAlert) {
+      let currentLang = 'ar-TN';
+      const zoneId = "{{ $userZone?->id ?? '' }}";
+
+      function updateAudioSource(autoPlay = false) {
+        if (!zoneId) return;
+        const streamUrl = `/voice/stream/${zoneId}?lang=${currentLang}&t=${Date.now()}`;
+        audioVoiceAlert.src = streamUrl;
+        if (autoPlay) {
+          playAudio();
+        }
+      }
+
+      function playAudio() {
+        if (!audioVoiceAlert.src) {
+          updateAudioSource(false);
+        }
+        voiceStatusText.textContent = currentLang === 'ar-TN' ? 'قاعد يقرا في التنبيه الصوتي بالدارجة...' : 'Lecture du bulletin vocal en cours...';
+        btnPlayVoiceAlert.classList.add('pulse-voice');
+        audioVoiceAlert.play().then(() => {
+          iconPlayVoice.className = 'bi bi-pause-fill fs-3';
+        }).catch(err => {
+          console.warn('Playback error or user blocked autoplay', err);
+          voiceStatusText.textContent = 'Cliquez pour écouter.';
+          iconPlayVoice.className = 'bi bi-play-fill fs-3';
+          btnPlayVoiceAlert.classList.remove('pulse-voice');
+        });
+      }
+
+      function pauseAudio() {
+        audioVoiceAlert.pause();
+        iconPlayVoice.className = 'bi bi-play-fill fs-3';
+        btnPlayVoiceAlert.classList.remove('pulse-voice');
+        voiceStatusText.textContent = 'En pause. Cliquez pour reprendre.';
+      }
+
+      btnPlayVoiceAlert.addEventListener('click', function() {
+        if (audioVoiceAlert.paused || audioVoiceAlert.ended) {
+          playAudio();
+        } else {
+          pauseAudio();
+        }
+      });
+
+      audioVoiceAlert.addEventListener('ended', function() {
+        iconPlayVoice.className = 'bi bi-arrow-repeat fs-3';
+        btnPlayVoiceAlert.classList.remove('pulse-voice');
+        voiceStatusText.textContent = currentLang === 'ar-TN' ? 'وفات القراءة. انقر لإعادة الاستماع.' : 'Lecture terminée. Cliquez pour réécouter.';
+      });
+
+      langButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          langButtons.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          currentLang = this.getAttribute('data-lang');
+
+          if (currentLang === 'ar-TN') {
+            voiceTitleText.textContent = '🎙️ Écouter le Bulletin Vocal en Derja';
+            voiceStatusText.textContent = 'تنبيه صوتي بالدارجة التونسية للجهة متاعك.';
+          } else {
+            voiceTitleText.textContent = '🎙️ Écouter le Bulletin Vocal (FR)';
+            voiceStatusText.textContent = 'Bulletin vocal préventif en français.';
+          }
+
+          updateAudioSource(!audioVoiceAlert.paused);
+        });
+      });
+
+      // Initialisation
+      updateAudioSource(false);
     }
   });
 </script>
