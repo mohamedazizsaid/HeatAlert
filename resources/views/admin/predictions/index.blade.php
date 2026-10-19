@@ -325,13 +325,13 @@
           @endif
 
           <div class="d-flex justify-content-end align-items-center gap-1 gap-sm-2 pt-2 border-top overflow-x-auto" style="border-color:#eef2f7 !important;">
-            @if($prediction && ($prediction->probability >= 0.70 || $prediction->risk_level === 'high'))
+            @if($prediction)
               <button type="button"
                       class="btn btn-sm btn-outline-warning text-dark fw-semibold js-play-admin-voice d-inline-flex align-items-center gap-1 text-nowrap"
                       style="height:32px;padding:0 8px;font-size:11.5px;background:#fef3c7;border-color:#fde68a;"
                       data-zone-id="{{ $zone->id }}"
                       data-zone-name="{{ $zone->nom }}"
-                      title="Écouter le bulletin vocal d'urgence IA en Derja (بالدارجة)">
+                      title="Écouter le bulletin vocal adapté au niveau de risque (بالدارجة)">
                 <i class="fa-solid fa-volume-high text-warning-emphasis"></i><span class="d-none d-sm-inline">Vocal</span> 🇹🇳
               </button>
             @endif

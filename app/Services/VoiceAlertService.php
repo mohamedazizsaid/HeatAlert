@@ -42,7 +42,8 @@ class VoiceAlertService
     protected function buildDerjaScript(string $zoneName, int $probPct, ?string $startHour, ?string $endHour): string
     {
         $text = "عسلامة، تنبيه من منصة هيت ألارت. ";
-        $text .= "فمة خطر كبير متاع انقطاع التيّار الكهربائي في {$zoneName} بنسبة {$probPct} في المائة. ";
+        $riskLabel = $probPct >= 70 ? 'خطر كبير' : ($probPct >= 40 ? 'خطر متوسط' : 'خطر ضعيف');
+        $text .= "مستوى الخطر {$riskLabel}، واحتمال انقطاع التيّار الكهربائي في {$zoneName} هو {$probPct} في المائة. ";
 
         if ($startHour && $endHour) {
             $text .= "الانقطاع متوقع يبدا من السوايع {$startHour} و يرجع مع {$endHour}. ";
@@ -52,8 +53,10 @@ class VoiceAlertService
 
         if ($probPct >= 70) {
             $text .= "ننصحوكم تشرجيو تليفوناتكم توا، تسكروا الفريجيدار مليح، و تحضروا دبوزة ماء. ان شاء الله ربي يحفظكم.";
+        } elseif ($probPct >= 40) {
+            $text .= "ننصحوكم تتابعوا التحديثات، وتشحنوا تليفوناتكم وتاخذوا احتياطاتكم.";
         } else {
-            $text .= "ردوا بالكم من السخانة و تابعوا التحديثات على المنصة.";
+            $text .= "الخطر ضعيف، أما ردوا بالكم من السخانة وتابعوا التحديثات على المنصة.";
         }
 
         return $text;
@@ -65,7 +68,8 @@ class VoiceAlertService
     protected function buildFrenchScript(string $zoneName, int $probPct, ?string $startHour, ?string $endHour): string
     {
         $text = "Bonjour, ici l'alerte météo HeatAlert. ";
-        $text .= "Un risque de coupure de courant de {$probPct} pour cent est prévu pour la zone de {$zoneName}. ";
+        $riskLabel = $probPct >= 70 ? 'élevé' : ($probPct >= 40 ? 'modéré' : 'faible');
+        $text .= "Le risque de coupure de courant est {$riskLabel} dans la zone de {$zoneName}, avec une probabilité de {$probPct} pour cent. ";
 
         if ($startHour && $endHour) {
             $text .= "Le créneau prévisionnel est estimé entre {$startHour} et {$endHour}. ";
@@ -75,6 +79,10 @@ class VoiceAlertService
 
         if ($probPct >= 70) {
             $text .= "Nous vous recommandons de recharger vos appareils, de garder les réfrigérateurs bien fermés et de prévoir de l'eau potable.";
+        } elseif ($probPct >= 40) {
+            $text .= "Nous vous conseillons de suivre les prochaines mises à jour et de recharger vos appareils par précaution.";
+        } else {
+            $text .= "Le risque reste faible. Restez attentif aux mises à jour et aux consignes locales.";
         }
 
         return $text;
