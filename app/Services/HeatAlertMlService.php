@@ -137,17 +137,25 @@ class HeatAlertMlService
             ->where('date_debut', '<', $referenceAt);
         $lastCoupureAt = (clone $history)->max('date_debut');
 
-        // Météo via alerte active, sinon via Open-Meteo en temps réel
-        $weather = $alert
-            ? [
+        // 1. Priorité absolue : Météo réelle en direct via satellite Open-Meteo (basée sur GPS de la zone)
+        $liveWeather = $this->fetchLiveWeather((float) $zone->latitude, (float) $zone->longitude);
+
+        // 2. Si l'API Open-Meteo a répondu avec succès, on utilise ces vraies données en temps réel
+        if (!is_null($liveWeather['temperature_max'])) {
+            $weather = $liveWeather;
+        } elseif ($alert) {
+            // 3. Fallback secondaire : si l'API satellite est injoignable, on prend les valeurs de l'alerte
+            $weather = [
                 'temperature_min'       => $alert->temperature_min,
                 'temperature_max'       => $alert->temperature_max,
                 'temperature_ressentie' => $alert->temperature_ressentie,
                 'humidite'              => $alert->humidite,
                 'indice_uv'             => $alert->indice_uv,
                 'vitesse_vent'          => $alert->vitesse_vent,
-            ]
-            : $this->fetchLiveWeather((float) $zone->latitude, (float) $zone->longitude);
+            ];
+        } else {
+            $weather = $liveWeather;
+        }
 
         return [
             'zone_id'                    => $zone->id,
