@@ -31,7 +31,7 @@
         </li>
         <li class="{{ request()->routeIs('admin.predictions.*') ? 'active' : '' }}">
           <a href="{{ route('admin.predictions.index') }}">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>Prédictions ML
+            <i class="fa-solid fa-wand-magic-sparkles"></i>Prévisions de coupures
           </a>
         </li>
         <li class="{{ request()->routeIs('admin.alertes.*') ? 'active has-sub' : 'has-sub' }}">
@@ -131,7 +131,7 @@
 
         <li class="{{ request()->routeIs('admin.predictions.*') ? 'active' : '' }}">
           <a href="{{ route('admin.predictions.index') }}">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>Prédictions ML
+            <i class="fa-solid fa-wand-magic-sparkles"></i>Prévisions de coupures
           </a>
         </li>
 

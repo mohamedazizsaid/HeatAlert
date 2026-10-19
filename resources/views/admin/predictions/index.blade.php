@@ -1,6 +1,6 @@
 @extends('layouts.admin.admin')
 
-@section('title', 'Prédictions de coupures')
+@section('title', 'Prévisions de coupures')
 
 @push('styles')
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -42,7 +42,7 @@
 @section('content')
 <div class="page-header">
   <div>
-    <h1><i class="fa-solid fa-wand-magic-sparkles me-2 text-primary"></i>Prédictions de coupures</h1>
+    <h1><i class="fa-solid fa-wand-magic-sparkles me-2 text-primary"></i>Prévisions de coupures</h1>
     <p class="subtitle">Dernier résultat disponible par zone, avec sa période de validité.</p>
   </div>
   <div class="page-header__actions d-flex align-items-center gap-2">
