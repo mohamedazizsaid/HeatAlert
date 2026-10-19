@@ -2555,13 +2555,9 @@ Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
   function speakText(rawText, onEndCallback) {
     if (!rawText || rawText.trim().length < 2) return;
 
-    // Couper toute lecture en cours
-    window.speechSynthesis.cancel();
+    // Couper toute lecture en cours proprement
+    stopSpeaking();
     heatbotState._ttsAborted = false;
-    if (heatbotState._currentAudio) {
-      heatbotState._currentAudio.pause();
-      heatbotState._currentAudio = null;
-    }
 
     const voiceLangSetting = heatbotState.voiceLang || 'fr-FR';
 
@@ -2624,6 +2620,7 @@ Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
       };
 
       audio.onerror = () => {
+        if (heatbotState._ttsAborted) return;
         console.warn('[HeatBot TTS] Proxy indisponible, fallback Web Speech API.');
         if ('speechSynthesis' in window) {
           const utt = new SpeechSynthesisUtterance(chunk);
@@ -2631,6 +2628,7 @@ Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
           utt.lang  = voiceLang; // ar-TN, ar-SA, ou fr-FR
           utt.rate  = 0.9;
           utt.onend = () => { if (!heatbotState._ttsAborted) playNextChunk(); };
+          utt.onerror = () => { if (!heatbotState._ttsAborted) playNextChunk(); };
           window.speechSynthesis.speak(utt);
         } else {
           playNextChunk();
@@ -2638,28 +2636,47 @@ Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
       };
 
       audio.play().catch(err => {
+        if (heatbotState._ttsAborted) return;
         console.warn('[HeatBot TTS] Autoplay bloqué:', err.message);
-        setTimeout(playNextChunk, 100);
+        heatbotState._ttsTimeout = setTimeout(() => {
+          if (!heatbotState._ttsAborted) playNextChunk();
+        }, 100);
       });
     }
 
     playNextChunk();
   }
 
-
-
   function stopSpeaking() {
     heatbotState._ttsAborted = true;
+
+    // Annuler tout timer de retry
+    if (heatbotState._ttsTimeout) {
+      clearTimeout(heatbotState._ttsTimeout);
+      heatbotState._ttsTimeout = null;
+    }
+
+    // Arrêter l'audio HTML5 (Google Translate TTS / Proxy) sans déclencher onerror ou onended
+    if (heatbotState._currentAudio) {
+      const audio = heatbotState._currentAudio;
+      heatbotState._currentAudio = null;
+      audio.onended = null;
+      audio.onerror = null;
+      audio.oncanplay = null;
+      try {
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
+      } catch (e) {}
+    }
+
     // Arrêter Web Speech API
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
     }
-    // Arrêter l'audio HTML5 (Google Translate TTS)
-    if (heatbotState._currentAudio) {
-      heatbotState._currentAudio.pause();
-      heatbotState._currentAudio.src = '';
-      heatbotState._currentAudio = null;
-    }
+
     heatbotState.isSpeaking = false;
     resetAllSpeakButtons();
   }
@@ -2667,8 +2684,6 @@ Optimisé pour Plein Écran, Écran Standard et Mobile / Tablettes
   function toggleSpeakMessage(btn) {
     if (btn.classList.contains('speaking')) {
       stopSpeaking();
-      btn.classList.remove('speaking');
-      btn.innerHTML = '<i class="bi bi-volume-up"></i> <span style="font-size:11px;">Écouter</span>';
     } else {
       stopSpeaking();
       const body = btn.closest('.heatbot-msg-body');

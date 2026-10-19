@@ -6,7 +6,6 @@ use App\Models\AlerteMeteo;
 use App\Models\Conseil;
 use App\Models\Coupure;
 use App\Models\PointFraicheur;
-use App\Models\PredictionCoupure;
 use App\Models\SignalementCoupure;
 use App\Models\User;
 use App\Models\Zone;
@@ -96,9 +95,10 @@ class GeminiChatbotService
     {
         // Compter les caractères arabes (Unicode U+0600 à U+06FF + U+0750-U+077F)
         $arabicCount = preg_match_all('/[\x{0600}-\x{06FF}\x{0750}-\x{077F}]/u', $message);
-        $totalChars  = mb_strlen(trim($message));
+        $totalChars = mb_strlen(trim($message));
 
-        if ($totalChars === 0) return 'fr';
+        if ($totalChars === 0)
+            return 'fr';
 
         // Si plus de 20% des caractères sont arabes, considérer comme arabe
         return ($arabicCount / $totalChars) >= 0.20 ? 'ar' : 'fr';
@@ -397,7 +397,7 @@ class GeminiChatbotService
         $confirmationMsg = match ($voiceLang) {
             'ar-TN' => 'مفهوم! أنا HeatBot نجاوب بالدارجة التونسية بالكامل. ما نكتبش ولا كلمة بالفرنسية.',
             'ar-SA' => 'مفهوم! أنا HeatBot وسأجيب باللغة العربية الفصحى فقط. لن أكتب أي كلمة بالفرنسية.',
-            default  => "Compris ! Je suis HeatBot. Je réponds en français immédiatement avec les données météo réelles. Je ne dis JAMAIS de consulter une autre page.",
+            default => "Compris ! Je suis HeatBot. Je réponds en français immédiatement avec les données météo réelles. Je ne dis JAMAIS de consulter une autre page.",
         };
 
         $contents[] = [
@@ -595,24 +595,7 @@ class GeminiChatbotService
                             'retablissement' => $c->retablissement_estime?->format('d/m/Y H:i'),
                         ])->toArray();
                 }
-
-                // ── Prédiction ML de coupure pour la zone ciblée ──
-                $targetMlPrediction = null;
-                if (!empty($targetLocation['zone_id'])) {
-                    $mlZone = Zone::find($targetLocation['zone_id']);
-                    $mlPred = $mlZone?->latestPrediction;
-                    if ($mlPred) {
-                        $targetMlPrediction = [
-                            'probability_pct'       => round($mlPred->probability * 100, 1),
-                            'risk_level'            => $mlPred->risk_level,
-                            'estimated_outage_start'=> $mlPred->estimated_outage_start?->format('d/m/Y à H:i'),
-                            'estimated_outage_end'  => $mlPred->estimated_outage_end?->format('H:i'),
-                            'estimated_outage_cause'=> $mlPred->estimated_outage_cause,
-                            'model_version'         => $mlPred->model_version,
-                            'updated_at'            => $mlPred->created_at?->diffForHumans(),
-                        ];
-                    }
-                }
+            }
 
             // Statistiques globales de la plateforme
             $alertesParNiveau = [
@@ -650,7 +633,6 @@ class GeminiChatbotService
                 'target_alertes' => $targetAlertes,
                 'target_points' => $targetPoints,
                 'target_coupures' => $targetCoupures,
-                'target_ml_prediction' => $targetMlPrediction ?? null,
                 'stats' => [
                     'zones_total' => Zone::where('actif', true)->count(),
                     'alertes_actives_total' => AlerteMeteo::where('statut', 'active')->count(),
@@ -705,7 +687,6 @@ LANG,
 - Pour une ville hors Tunisie, évalue la vigilance thermique à partir de la météo (canicule probable au-dessus de 34 °C, fortes chaleurs au-dessus de 30 °C, UV extrême au-dessus de 8).
 - Ne parle pas d'autres villes sans lien avec la question.
 - Ajoute un graphique "line" des températures de la journée.
-- Si "target_ml_prediction" contient des données et que l'utilisateur demande s'il y aura une coupure (présente ou future), utilise ces données en priorité : présente la probabilité (ex : "81,2% de risque"), le créneau estimé, la cause probable et un rappel que c'est une **prévision IA** (non confirmée). Si le risque dépasse 70%, ajoute des recommandations préventives (recharger téléphones, garder le frigo fermé, prévoir de l'eau).
 LOC;
         }
 
@@ -1353,60 +1334,9 @@ EOT;
         // ══════════════════════════════════════════════════════
         // ── CAS : COUPURES / COURANT ──
         // ══════════════════════════════════════════════════════
-        if (preg_match('/\b(coupure|courant|électricité|electricite|délestage|panne.*electricité|panne.*courant|kopure|kopure de coran|courant.*heure|risque.*coupure|y aura.*coupure|aura-t-il.*coupure|prevision.*coupure|prévision.*coupure)/iu', $message)) {
+        if (preg_match('/\b(coupure|courant|électricité|electricite|délestage|panne.*electricité|panne.*courant|kopure|kopure de coran|courant.*heure)/iu', $message)) {
             $totalCoupures = $stats['coupures_actives_total'];
 
-            // ── Prédiction ML disponible pour la zone ciblée ──
-            $mlPred = $knowledge['target_ml_prediction'] ?? null;
-            if ($mlPred && $targetLocation) {
-                $zoneName = $targetLocation['name'];
-                $prob     = $mlPred['probability_pct'];
-                $level    = $mlPred['risk_level'];
-
-                $reply = "### ⚡ Prévision IA de Coupure — {$zoneName}\n\n";
-                $reply .= "🤖 **Analyse HeatAlert ML :** ";
-
-                if ($level === 'high') {
-                    $reply .= "Risque **élevé** de coupure estimé à **{$prob}%** ⚠️\n\n";
-                } elseif ($level === 'medium') {
-                    $reply .= "Risque **modéré** de coupure estimé à **{$prob}%** 🟡\n\n";
-                } else {
-                    $reply .= "Risque **faible** de coupure estimé à **{$prob}%** ✅\n\n";
-                }
-
-                if (!empty($mlPred['estimated_outage_start'])) {
-                    $reply .= "🕐 **Créneau prévisionnel :** {$mlPred['estimated_outage_start']}";
-                    if (!empty($mlPred['estimated_outage_end'])) {
-                        $reply .= " → {$mlPred['estimated_outage_end']}";
-                    }
-                    $reply .= "\n";
-                }
-
-                if (!empty($mlPred['estimated_outage_cause'])) {
-                    $reply .= "⚙️ **Cause probable :** {$mlPred['estimated_outage_cause']}\n";
-                }
-
-                $reply .= "\n";
-
-                if ($prob >= 70) {
-                    $reply .= "**🛡️ Recommandations préventives :**\n";
-                    $reply .= "- 📱 Rechargez téléphones et batteries de secours maintenant\n";
-                    $reply .= "- ❄️ Gardez le réfrigérateur bien fermé (froid conservé 4–6h)\n";
-                    $reply .= "- 💧 Prévoyez une réserve d'eau potable\n";
-                    $reply .= "- 💊 Médicaments thermosensibles → glacière isotherme\n";
-                    $reply .= "- 🔌 Débranchez les appareils sensibles avant la coupure\n\n";
-                }
-
-                $reply .= "_⚠️ Il s'agit d'une **prévision IA** basée sur la température, la surcharge thermique et les données historiques — non d'une coupure confirmée. Mise à jour {$mlPred['updated_at']}._";
-
-                return [
-                    'reply'       => $reply,
-                    'chart'       => null,
-                    'suggestions' => ['Coupures confirmées de ma zone', 'Signaler une coupure', 'Points fraîcheur proches'],
-                ];
-            }
-
-            // ── Réponse générique (sans zone ciblée ou sans prédiction ML) ──
             $reply = "### ⚡ Coupures de Courant — Que Faire ?\n\n";
 
             if ($totalCoupures > 0) {
@@ -1428,8 +1358,8 @@ EOT;
             $reply .= "📲 *Signalez votre coupure sur HeatAlert pour alerter les équipes.*";
 
             return [
-                'reply'       => $reply,
-                'chart'       => null,
+                'reply' => $reply,
+                'chart' => null,
                 'suggestions' => ['Signaler une coupure', 'Médicaments et coupure', 'Points fraîcheur'],
             ];
         }
@@ -1914,4 +1844,3 @@ EOT;
         return $this->parseReplyAndChart($rawReply, $knowledge, $targetLocation);
     }
 }
-
