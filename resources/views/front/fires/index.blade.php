@@ -563,6 +563,21 @@
       </div>
     </div>
 
+    <!-- Toast HeatAlert (Sans alert() du navigateur) -->
+    <div id="fireToastWrapper" class="position-fixed top-0 end-0 p-3" style="z-index: 999999; margin-top: 75px;">
+      <div id="fireToastNotification" class="toast align-items-center text-white border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" style="display: none; min-width: 320px; max-width: 440px; border-radius: 16px; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); border-left: 5px solid #f59e0b;">
+        <div class="d-flex p-3 align-items-center">
+          <div id="fireToastIcon" class="me-3 fs-3 text-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+          </div>
+          <div class="toast-body p-0 flex-grow-1" style="font-size: 13.5px; font-weight: 500; line-height: 1.45;" id="fireToastMessage">
+            Aucun foyer actif détecté pour calculer la propagation.
+          </div>
+          <button type="button" class="btn-close btn-close-white ms-2 me-0" onclick="hideFireToast()" aria-label="Fermer"></button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -789,6 +804,20 @@
     }
     .header, .footer, #header, #footer, nav, .btn, .page-title, .breadcrumbs {
       display: none !important;
+    }
+  }
+  /* Toast Notification Animation */
+  .toast-slide-animate {
+    animation: toastSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes toastSlideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 </style>
@@ -1228,7 +1257,7 @@
 
   window.locateUserPosition = function() {
     if (!navigator.geolocation) {
-      alert("La géolocalisation n'est pas supportée par votre navigateur.");
+      showFireToast("La géolocalisation n'est pas supportée par votre navigateur.", "warning");
       return;
     }
 
@@ -1251,7 +1280,7 @@
       },
       err => {
         if (loadingOverlay) loadingOverlay.classList.add('d-none');
-        alert("Impossible de récupérer votre position GPS. Veuillez autoriser la localisation.");
+        showFireToast("Impossible de récupérer votre position GPS. Veuillez autoriser la localisation.", "warning");
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -1384,10 +1413,64 @@
   };
 
   // ═══════════════════════════════════════════════════════════
+  // ─── NOTIFICATION TOAST PERSONNALISÉE (SANS ALERT NAVIGATEUR)
+  // ═══════════════════════════════════════════════════════════
+
+  let fireToastTimer = null;
+  window.showFireToast = function(message, type = 'warning') {
+    const toast = document.getElementById('fireToastNotification');
+    const msgEl = document.getElementById('fireToastMessage');
+    const iconEl = document.getElementById('fireToastIcon');
+    if (!toast || !msgEl) return;
+
+    msgEl.textContent = message;
+
+    const config = {
+      warning: { icon: 'bi-exclamation-triangle-fill', textClass: 'text-warning', border: '#f59e0b' },
+      info:    { icon: 'bi-info-circle-fill',         textClass: 'text-primary', border: '#3b82f6' },
+      danger:  { icon: 'bi-fire',                     textClass: 'text-danger',  border: '#dc2626' },
+      success: { icon: 'bi-check-circle-fill',        textClass: 'text-success', border: '#10b981' }
+    };
+    const c = config[type] || config.warning;
+
+    if (iconEl) {
+      iconEl.className = `me-3 fs-3 ${c.textClass}`;
+      iconEl.innerHTML = `<i class="bi ${c.icon}"></i>`;
+    }
+    toast.style.borderLeft = `5px solid ${c.border}`;
+    toast.style.display = 'block';
+    toast.classList.remove('toast-slide-animate');
+    void toast.offsetWidth; // Force le recalcul du layout pour réactiver l'animation fluide
+    toast.classList.add('show');
+    toast.classList.add('toast-slide-animate');
+
+    if (fireToastTimer) clearTimeout(fireToastTimer);
+    fireToastTimer = setTimeout(() => {
+      hideFireToast();
+    }, 4500);
+  };
+
+  window.hideFireToast = function() {
+    const toast = document.getElementById('fireToastNotification');
+    if (!toast) return;
+    toast.classList.remove('show');
+    toast.classList.remove('toast-slide-animate');
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 250);
+  };
+
+  // ═══════════════════════════════════════════════════════════
   // ─── PRÉDICTION ML DE PROPAGATION DU FEU (LIGHTGBM 24H) ───
   // ═══════════════════════════════════════════════════════════
 
   window.runFireSpreadPrediction = function() {
+    // Si aucun foyer actif n'est actuellement détecté, afficher le toast personnalisé
+    if (!cachedHotspots || cachedHotspots.length === 0) {
+      showFireToast("Aucun foyer actif détecté pour calculer la propagation.", "warning");
+      return;
+    }
+
     const btn = document.getElementById('btnPredictSpread');
     const originalHtml = btn ? btn.innerHTML : '';
     if (btn) {
@@ -1421,7 +1504,7 @@
       }
 
       if (!data.success) {
-        alert(data.message || 'Impossible de calculer la propagation.');
+        showFireToast(data.message || "Aucun foyer actif détecté pour calculer la propagation.", "warning");
         return;
       }
 
@@ -1434,7 +1517,7 @@
         btn.disabled = false;
         btn.innerHTML = originalHtml;
       }
-      alert('Erreur lors de la communication avec le microservice ML.');
+      showFireToast("Erreur lors de la communication avec le microservice ML.", "danger");
     });
   };
 
