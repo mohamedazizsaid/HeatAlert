@@ -74,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
     // ─── Détection des Départs de Feux (NASA FIRMS)
     Route::get('/feux-foret', [FrontController::class, 'firesIndex'])->name('front.fires.index');
     Route::get('/feux-foret/api', [FrontController::class, 'firesApi'])->name('front.fires.api');
+    Route::post('/feux-foret/predict-spread', [FrontController::class, 'firesPredictSpread'])->name('front.fires.predict_spread');
 
     // ─── Profil Utilisateur (Détails & Modification)
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');

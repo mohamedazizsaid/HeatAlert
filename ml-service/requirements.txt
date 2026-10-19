@@ -5,3 +5,7 @@ fastapi>=0.110,<1
 uvicorn[standard]>=0.29,<1
 pymysql>=1.1,<2
 pytest>=8,<9
+lightgbm>=4.0,<5
+requests>=2.30,<3
+shap>=0.45,<1
+
