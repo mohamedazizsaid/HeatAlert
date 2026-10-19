@@ -178,7 +178,8 @@ class FireSpreadPredictionOutput(BaseModel):
 class FireSpreadBatchRequest(BaseModel):
     cells: list[FireSpreadCellInput] = Field(default_factory=list)
     active_hotspots: list[dict[str, Any]] | None = None
-    weather: dict[str, Any] | None = None
+    weather: dict[str, Any] | list[Any] | None = None
+
 
 
 class FireSpreadBatchResponse(BaseModel):
@@ -436,7 +437,7 @@ def create_app(
 
         # Si l'appelant fournit des détections satellites actives et demande la génération automatique de la grille
         if not cells and payload.active_hotspots:
-            weather_cfg = payload.weather or {}
+            weather_cfg = payload.weather if isinstance(payload.weather, dict) else {}
             w_temp = float(weather_cfg.get("temperature", 36.5))
             w_hum = float(weather_cfg.get("humidity", 25.0))
             w_speed = float(weather_cfg.get("wind_speed", 30.0))
