@@ -25,10 +25,27 @@ class FrontEquipementSensibleController extends Controller
     {
         $filters = $request->only(['search', 'niveau_sensibilite', 'actif']);
         $equipements = $this->service->getForUserPaginated($request->user(), $filters);
+
+        // Prédiction lazy : déclencher la prédiction pour les équipements sans prédiction existante.
+        foreach ($equipements as $equipement) {
+            if ($equipement->latestRiskPrediction === null) {
+                try {
+                    $this->riskService->predict($equipement);
+                    $equipement->unsetRelation('latestRiskPrediction');
+                    $equipement->load('latestRiskPrediction');
+                } catch (Throwable $exception) {
+                    Log::warning('Prédiction lazy équipement indisponible.', [
+                        'equipement_id' => $equipement->id,
+                        'error'         => $exception->getMessage(),
+                    ]);
+                }
+            }
+        }
+
         return view('front.equipements_sensibles.index', [
             'equipements' => $equipements,
-            'niveaux' => EquipementSensible::NIVEAUX,
-            'filters' => $filters,
+            'niveaux'     => EquipementSensible::NIVEAUX,
+            'filters'     => $filters,
         ]);
     }
 

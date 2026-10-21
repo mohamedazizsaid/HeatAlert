@@ -65,18 +65,22 @@ class EquipementSensibleRiskService
             'warnings' => ['present', 'array'],
         ])->validate();
 
-        return $equipement->riskPredictions()->updateOrCreate([
-            'target_window_start' => $validated['target_window_start'],
-        ], [
-            'probability' => $validated['probability'],
-            'risk_level' => $validated['risk_level'],
-            'target_window_hours' => $validated['target_window_hours'],
-            'target_window_end_exclusive' => $validated['target_window_end_exclusive'],
-            'model_version' => $validated['model_version'],
-            'factors' => $validated['factors'],
-            'warnings' => $validated['warnings'],
-            'input_snapshot' => $payload,
-        ]);
+        return $equipement->riskPredictions()->updateOrCreate(
+            [
+                'target_window_start' => \Carbon\Carbon::parse($validated['target_window_start'])->utc(),
+            ],
+            [
+                'probability'                 => $validated['probability'],
+                'risk_level'                  => $validated['risk_level'],
+                'target_window_hours'         => $validated['target_window_hours'],
+                'target_window_end_exclusive' => \Carbon\Carbon::parse($validated['target_window_end_exclusive'])->utc(),
+                'model_version'               => $validated['model_version'],
+                'factors'                     => $validated['factors'],
+                'warnings'                    => $validated['warnings'],
+                'input_snapshot'              => $payload,
+            ]
+        );
+
     }
 
     private function buildPayload(EquipementSensible $equipement, Carbon $referenceAt): array
