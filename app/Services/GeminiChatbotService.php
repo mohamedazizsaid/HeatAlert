@@ -115,6 +115,57 @@ class GeminiChatbotService
     {
         $cleanMessage = mb_strtolower(trim($message));
 
+        // ── Translittération des noms arabes de villes tunisiennes ──
+        $arabicCityMap = [
+            'الحمامات' => 'hammamet',
+            'نابل'     => 'nabeul',
+            'تونس'     => 'tunis',
+            'أريانة'   => 'ariana',
+            'بن عروس'  => 'ben arous',
+            'منوبة'    => 'manouba',
+            'بنزرت'    => 'bizerte',
+            'سوسة'     => 'sousse',
+            'المنستير'  => 'monastir',
+            'المهدية'  => 'mahdia',
+            'صفاقس'   => 'sfax',
+            'القيروان' => 'kairouan',
+            'القصرين'  => 'kasserine',
+            'سيدي بوزيد' => 'sidi bouzid',
+            'جندوبة'   => 'jendouba',
+            'باجة'     => 'beja',
+            'الكاف'    => 'le kef',
+            'سليانة'   => 'siliana',
+            'زغوان'    => 'zaghouan',
+            'قابس'     => 'gabes',
+            'مدنين'    => 'medenine',
+            'جربة'     => 'djerba',
+            'تطاوين'   => 'tataouine',
+            'قفصة'     => 'gafsa',
+            'توزر'     => 'tozeur',
+            'قبلي'     => 'kebili',
+            'قليبية'   => 'kelibia',
+            'طبرقة'    => 'tabarka',
+            'المرسى'   => 'la marsa',
+            'قرطاج'    => 'carthage',
+            // Villes internationales
+            'باريس'    => 'paris',
+            'لندن'     => 'london',
+            'مدريد'    => 'madrid',
+            'روما'     => 'rome',
+            'برلين'    => 'berlin',
+            'دبي'      => 'dubai',
+            'الرياض'   => 'riyad',
+            'القاهرة'  => 'cairo',
+            'الجزائر'  => 'alger',
+            'الدار البيضاء' => 'casablanca',
+        ];
+        foreach ($arabicCityMap as $arabicName => $latinKey) {
+            if (str_contains($message, $arabicName) || str_contains($cleanMessage, mb_strtolower($arabicName))) {
+                // Replace in cleanMessage so the existing Latin matching below finds it
+                $cleanMessage = str_replace(mb_strtolower($arabicName), $latinKey, $cleanMessage);
+            }
+        }
+
         // 1. Villes et gouvernorats tunisiens connus
         $tunisianLocations = [
             'hammamet' => ['name' => 'Hammamet', 'admin1' => 'Nabeul', 'country' => 'Tunisie', 'lat' => 36.4000, 'lng' => 10.6167],
@@ -1376,13 +1427,166 @@ EOT;
         }
 
         // ══════════════════════════════════════════════════════
-        // ── CAS : MULTI-LANGUE : ARABE ──
+        // ── CAS : MULTI-LANGUE : ARABE — détection d'intention avancée ──
         // ══════════════════════════════════════════════════════
-        if (preg_match('/[\x{0600}-\x{06FF}]/u', $message)) {
+        if (preg_match('/[\x{0600}-\x{06FF}]/u', $message) && !$targetLocation) {
+
+            // ── Météo / Température ──
+            // Si une ville est détectée, on ne répond pas ici : on laisse tomber vers
+            // le bloc de localisation plus bas pour obtenir la météo réelle.
+            if (!$targetLocation && preg_match('/(الطقس|أحوال الطقس|درجة الحرارة|درجات الحرارة|الحرارة|الجو)/u', $message)) {
+                return [
+                    'reply' => "### 🌤️ الطقس والمراقبة الحرارية\n\nأخبرني باسم مدينتك لأعطيك الطقس الآني، الحرارة المحسوسة، ومؤشر الأشعة فوق البنفسجية.\n\nأمثلة :\n- 🇹🇳 *'الطقس في الحمامات'*\n- 🇹🇳 *'الطقس في تونس'*\n- 🌍 *'الطقس في باريس'*",
+                    'chart' => null,
+                    'suggestions' => ['الطقس في الحمامات', 'الطقس في تونس', 'الطقس في باريس'],
+                ];
+            }
+
+            // ── Points fraîcheur / نقاط التبريد ──
+            if (preg_match('/(نقطة تبريد|نقاط التبريد|نقاط الانتعاش|أقرب نقطة|أماكن مكيفة|مكان بارد)/u', $message)) {
+                $reply = "### ❄️ نقاط التبريد والملاجئ الحرارية\n\n";
+                $reply .= "تضم المنصة **{$stats['points_fraicheur_total']} نقطة تبريد** في تونس :\n\n";
+                $reply .= "- 🌳 **الحدائق والمساحات الخضراء :** {$stats['points_par_type']['parc']}\n";
+                $reply .= "- 🏢 **القاعات المكيفة :** {$stats['points_par_type']['salle_climatisee']}\n";
+                $reply .= "- 💧 **النوافير ومحطات الماء الصالح للشرب :** {$stats['points_par_type']['fontaine']}\n";
+                $reply .= "- 🏊 **المسابح البلدية :** {$stats['points_par_type']['piscine']}\n";
+                $reply .= "- 📚 **المكتبات :** {$stats['points_par_type']['bibliotheque']}\n\n";
+                $reply .= "💡 *اذكر اسم مدينتك للحصول على العناوين الدقيقة. مثال: 'أقرب نقطة تبريد في الحمامات'.*";
+                $chart = [
+                    'type' => 'bar',
+                    'title' => 'توزيع نقاط التبريد حسب النوع',
+                    'labels' => ['الحدائق', 'قاعات مكيفة', 'نوافير', 'مسابح', 'مكتبات'],
+                    'datasets' => [[
+                        'label' => 'عدد النقاط',
+                        'data' => [
+                            $stats['points_par_type']['parc'],
+                            $stats['points_par_type']['salle_climatisee'],
+                            $stats['points_par_type']['fontaine'],
+                            $stats['points_par_type']['piscine'],
+                            $stats['points_par_type']['bibliotheque'],
+                        ],
+                        'backgroundColor' => ['#16a34a', '#2563eb', '#0ea5e9', '#06b6d4', '#7c3aed'],
+                    ]],
+                ];
+                return [
+                    'reply' => $reply,
+                    'chart' => $chart,
+                    'suggestions' => ['نقاط التبريد في تونس', 'نقاط التبريد في الحمامات', 'نصائح الوقاية من الحر'],
+                ];
+            }
+
+            // ── Alertes / تنبيهات ──
+            if (preg_match('/(التنبيهات|تنبيهات|الإنذار|إنذارات|تحذيرات|نداءات الخطر)/u', $message)) {
+                $totalAlertes = $stats['alertes_actives_total'];
+                $niveaux = $stats['alertes_par_niveau'];
+                if ($totalAlertes === 0) {
+                    $reply = "### ✅ الوضع الجوي — لا توجد تنبيهات نشطة\n\nبشرى سارة! منصة HeatAlert لا تسجّل حالياً أي تنبيه موجة حر نشط في تونس.\n\n📊 المناطق المراقبة: **{$stats['zones_total']}** ولاية ودائرة\n📅 آخر تحديث: {$knowledge['date']}";
+                } else {
+                    $reply = "### ⚠️ التنبيهات الجوية الحالية\n\nتسجل منصة HeatAlert حالياً **{$totalAlertes}** تنبيه(ات) نشطة:\n\n";
+                    if ($niveaux['rouge'] > 0) $reply .= "- 🔴 **المستوى الأحمر** (خطر شديد): **{$niveaux['rouge']}** منطقة\n";
+                    if ($niveaux['orange'] > 0) $reply .= "- 🟠 **المستوى البرتقالي** (يقظة عالية): **{$niveaux['orange']}** منطقة\n";
+                    if ($niveaux['jaune'] > 0) $reply .= "- 🟡 **المستوى الأصفر** (حرارة ملحوظة): **{$niveaux['jaune']}** منطقة\n";
+                    if ($niveaux['vert'] > 0) $reply .= "- 🟢 **المستوى الأخضر** (عادي): **{$niveaux['vert']}** منطقة\n";
+                    $reply .= "\n📅 التحديث: {$knowledge['date']}";
+                }
+                $chart = [
+                    'type' => 'doughnut',
+                    'title' => 'توزيع التنبيهات النشطة حسب المستوى',
+                    'labels' => ['🔴 أحمر', '🟠 برتقالي', '🟡 أصفر', '🟢 أخضر'],
+                    'datasets' => [[
+                        'label' => 'التنبيهات',
+                        'data' => [$niveaux['rouge'], $niveaux['orange'], $niveaux['jaune'], $niveaux['vert']],
+                        'backgroundColor' => ['#dc2626', '#ea580c', '#eab308', '#16a34a'],
+                    ]],
+                ];
+                return [
+                    'reply' => $reply,
+                    'chart' => $chart,
+                    'suggestions' => ['ماذا أفعل في التنبيه الأحمر؟', 'نقاط التبريد', 'نصائح الوقاية'],
+                ];
+            }
+
+            // ── Statistiques / إحصائيات ──
+            if (preg_match('/(إحصائيات|إحصاء|بيانات المنصة|أرقام|تقرير)/u', $message)) {
+                $reply = "### 📊 إحصائيات المنصة — HeatAlert\n\n";
+                $reply .= "- 🌍 **المناطق المراقبة:** {$stats['zones_total']} ولاية ودائرة\n";
+                $reply .= "- ⚠️ **التنبيهات النشطة:** **{$stats['alertes_actives_total']}** (أحمر: {$stats['alertes_par_niveau']['rouge']}, برتقالي: {$stats['alertes_par_niveau']['orange']}, أصفر: {$stats['alertes_par_niveau']['jaune']})\n";
+                $reply .= "- ❄️ **نقاط التبريد:** **{$stats['points_fraicheur_total']}** موقع\n";
+                $reply .= "- 🔥 **البؤر الحرارية (NASA FIRMS):** **{$stats['feux_hotspots_total']}** نقطة\n";
+                $reply .= "- ⚡ **انقطاعات الكهرباء:** {$stats['coupures_actives_total']} جارية أو مبرمجة\n";
+                $reply .= "- 📢 **بلاغات المواطنين:** {$stats['signalements_total']} بلاغ\n\n";
+                $reply .= "📅 آخر تحديث: {$knowledge['date']}";
+                $chart = [
+                    'type' => 'doughnut',
+                    'title' => 'توزيع التنبيهات النشطة حسب المستوى',
+                    'labels' => ['🔴 أحمر', '🟠 برتقالي', '🟡 أصفر', '🟢 أخضر'],
+                    'datasets' => [[
+                        'label' => 'التنبيهات',
+                        'data' => [$stats['alertes_par_niveau']['rouge'], $stats['alertes_par_niveau']['orange'], $stats['alertes_par_niveau']['jaune'], $stats['alertes_par_niveau']['vert']],
+                        'backgroundColor' => ['#dc2626', '#ea580c', '#eab308', '#16a34a'],
+                    ]],
+                ];
+                return [
+                    'reply' => $reply,
+                    'chart' => $chart,
+                    'suggestions' => ['التنبيهات الجارية', 'نقاط التبريد', 'الطقس في تونس'],
+                ];
+            }
+
+            // ── Feux / حرائق ──
+            if (preg_match('/(حرائق|حريق|البؤر الحرارية|NASA FIRMS|الغابات)/u', $message)) {
+                $totalFeux = $stats['feux_hotspots_total'];
+                $reply = "### 🔥 رصد الحرائق بالأقمار الصناعية (NASA FIRMS)\n\n";
+                if ($totalFeux === 0) {
+                    $reply .= "✅ لا توجد بؤر حرارية نشطة مسجلة في تونس خلال آخر 24 ساعة.\n\n";
+                } else {
+                    $reply .= "⚠️ تم رصد **{$totalFeux}** بؤرة حرارية، منها **{$stats['feux_high_confidence']}** بدرجة ثقة عالية.\n\n";
+                }
+                $reply .= "💡 *تخضع المناطق الغابية في الشمال الغربي (جندوبة، باجة، بنزرت) لمراقبة حرارية مستمرة.*";
+                $chart = [
+                    'type' => 'bar',
+                    'title' => 'البؤر الحرارية المرصودة (NASA FIRMS)',
+                    'labels' => ['ثقة عالية (>80%)', 'ثقة متوسطة'],
+                    'datasets' => [[
+                        'label' => 'عدد البؤر',
+                        'data' => [$stats['feux_high_confidence'], max(0, $stats['feux_hotspots_total'] - $stats['feux_high_confidence'])],
+                        'backgroundColor' => ['#ef4444', '#f97316'],
+                    ]],
+                ];
+                return [
+                    'reply' => $reply,
+                    'chart' => $chart,
+                    'suggestions' => ['التنبيهات الجارية', 'نصائح الوقاية من الحر', 'إحصائيات المنصة'],
+                ];
+            }
+
+            // ── Coupures / انقطاع الكهرباء ──
+            if (preg_match('/(الكهرباء|انقطاع|قطع الكهرباء|التيار الكهربائي)/u', $message)) {
+                $totalCoupures = $stats['coupures_actives_total'];
+                $reply = "### ⚡ انقطاع التيار الكهربائي — ماذا تفعل؟\n\n";
+                if ($totalCoupures > 0) {
+                    $reply .= "📡 **معلومة HeatAlert:** **{$totalCoupures}** انقطاع(ات) مسجلة أو مبرمجة حالياً.\n\n";
+                } else {
+                    $reply .= "✅ **معلومة HeatAlert:** لا انقطاعات كبرى مسجلة حالياً على المنصة.\n\n";
+                }
+                $reply .= "**🥶 الحفاظ على الأغذية:**\n";
+                $reply .= "- الثلاجة: لا تفتحها — تحافظ على البرودة من 4 إلى 6 ساعات\n";
+                $reply .= "- المجمّد: لا تفتحه — يحافظ من 24 إلى 48 ساعة\n\n";
+                $reply .= "**💊 الأدوية الحساسة (الأنسولين، اللقاحات):**\n";
+                $reply .= "- علبة حفظ حرارية + كيس ثلج ملفوف في قماش\n\n";
+                $reply .= "🆘 **أرقام الطوارئ:** 190 (الإسعاف) · 198 (الحماية المدنية)";
+                return [
+                    'reply' => $reply,
+                    'chart' => null,
+                    'suggestions' => ['الإبلاغ عن انقطاع', 'أجهزة حساسة وانقطاع', 'نقاط التبريد'],
+                ];
+            }
+
+            // ── Réponse générique en arabe pour tout le reste ──
             return [
                 'reply' => "### 🌡️ ماذا أفعل أثناء موجة الحر؟\n\nإليك **6 إجراءات أساسية** للوقاية:\n\n1. 💧 **شرب الماء**: من 2 إلى 3 لترات يومياً، دون انتظار العطش\n2. 🏠 **حماية المنزل**: أغلق المصاريع نهاراً وافتح النوافذ ليلاً\n3. ☀️ **تجنب الخروج** بين الساعة 11 صباحاً و5 مساءً\n4. 👴👶 **تفقد الأشخاص الضعفاء**: المسنين، الرضع، المرضى — مرتين يومياً على الأقل\n5. ❄️ **استخدام نقاط الاسترخاء والتبريد** (مكتبات، مراكز تجارية، مسابح عامة)\n6. 📱 **متابعة تنبيهات HeatAlert** لمنطقتك\n\n🆘 **أرقام الطوارئ (تونس):** 190 (SAMU) · 198 (الحماية المدنية)",
                 'chart' => null,
-                'suggestions' => ['نصائح الوقاية من الحر', 'أقرب نقطة تبريد', 'التنبيهات الجارية'],
+                'suggestions' => ['الطقس في الحمامات', 'أقرب نقطة تبريد', 'التنبيهات الجارية'],
             ];
         }
 
@@ -1398,94 +1602,173 @@ EOT;
             $alertes = $knowledge['target_alertes'];
             $points = $knowledge['target_points'];
             $coupures = $knowledge['target_coupures'];
+            $isArabicQuery = (bool) preg_match('/[\x{0600}-\x{06FF}]/u', $message);
 
-            $countryDisplay = $isInternational ? " — {$locCountry}" : " ({$locAdmin})";
-            $reply = "### 📍 Météo & Vigilance Thermique — {$locName}{$countryDisplay}\n\n";
+            if ($isArabicQuery) {
+                // ─────────────────────────── Réponse en ARABE ───────────────────────────
+                $countryDisplay = $isInternational ? " — {$locCountry}" : " ({$locAdmin})";
+                $reply = "### 📍 الطقس والمراقبة الحرارية — {$locName}{$countryDisplay}\n\n";
 
-            // 1. Météo en direct
-            if ($weather) {
-                $temp = $weather['temperature'];
-                $felt = $weather['apparent_temp'];
-                $uv = $weather['uv_index'];
+                if ($weather) {
+                    $temp = $weather['temperature'];
+                    $felt = $weather['apparent_temp'];
+                    $uv   = $weather['uv_index'];
 
-                // Évaluation du niveau de risque canicule mondial
-                $riskBadge = "🟢 **Conditions Tempérées** : Aucun stress thermique critique.";
-                if ($temp >= 38 || $felt >= 42) {
-                    $riskBadge = "🔴 **Alerte Canicule Sévère** : Chaleur extrême ! Risque élevé d'insolation et de déshydratation.";
-                } elseif ($temp >= 33 || $felt >= 36) {
-                    $riskBadge = "🟠 **Vigilance Canicule Élevée** : Températures très chaudes, hydratez-vous abondamment.";
-                } elseif ($temp >= 29) {
-                    $riskBadge = "🟡 **Chaleur Modérée** : Conditions estivales chaudes.";
-                }
-
-                $uvBadge = $uv >= 8 ? "🔴 *Très Élevé (Protection solaire indispensable)*" : ($uv >= 6 ? "🟠 *Élevé*" : "🟢 *Modéré*");
-
-                $reply .= "🌤️ **Données en Direct :**\n";
-                $reply .= "- **Ciel :** {$weather['condition']}\n";
-                $reply .= "- **Température :** **{$temp}°C** (Ressentie : **{$felt}°C**)\n";
-                $reply .= "- **Indice UV Solaire :** **{$uv} / 11** — {$uvBadge}\n";
-                $reply .= "- **Humidité :** {$weather['humidity']}%\n";
-                $reply .= "- **Vitesse du vent :** {$weather['wind_speed']} km/h\n\n";
-                $reply .= "🌡️ **Statut Vigilance :** {$riskBadge}\n\n";
-            }
-
-            // 2. Alertes spécifiques plateforme (si Tunisie)
-            if (!$isInternational) {
-                if (!empty($alertes)) {
-                    $a = $alertes[0];
-                    $reply .= "⚠️ **Alerte Officielle HeatAlert :**\n";
-                    $reply .= "- **Niveau :** **" . strtoupper($a['niveau']) . "** — {$a['titre']}\n";
-                    $reply .= "- **Description :** {$a['description']}\n\n";
-                } else {
-                    $reply .= "✅ **Alerte Nationale :** Aucune alerte canicule critique émise par HeatAlert pour {$locName}.\n\n";
-                }
-
-                if (!empty($points)) {
-                    $reply .= "❄️ **Points Fraîcheur Répertoriés à {$locName} :**\n";
-                    foreach (array_slice($points, 0, 3) as $pt) {
-                        $reply .= "- **{$pt['nom']}** ({$pt['type']}) — *{$pt['adresse']}* [PMR: {$pt['pmr']}]\n";
+                    $riskBadge = "🟢 **أوضاع معتدلة**: لا توتر حراري حرج.";
+                    if ($temp >= 38 || $felt >= 42) {
+                        $riskBadge = "🔴 **تنبيه موجة حر شديدة**: حرارة قصوى! خطر مرتفع لضربة الشمس والجفاف.";
+                    } elseif ($temp >= 33 || $felt >= 36) {
+                        $riskBadge = "🟠 **يقظة حرارية عالية**: درجات حرارة مرتفعة جداً، اشرب الماء بكثرة.";
+                    } elseif ($temp >= 29) {
+                        $riskBadge = "🟡 **حرارة معتدلة**: أجواء صيفية دافئة.";
                     }
-                    $reply .= "\n";
+
+                    $uvBadge = $uv >= 8 ? "🔴 *مرتفع جداً (الحماية من الشمس ضرورية)*" : ($uv >= 6 ? "🟠 *مرتفع*" : "🟢 *معتدل*");
+
+                    $reply .= "🌤️ **البيانات الآنية:**\n";
+                    $reply .= "- **السماء:** {$weather['condition']}\n";
+                    $reply .= "- **درجة الحرارة:** **{$temp}°م** (المحسوسة: **{$felt}°م**)\n";
+                    $reply .= "- **مؤشر الأشعة فوق البنفسجية:** **{$uv} / 11** — {$uvBadge}\n";
+                    $reply .= "- **الرطوبة:** {$weather['humidity']}%\n";
+                    $reply .= "- **سرعة الرياح:** {$weather['wind_speed']} كم/س\n\n";
+                    $reply .= "🌡️ **مستوى اليقظة:** {$riskBadge}\n\n";
                 }
+
+                if (!$isInternational) {
+                    if (!empty($alertes)) {
+                        $a = $alertes[0];
+                        $reply .= "⚠️ **تنبيه رسمي HeatAlert:**\n";
+                        $reply .= "- **المستوى:** **" . strtoupper($a['niveau']) . "** — {$a['titre']}\n";
+                        $reply .= "- **الوصف:** {$a['description']}\n\n";
+                    } else {
+                        $reply .= "✅ **تنبيه وطني:** لم تُصدر منصة HeatAlert أي تنبيه موجة حر حرج لـ{$locName}.\n\n";
+                    }
+                    if (!empty($points)) {
+                        $reply .= "❄️ **نقاط التبريد في {$locName}:**\n";
+                        foreach (array_slice($points, 0, 3) as $pt) {
+                            $reply .= "- **{$pt['nom']}** ({$pt['type']}) — *{$pt['adresse']}*\n";
+                        }
+                        $reply .= "\n";
+                    }
+                } else {
+                    $reply .= "🌍 **المراقبة الدولية:** تتابع محطاتنا العالمية باستمرار التغيرات الحرارية وموجات الحر لـ{$locName}.\n\n";
+                }
+
+                $reply .= "📊 *إليك مخطط تطور درجات الحرارة خلال اليوم في {$locName}:*";
+
+                if ($weather) {
+                    $chart = [
+                        'type'     => 'line',
+                        'title'    => "التطور الحراري في {$locName} اليوم (°م)",
+                        'labels'   => $weather['chart_hours'],
+                        'datasets' => [
+                            [
+                                'label'           => 'درجة الحرارة (°م)',
+                                'data'            => $weather['chart_temps'],
+                                'borderColor'     => '#ea580c',
+                                'backgroundColor' => 'rgba(234, 88, 12, 0.15)',
+                                'fill'            => true,
+                            ],
+                            [
+                                'label'           => 'درجة الحرارة المحسوسة (°م)',
+                                'data'            => $weather['chart_felts'],
+                                'borderColor'     => '#dc2626',
+                                'backgroundColor' => 'rgba(220, 38, 38, 0.08)',
+                                'fill'            => true,
+                            ],
+                        ],
+                    ];
+                }
+
+                return [
+                    'reply'       => $reply,
+                    'chart'       => $chart,
+                    'suggestions' => ["نصائح الوقاية من الحر", "الطقس في تونس", "📊 إحصائيات المنصة"],
+                ];
+
             } else {
-                $reply .= "🌍 **Surveillance Internationale :** Nos stations mondiales suivent en continu les variations thermiques et les vagues de chaleur pour {$locName}.\n\n";
-            }
+                // ─────────────────────────── Réponse en FRANÇAIS ───────────────────────────
+                $countryDisplay = $isInternational ? " — {$locCountry}" : " ({$locAdmin})";
+                $reply = "### 📍 Météo & Vigilance Thermique — {$locName}{$countryDisplay}\n\n";
 
-            $reply .= "📊 *Voici le graphique d'évolution des températures de la journée pour {$locName} :*";
+                if ($weather) {
+                    $temp = $weather['temperature'];
+                    $felt = $weather['apparent_temp'];
+                    $uv   = $weather['uv_index'];
 
-            if ($weather) {
-                $chart = [
-                    'type' => 'line',
-                    'title' => "Évolution Thermique à {$locName} Aujourd'hui (°C)",
-                    'labels' => $weather['chart_hours'],
-                    'datasets' => [
-                        [
-                            'label' => 'Température (°C)',
-                            'data' => $weather['chart_temps'],
-                            'borderColor' => '#ea580c',
-                            'backgroundColor' => 'rgba(234, 88, 12, 0.15)',
-                            'fill' => true,
+                    $riskBadge = "🟢 **Conditions Tempérées** : Aucun stress thermique critique.";
+                    if ($temp >= 38 || $felt >= 42) {
+                        $riskBadge = "🔴 **Alerte Canicule Sévère** : Chaleur extrême ! Risque élevé d'insolation et de déshydratation.";
+                    } elseif ($temp >= 33 || $felt >= 36) {
+                        $riskBadge = "🟠 **Vigilance Canicule Élevée** : Températures très chaudes, hydratez-vous abondamment.";
+                    } elseif ($temp >= 29) {
+                        $riskBadge = "🟡 **Chaleur Modérée** : Conditions estivales chaudes.";
+                    }
+
+                    $uvBadge = $uv >= 8 ? "🔴 *Très Élevé (Protection solaire indispensable)*" : ($uv >= 6 ? "🟠 *Élevé*" : "🟢 *Modéré*");
+
+                    $reply .= "🌤️ **Données en Direct :**\n";
+                    $reply .= "- **Ciel :** {$weather['condition']}\n";
+                    $reply .= "- **Température :** **{$temp}°C** (Ressentie : **{$felt}°C**)\n";
+                    $reply .= "- **Indice UV Solaire :** **{$uv} / 11** — {$uvBadge}\n";
+                    $reply .= "- **Humidité :** {$weather['humidity']}%\n";
+                    $reply .= "- **Vitesse du vent :** {$weather['wind_speed']} km/h\n\n";
+                    $reply .= "🌡️ **Statut Vigilance :** {$riskBadge}\n\n";
+                }
+
+                if (!$isInternational) {
+                    if (!empty($alertes)) {
+                        $a = $alertes[0];
+                        $reply .= "⚠️ **Alerte Officielle HeatAlert :**\n";
+                        $reply .= "- **Niveau :** **" . strtoupper($a['niveau']) . "** — {$a['titre']}\n";
+                        $reply .= "- **Description :** {$a['description']}\n\n";
+                    } else {
+                        $reply .= "✅ **Alerte Nationale :** Aucune alerte canicule critique émise par HeatAlert pour {$locName}.\n\n";
+                    }
+
+                    if (!empty($points)) {
+                        $reply .= "❄️ **Points Fraîcheur Répertoriés à {$locName} :**\n";
+                        foreach (array_slice($points, 0, 3) as $pt) {
+                            $reply .= "- **{$pt['nom']}** ({$pt['type']}) — *{$pt['adresse']}* [PMR: {$pt['pmr']}]\n";
+                        }
+                        $reply .= "\n";
+                    }
+                } else {
+                    $reply .= "🌍 **Surveillance Internationale :** Nos stations mondiales suivent en continu les variations thermiques et les vagues de chaleur pour {$locName}.\n\n";
+                }
+
+                $reply .= "📊 *Voici le graphique d'évolution des températures de la journée pour {$locName} :*";
+
+                if ($weather) {
+                    $chart = [
+                        'type'     => 'line',
+                        'title'    => "Évolution Thermique à {$locName} Aujourd'hui (°C)",
+                        'labels'   => $weather['chart_hours'],
+                        'datasets' => [
+                            [
+                                'label'           => 'Température (°C)',
+                                'data'            => $weather['chart_temps'],
+                                'borderColor'     => '#ea580c',
+                                'backgroundColor' => 'rgba(234, 88, 12, 0.15)',
+                                'fill'            => true,
+                            ],
+                            [
+                                'label'           => 'Température Ressentie (°C)',
+                                'data'            => $weather['chart_felts'],
+                                'borderColor'     => '#dc2626',
+                                'backgroundColor' => 'rgba(220, 38, 38, 0.08)',
+                                'fill'            => true,
+                            ],
                         ],
-                        [
-                            'label' => 'Température Ressentie (°C)',
-                            'data' => $weather['chart_felts'],
-                            'borderColor' => '#dc2626',
-                            'backgroundColor' => 'rgba(220, 38, 38, 0.08)',
-                            'fill' => true,
-                        ],
-                    ],
+                    ];
+                }
+
+                return [
+                    'reply'       => $reply,
+                    'chart'       => $chart,
+                    'suggestions' => ["Conseils canicule", "Météo de Tunis", "📊 Statistiques globales de la plateforme"],
                 ];
             }
-
-            return [
-                'reply' => $reply,
-                'chart' => $chart,
-                'suggestions' => [
-                    "Conseils canicule",
-                    "Météo de Tunis",
-                    "📊 Statistiques globales de la plateforme",
-                ],
-            ];
         }
 
         // ── CAS 2 : DEMANDE DE STATISTIQUES GLOBALES OU GRAPHIQUE ──
