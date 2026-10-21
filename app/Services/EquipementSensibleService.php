@@ -41,7 +41,7 @@ class EquipementSensibleService
 
     public function getForUserPaginated(User $user, array $filters = [], int $perPage = 8): LengthAwarePaginator
     {
-        $query = EquipementSensible::with('zone')->where('user_id', $user->id);
+        $query = EquipementSensible::with(['zone', 'latestRiskPrediction'])->where('user_id', $user->id);
         if (!empty($filters['search'])) {
             $search = $filters['search'];
             $query->where(fn ($q) => $q->where('nom', 'like', "%{$search}%")

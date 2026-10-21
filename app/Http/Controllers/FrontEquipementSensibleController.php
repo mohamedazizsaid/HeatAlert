@@ -10,12 +10,15 @@ use App\Services\Module4NotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class FrontEquipementSensibleController extends Controller
 {
     public function __construct(
         private EquipementSensibleService $service,
         private Module4NotificationService $notificationService,
+        private \App\Services\EquipementSensibleRiskService $riskService,
     ) {}
 
     public function index(Request $request): View
@@ -42,9 +45,22 @@ class FrontEquipementSensibleController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
         $data['actif'] = $request->boolean('actif', true);
-        $this->service->create($data);
+        $equipement = $this->service->create($data);
         $this->notificationService->generateForUser($request->user());
-        return redirect()->route('front.equipements_sensibles.index')->with('success', 'Équipement ajouté à votre préparation.');
+        $redirect = redirect()->route('front.equipements_sensibles.index')
+            ->with('success', 'Équipement ajouté à votre préparation.');
+
+        try {
+            $this->riskService->predict($equipement);
+        } catch (Throwable $exception) {
+            Log::warning('Prédiction équipement indisponible après création.', [
+                'equipement_id' => $equipement->id,
+                'error' => $exception->getMessage(),
+            ]);
+            $redirect->with('risk_warning', 'Équipement ajouté, mais la prédiction est temporairement indisponible.');
+        }
+
+        return $redirect;
     }
 
     public function edit(Request $request, EquipementSensible $equipementSensible): View
@@ -64,7 +80,20 @@ class FrontEquipementSensibleController extends Controller
         $data['actif'] = $request->boolean('actif');
         $this->service->update($equipementSensible, $data);
         $this->notificationService->generateForUser($request->user());
-        return redirect()->route('front.equipements_sensibles.index')->with('success', 'Équipement mis à jour.');
+        $redirect = redirect()->route('front.equipements_sensibles.index')
+            ->with('success', 'Équipement mis à jour.');
+
+        try {
+            $this->riskService->predict($equipementSensible);
+        } catch (Throwable $exception) {
+            Log::warning('Prédiction équipement indisponible après mise à jour.', [
+                'equipement_id' => $equipementSensible->id,
+                'error' => $exception->getMessage(),
+            ]);
+            $redirect->with('risk_warning', 'Équipement mis à jour, mais la prédiction est temporairement indisponible.');
+        }
+
+        return $redirect;
     }
 
     public function destroy(Request $request, EquipementSensible $equipementSensible): RedirectResponse

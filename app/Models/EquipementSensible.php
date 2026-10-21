@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class EquipementSensible extends Model
 {
@@ -82,5 +83,15 @@ class EquipementSensible extends Model
     public function module4Notifications(): HasMany
     {
         return $this->hasMany(Module4Notification::class);
+    }
+
+    public function riskPredictions(): HasMany
+    {
+        return $this->hasMany(EquipementSensiblePrediction::class);
+    }
+
+    public function latestRiskPrediction(): HasOne
+    {
+        return $this->hasOne(EquipementSensiblePrediction::class)->latestOfMany('target_window_start');
     }
 }

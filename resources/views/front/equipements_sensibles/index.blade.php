@@ -18,6 +18,7 @@
   @foreach(['success','deleted'] as $type)
     @if(session($type))<div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3"><i class="bi bi-check-circle me-2"></i>{{ session($type) }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button></div>@endif
   @endforeach
+  @if(session('risk_warning'))<div class="alert alert-warning alert-dismissible fade show border-0 shadow-sm rounded-3"><i class="bi bi-exclamation-triangle me-2"></i>{{ session('risk_warning') }} Vérifiez que le service ML est démarré et que la migration est exécutée.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button></div>@endif
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div><h2 class="h4 mb-1">Mes équipements sensibles</h2><p class="text-muted mb-0"><strong id="equipementsCount">{{ $equipements->count() }}</strong> équipement(s) affiché(s) <span class="small">sur {{ $equipements->total() }}</span></p></div>
     <button type="button" class="btn btn-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addEquipementModal"><i class="bi bi-plus-lg me-1"></i>Ajouter un équipement</button>
@@ -33,7 +34,24 @@
   <div id="equipementsGrid" class="row g-4">@forelse($equipements as $equipement)
     <div class="col-md-6 col-lg-4 equipement-card" data-equipement-card data-search="{{ strtolower($equipement->nom . ' ' . $equipement->type . ' ' . ($equipement->description ?? '')) }}" data-niveau="{{ $equipement->niveau_sensibilite }}" data-actif="{{ $equipement->actif ? '1' : '0' }}"><div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden">
       <div class="card-body p-4"><div class="d-flex justify-content-between align-items-start gap-2"><h3 class="h5 fw-bold mb-2">{{ $equipement->nom }}</h3><span class="badge rounded-pill bg-{{ $equipement->niveau_sensibilite === 'eleve' ? 'danger' : ($equipement->niveau_sensibilite === 'moyen' ? 'warning text-dark' : 'success') }}">{{ ucfirst($equipement->niveau_sensibilite) }}</span></div>
-      <div class="text-danger small fw-semibold mb-3"><i class="bi bi-cpu me-1"></i>{{ $equipement->type }}</div><p class="text-muted small mb-3">{{ $equipement->description ?: 'Aucune précaution renseignée.' }}</p><span class="badge rounded-pill bg-{{ $equipement->actif ? 'success' : 'secondary' }}"><i class="bi bi-{{ $equipement->actif ? 'eye' : 'eye-slash' }} me-1"></i>{{ $equipement->actif ? 'À surveiller' : 'Désactivé' }}</span></div>
+      <div class="text-danger small fw-semibold mb-3"><i class="bi bi-cpu me-1"></i>{{ $equipement->type }}</div><p class="text-muted small mb-3">{{ $equipement->description ?: 'Aucune précaution renseignée.' }}</p><span class="badge rounded-pill bg-{{ $equipement->actif ? 'success' : 'secondary' }}"><i class="bi bi-{{ $equipement->actif ? 'eye' : 'eye-slash' }} me-1"></i>{{ $equipement->actif ? 'À surveiller' : 'Désactivé' }}</span>
+      @if($equipement->latestRiskPrediction)
+        @php($prediction = $equipement->latestRiskPrediction)
+        <div class="mt-3 p-3 rounded-3 bg-light border">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="small fw-semibold"><i class="bi bi-graph-up-arrow me-1"></i>Risque dans 24 h</span>
+            <span class="badge rounded-pill bg-{{ $prediction->risk_level === 'high' ? 'danger' : ($prediction->risk_level === 'medium' ? 'warning text-dark' : 'success') }}">{{ strtoupper($prediction->risk_level) }}</span>
+          </div>
+          <div class="fw-bold">{{ number_format($prediction->probability * 100, 1, ',', ' ') }} %</div>
+          <div class="small text-muted">{{ $prediction->target_window_start?->format('d/m/Y H:i') }}</div>
+          @if($prediction->factors)
+            <div class="small text-muted mt-2">{{ implode(' · ', $prediction->factors) }}</div>
+          @endif
+        </div>
+      @else
+        <div class="mt-3 small text-muted"><i class="bi bi-hourglass-split me-1"></i>Aucune prédiction disponible.</div>
+      @endif
+      </div>
       <div class="card-footer bg-white border-0 px-4 pb-4 d-flex gap-2"><button type="button" class="btn btn-sm btn-outline-primary rounded-pill flex-grow-1" data-bs-toggle="modal" data-bs-target="#editEquipementModal{{ $equipement->id }}"><i class="bi bi-pencil me-1"></i>Modifier</button><form method="POST" action="{{ route('front.equipements_sensibles.destroy', $equipement) }}" onsubmit="return confirm('Supprimer cet équipement ?')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger rounded-pill" title="Supprimer"><i class="bi bi-trash"></i></button></form></div>
     </div></div>
   @empty<div class="col-12"><div class="card border-0 shadow-sm rounded-4 text-center p-5"><i class="bi bi-shield-plus text-danger" style="font-size:3rem"></i><h3 class="h5 mt-3">Aucun équipement enregistré</h3><p class="text-muted">Votre liste est vide. Ajoutez un équipement important pour mieux anticiper la canicule.</p><button type="button" class="btn btn-danger rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addEquipementModal">Ajouter mon premier équipement</button></div></div>@endforelse</div>
@@ -130,25 +148,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </div>
 @endforeach
 
-@if($errors->any())
-@php
-    $modalValue = (string) old('_modal');
-    $modalId = $modalValue === 'create'
-        ? 'addEquipementModal'
-        : (str_starts_with($modalValue, 'edit-')
-            ? 'editEquipementModal' . str_replace('edit-', '', $modalValue)
-            : null);
-@endphp
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const modalId = @json($modalId);
-  if (modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modal).show();
-  }
-});
-</script>
-@endpush
-@endif
 @endsection

@@ -14,6 +14,12 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException, Request, status
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.equipment_risk import (
+    create_equipment_router,
+    default_equipment_model_path,
+    load_equipment_model_bundle,
+)
+
 # ══════════════════════════════════════════════════════════════
 # MODÈLE 1 : PRÉDICTION DES COUPURES ÉLECTRIQUES (STEG)
 # ══════════════════════════════════════════════════════════════
@@ -281,9 +287,12 @@ def create_app(
     model_path: Path | None = None,
     model: Any | None = None,
     fire_model_path: Path | None = None,
+    equipment_model: Any | None = None,
 ) -> FastAPI:
     resolved_path = model_path or default_model_path()
     resolved_fire_path = fire_model_path or default_fire_model_path()
+    equipment_router = create_equipment_router()
+    resolved_equipment_path = default_equipment_model_path()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -303,22 +312,34 @@ def create_app(
         app.state.fire_model = loaded_fire_model
         app.state.fire_metadata = fire_metadata
         app.state.fire_model_error = fire_error
+        if equipment_model is not None:
+            loaded_equipment_model = equipment_model
+            equipment_metadata = {"model_version": "test-injected-equipment-model"}
+            equipment_error = None
+        else:
+            loaded_equipment_model, equipment_metadata, equipment_error = load_equipment_model_bundle(
+                resolved_equipment_path
+            )
+        app.state.equipment_model = loaded_equipment_model
+        app.state.equipment_metadata = equipment_metadata
+        app.state.equipment_model_error = equipment_error
 
         yield
 
     app = FastAPI(
         title="HeatAlert ML API",
-        version="2.0.0",
-        description="Services ML : Prédiction des coupures STEG & Risque de propagation des feux de forêts (24h).",
+        version="2.1.0",
+        description="Services ML : coupures STEG, propagation des feux et risque des équipements sensibles.",
         lifespan=lifespan,
     )
+    app.include_router(equipment_router)
 
     @app.get("/")
     def root() -> dict[str, str]:
         return {
             "service": "HeatAlert ML API",
-            "version": "2.0.0",
-            "endpoints": ["/predict", "/predict/feu", "/health", "/docs"],
+            "version": "2.1.0",
+            "endpoints": ["/predict", "/predict/feu", "/predict/equipements", "/health", "/docs"],
         }
 
     @app.get("/health")
@@ -330,6 +351,9 @@ def create_app(
             "fire_model_loaded": getattr(request.app.state, "fire_model", None) is not None,
             "fire_model_error": getattr(request.app.state, "fire_model_error", None),
             "fire_model_type": "LightGBM Classifier",
+            "equipment_model_loaded": getattr(request.app.state, "equipment_model", None) is not None,
+            "equipment_model_error": getattr(request.app.state, "equipment_model_error", None),
+            "equipment_model_type": "Random Forest Classifier",
         }
 
     # ══════════════════════════════════════════════════════════

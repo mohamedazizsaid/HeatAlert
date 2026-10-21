@@ -21,3 +21,9 @@ Schedule::command('steg:sync-coupures')
     ->everyTwoHours()
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/steg-sync.log'));
+
+// Actualise les risques avec l'historique des coupures et la météo actuelle.
+Schedule::command('equipements:refresh-risks')
+    ->hourly()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/equipements-risk.log'));

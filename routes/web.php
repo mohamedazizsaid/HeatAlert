@@ -90,6 +90,10 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('api')->name('api.')->group(function () {
         Route::apiResource('mes-equipements', \App\Http\Controllers\Api\EquipementSensibleController::class)
             ->parameters(['mes-equipements' => 'equipementSensible']);
+        Route::post(
+            'mes-equipements/{equipementSensible}/risk-prediction',
+            [\App\Http\Controllers\Api\EquipementSensibleRiskController::class, 'store']
+        )->name('mes-equipements.risk-prediction');
     });
     Route::get('/notifications', [NotificationController::class, 'index'])->name('front.notifications.index');
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('front.notifications.read');
