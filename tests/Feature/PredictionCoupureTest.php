@@ -21,7 +21,7 @@ class PredictionCoupureTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.predictions.index'));
 
         $response->assertOk();
-        $response->assertSee('Prédictions de coupures');
+        $response->assertSee('Prévisions de coupures');
         $response->assertSee('Zone Test ML');
         $response->assertSee('Aucune prédiction disponible');
     }
