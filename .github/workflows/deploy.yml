@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - aziz
       - master
   pull_request:
     branches:
@@ -61,11 +62,61 @@ jobs:
           echo "All PHP files have valid syntax!"
 
   # ============================================================================
-  # JOB 2: Deploy to Render (Continuous Deployment)
+  # JOB 2: Unit & Feature Tests (PHPUnit)
+  # ============================================================================
+  test:
+    name: Run Unit & Feature Tests
+    runs-on: ubuntu-latest
+    needs: ci
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, bcmath, gd, zip
+          coverage: none
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare Laravel Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Configure SQLite for Testing
+        run: |
+          touch database/database.sqlite
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env
+
+      - name: Run Database Migrations
+        run: php artisan migrate --force
+
+      - name: Run Unit Tests
+        run: php artisan test --testsuite=Unit --stop-on-failure
+
+      - name: Run Feature Tests
+        run: php artisan test --testsuite=Feature --stop-on-failure
+
+  # ============================================================================
+  # JOB 3: Deploy to Render (Continuous Deployment)
   # ============================================================================
   deploy:
     name: Deploy to Render
-    needs: ci
+    needs: [ci, test]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
