@@ -16,7 +16,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->get('/profile');
+            ->get('/profil');
 
         $response->assertOk();
     }
@@ -27,19 +27,21 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
-                'name' => 'Test User',
-                'email' => 'test@example.com',
+            ->patch('/profil', [
+                'nom'    => 'Dupont',
+                'prenom' => 'Jean',
+                'email'  => 'jean@example.com',
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect('/profil');
 
         $user->refresh();
 
-        $this->assertSame('Test User', $user->name);
-        $this->assertSame('test@example.com', $user->email);
+        $this->assertSame('Dupont', $user->nom);
+        $this->assertSame('Jean', $user->prenom);
+        $this->assertSame('jean@example.com', $user->email);
         $this->assertNull($user->email_verified_at);
     }
 
@@ -49,14 +51,15 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->patch('/profile', [
-                'name' => 'Test User',
-                'email' => $user->email,
+            ->patch('/profil', [
+                'nom'    => $user->nom,
+                'prenom' => $user->prenom,
+                'email'  => $user->email,
             ]);
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect('/profile');
+            ->assertRedirect('/profil');
 
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
@@ -67,7 +70,7 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->delete('/profile', [
+            ->delete('/profil', [
                 'password' => 'password',
             ]);
 
@@ -85,14 +88,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
+            ->from('/profil')
+            ->delete('/profil', [
                 'password' => 'wrong-password',
             ]);
 
         $response
             ->assertSessionHasErrorsIn('userDeletion', 'password')
-            ->assertRedirect('/profile');
+            ->assertRedirect('/profil');
 
         $this->assertNotNull($user->fresh());
     }
